@@ -1,0 +1,99 @@
+{
+  "version": 3,
+  "skills": {
+    "find-skills": {
+      "source": "vercel-labs/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/vercel-labs/skills.git",
+      "skillPath": "skills/find-skills/SKILL.md",
+      "skillFolderHash": "c2f31172b6f256272305a5e6e7228b258446899f",
+      "installedAt": "2026-01-31T05:44:14.962Z",
+      "updatedAt": "2026-01-31T05:44:14.962Z"
+    },
+    "playwright-skill": {
+      "source": "lackeyjb/playwright-skill",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/lackeyjb/playwright-skill.git",
+      "skillPath": "skills/playwright-skill/SKILL.md",
+      "skillFolderHash": "b2d559b68b4c3004840124862f30c6d371270646",
+      "installedAt": "2026-01-31T11:07:14.575Z",
+      "updatedAt": "2026-01-31T11:07:14.575Z"
+    },
+    "context-engineering": {
+      "source": "NeoLabHQ/context-engineering-kit",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/NeoLabHQ/context-engineering-kit.git",
+      "skillPath": "plugins/customaize-agent/skills/context-engineering/SKILL.md",
+      "skillFolderHash": "0f1c5855bedc4549cb2d06a031667a9a96711073",
+      "installedAt": "2026-01-31T11:20:09.020Z",
+      "updatedAt": "2026-01-31T11:20:09.020Z"
+    },
+    "prompt-engineering": {
+      "source": "NeoLabHQ/context-engineering-kit",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/NeoLabHQ/context-engineering-kit.git",
+      "skillPath": "plugins/customaize-agent/skills/prompt-engineering/SKILL.md",
+      "skillFolderHash": "b38edcd12944f82d8759ea2d7078336c0970927f",
+      "installedAt": "2026-01-31T11:20:09.154Z",
+      "updatedAt": "2026-01-31T11:20:09.154Z"
+    },
+    "software-architecture": {
+      "source": "NeoLabHQ/context-engineering-kit",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/NeoLabHQ/context-engineering-kit.git",
+      "skillPath": "plugins/ddd/skills/software-architecture/SKILL.md",
+      "skillFolderHash": "9f12829d3a81b5889573d770039e4f845bf19e91",
+      "installedAt": "2026-01-31T11:20:09.197Z",
+      "updatedAt": "2026-01-31T11:20:09.197Z"
+    },
+    "kaizen": {
+      "source": "NeoLabHQ/context-engineering-kit",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/NeoLabHQ/context-engineering-kit.git",
+      "skillPath": "plugins/kaizen/skills/kaizen/SKILL.md",
+      "skillFolderHash": "4ae42e1685b8ae2bc3f1eba9cd5c62897f6cefea",
+      "installedAt": "2026-01-31T11:20:09.237Z",
+      "updatedAt": "2026-01-31T11:20:09.237Z"
+    },
+    "test-driven-development": {
+      "source": "NeoLabHQ/context-engineering-kit",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/NeoLabHQ/context-engineering-kit.git",
+      "skillPath": "plugins/tdd/skills/test-driven-development/SKILL.md",
+      "skillFolderHash": "bace396b4bd89d610971646687dc1951c2e210b6",
+      "installedAt": "2026-01-31T11:20:09.267Z",
+      "updatedAt": "2026-01-31T11:20:09.267Z"
+    },
+    "ship-learn-next": {
+      "source": "michalparkola/tapestry-skills-for-claude-code",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/michalparkola/tapestry-skills-for-claude-code.git",
+      "skillPath": "ship-learn-next/SKILL.md",
+      "skillFolderHash": "bde2a70a9dcb2a5f40ca19baa5a8190b8311ee08",
+      "installedAt": "2026-01-31T11:21:48.644Z",
+      "updatedAt": "2026-01-31T11:21:48.644Z"
+    },
+    "brainstorming": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/obra/superpowers.git",
+      "skillPath": "skills/brainstorming/SKILL.md",
+      "skillFolderHash": "761c2f359474328f40d73db9cb4cc1f5721917e5",
+      "installedAt": "2026-01-31T11:22:33.624Z",
+      "updatedAt": "2026-01-31T11:22:33.624Z"
+    },
+    "test-fixing": {
+      "source": "mhattingpete/claude-skills-marketplace",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/mhattingpete/claude-skills-marketplace.git",
+      "skillPath": "engineering-workflow-plugin/skills/test-fixing/SKILL.md",
+      "skillFolderHash": "d40869c07ef66ece9b34c28683b4be8667c415d3",
+      "installedAt": "2026-01-31T11:33:58.157Z",
+      "updatedAt": "2026-01-31T11:33:58.157Z"
+    }
+  },
+  "dismissed": {
+    "findSkillsPrompt": true
+  },
+  "lastSelectedAgents": []
+}
