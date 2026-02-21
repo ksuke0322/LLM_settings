@@ -90,10 +90,53 @@
       "skillFolderHash": "d40869c07ef66ece9b34c28683b4be8667c415d3",
       "installedAt": "2026-01-31T11:33:58.157Z",
       "updatedAt": "2026-01-31T11:33:58.157Z"
+    },
+    "auditing-wcag": {
+      "source": "masuP9/a11y-specialist-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/masuP9/a11y-specialist-skills.git",
+      "skillPath": "skills/auditing-wcag/SKILL.md",
+      "skillFolderHash": "22651759f9542c1b319dab1e76c92423e1d406b5",
+      "installedAt": "2026-02-20T06:51:10.349Z",
+      "updatedAt": "2026-02-20T06:51:10.349Z"
+    },
+    "planning-a11y-improvement": {
+      "source": "masuP9/a11y-specialist-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/masuP9/a11y-specialist-skills.git",
+      "skillPath": "skills/planning-a11y-improvement/SKILL.md",
+      "skillFolderHash": "e8d747f9b1b55ba46dd71a3789fa546387df52fc",
+      "installedAt": "2026-02-20T06:51:10.372Z",
+      "updatedAt": "2026-02-20T06:51:10.372Z"
+    },
+    "planning-wcag-audit": {
+      "source": "masuP9/a11y-specialist-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/masuP9/a11y-specialist-skills.git",
+      "skillPath": "skills/planning-wcag-audit/SKILL.md",
+      "skillFolderHash": "0b532d1d1fb8f7be3aba5c497a4c24ea1d8927f6",
+      "installedAt": "2026-02-20T06:51:10.391Z",
+      "updatedAt": "2026-02-20T06:51:10.391Z"
+    },
+    "reviewing-a11y": {
+      "source": "masuP9/a11y-specialist-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/masuP9/a11y-specialist-skills.git",
+      "skillPath": "skills/reviewing-a11y/SKILL.md",
+      "skillFolderHash": "fada5fefe0a7dad4bab0f251c5ccec1383e04f98",
+      "installedAt": "2026-02-20T06:51:10.408Z",
+      "updatedAt": "2026-02-20T06:51:10.408Z"
     }
   },
   "dismissed": {
     "findSkillsPrompt": true
   },
-  "lastSelectedAgents": []
+  "lastSelectedAgents": [
+    "amp",
+    "codex",
+    "gemini-cli",
+    "github-copilot",
+    "kimi-cli",
+    "opencode"
+  ]
 }
