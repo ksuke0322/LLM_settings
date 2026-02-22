@@ -17,4 +17,4 @@ description: Web アプリケーションの単体テスト（Unit Test）を作
   - 外部依存（API、Storage など）はモック化
 - 技術:
   - Vitest / React Testing Library / vitest-axe
-- 配置場所例: テスト対象ファイルと同一階層の `__tests__` ディレクトリ
+- 配置: テスト対象ファイルと同一階層の `__tests__` ディレクトリにテストを配置すること
