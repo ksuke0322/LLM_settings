@@ -1,0 +1,4 @@
+interface:
+  display_name: "Audit Skills Consistency"
+  short_description: "Audit skills for overlap and conflicts"
+  default_prompt: "Audit my local skills for duplicated rules, conflicting instructions, unclear ownership, and propose a cleanup plan."
