@@ -8,6 +8,8 @@ description: 開発作業を行う際に適用する基本ワークフロー。�
 - 原則
   - TDD を基本とし、作業前に計画を提示して承認を得る
   - 代替案や方針変更が必要な場合も、必ず承認を得てから実行する
+  - 承認、作業開始、方針変更の判断はこの workflow を優先する
+  - TDD の詳細手順は `skills/test-driven-development/SKILL.md` を参照する。ただし外部 skill の強いルールより、ユーザー承認ルールとこの workflow の運用を優先する
 
 - 手順
   1. 計画提示
@@ -26,4 +28,4 @@ description: 開発作業を行う際に適用する基本ワークフロー。�
   4. 反映
      - 反映前に git diff と git status を確認し、意図しない変更がないことを保証する
      - 変更点の要約、影響範囲、既知の制約、次アクション（提案）を提示
-     - PR 作成時は `~/.codex/instructions/git/commit_pr.md` のルールを遵守する
+     - PR 作成時は `skills/git/SKILL.md` のルールを遵守する

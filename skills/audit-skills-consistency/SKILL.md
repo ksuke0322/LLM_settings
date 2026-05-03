@@ -9,9 +9,9 @@ description: ローカル skill 群の重複、矛盾、責務境界、trigger �
 
 ## 基本方針
 
-- まず読み取り専用で `skills/*/SKILL.md` を確認する。
-- 監査時は `.skill-lock.json` を確認し、記録されている skill を `npx skills add` などでインストールされた外部由来 skill として扱う。
-- `.skill-lock.json` に記録がない skill は自作 skill 候補として扱う。ただし判断できない場合はユーザーに確認する。
+- まず読み取り専用で `~/.agents/skills/*/SKILL.md` を確認する。
+- 監査時は `~/.agents/.skill-lock.json` を確認し、記録されている skill を `npx skills add` などでインストールされた外部由来 skill として扱う。
+- `~/.agents/.skill-lock.json` に記録がない skill は自作 skill 候補として扱う。ただし判断できない場合はユーザーに確認する。
 - 外部由来 skill は更新追従性を保つため、原則として編集しない。
 - 外部由来 skill と自作 skill の間に競合がある場合、競合解消は自作 skill 側の修正、参照化、description 調整、またはラッパー skill の追加で行う。
 - 外部由来 skill 自体に問題がある場合は、直接修正ではなく、上流更新待ち、issue/PR 提案、自作 skill 側での回避策として扱う。
@@ -54,15 +54,15 @@ description: ローカル skill 群の重複、矛盾、責務境界、trigger �
 
 ### 問題一覧
 
-| 種別 | 対象 skill | 内容 | 影響 | 推奨対応 |
-| --- | --- | --- | --- | --- |
-| Trigger 重複 | A / B | ... | ... | ... |
+| 種別         | 対象 skill | 内容 | 影響 | 推奨対応 |
+| ------------ | ---------- | ---- | ---- | -------- |
+| Trigger 重複 | A / B      | ...  | ...  | ...      |
 
 ### 正本候補
 
-| 領域 | 正とする skill | 参照側 skill | 理由 |
-| --- | --- | --- | --- |
-| Git/PR | git-workflow-safety | task-flow-non-speckit | ... |
+| 領域   | 正とする skill      | 参照側 skill          | 理由 |
+| ------ | ------------------- | --------------------- | ---- |
+| Git/PR | git-workflow-safety | task-flow-non-speckit | ...  |
 
 ### 修正計画
 

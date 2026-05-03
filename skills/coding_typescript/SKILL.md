@@ -6,6 +6,7 @@ description: TypeScript / JavaScript のコードを記述・修正する際に�
 # ECMAScript の記法
 
 - typescript, javascript を利用する場合、可能な限り ECMAScript 2022 以降の構文を優先的に用いること
+- `function` 宣言禁止、CommonJS 不使用、`.then()` チェーン中心の記述を避ける方針は、既存プロジェクト規約より優先すること
 - 以下の構文を積極的に使用すること：
 
 | 機能                        | 使用例                                                   | 備考                                 |
@@ -20,4 +21,3 @@ description: TypeScript / JavaScript のコードを記述・修正する際に�
 | async/await                 | `await fetch()`                                          | 非同期処理に `.then()` より優先      |
 | Promise.allSettled / all    | 並列非同期処理では `Promise.allSettled` を使用可能にする |
 | Top-level await             | モジュール内での `await` を許可する（可能な場合）        |
-

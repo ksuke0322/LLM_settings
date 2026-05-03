@@ -5,6 +5,8 @@ description: Web アプリケーションの結合テスト（Integration Test�
 
 # webインテグレーションテストルール
 
+共通ルールは `skills/web_test_common/SKILL.md` を必ず参照し、この skill では結合テスト固有のルールだけを扱う。
+
 ## 結合テスト（インテグレーションテスト=Integration Test）
 
 - 目的: 複数のユニットが組み合わさったときの挙動を検証する

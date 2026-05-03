@@ -5,6 +5,8 @@ description: Web アプリケーションの単体テスト（Unit Test）を作
 
 # webユニットテストルール
 
+共通ルールは `skills/web_test_common/SKILL.md` を必ず参照し、この skill では単体テスト固有のルールだけを扱う。
+
 ## 単体テスト（ユニットテスト=Unit Test）
 
 - 目的: 最小のロジック単位が正しく動作することを保証する

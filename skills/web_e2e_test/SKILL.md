@@ -5,6 +5,8 @@ description: Web アプリケーションの E2E テストを作成する際に�
 
 # e2eテストルール
 
+共通ルールは `skills/web_test_common/SKILL.md` を必ず参照し、この skill では E2E テスト固有のルールだけを扱う。
+
 ## E2E テスト（End-to-End Test）
 
 - 目的: ユーザーが想定通りにアプリを操作できることを検証する
