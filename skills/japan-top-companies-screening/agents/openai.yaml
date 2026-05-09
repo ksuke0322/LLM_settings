@@ -1,0 +1,4 @@
+interface:
+  display_name: "Japan Top Companies Screening"
+  short_description: "東証33業種で有力候補を抽出する日本株スクリーニング"
+  default_prompt: "Use $japan-top-companies-screening to screen top Japanese companies by TSE 33 sectors for short- to mid-term stock candidate generation."
