@@ -1,11 +1,11 @@
 ---
 name: stock-investment-decision-support
-description: 企業名だけを入力として、日本株の銘柄コードを特定し、固定の trend_viewer analysis API から短期向け recent 分析 JSON を取得して、短期（1ヶ月以内程度）の売買判断材料レポートを作る。任天堂、トヨタ、ソニーなど企業名から短期目線の銘柄分析を依頼されたときに使用する。
+description: 企業名だけを入力として、日本株の銘柄コードを特定し、固定の trend_viewer trade-v2 analysis API から短期向け recent 分析 JSON を取得して、短期（1ヶ月以内程度）の売買判断材料レポートを作る。任天堂、トヨタ、ソニーなど企業名から短期目線の銘柄分析を依頼されたときに使用する。
 ---
 
 # Stock Investment Decision Support
 
-企業名から銘柄コードを特定し、trend_viewer の analysis endpoint を使って短期（1ヶ月以内程度）の売買判断材料レポートを作る。
+企業名から銘柄コードを特定し、trend_viewer の trade-v2 analysis endpoint を使って短期（1ヶ月以内程度）の売買判断材料レポートを作る。
 
 これは投資助言ではない。最終判断はユーザーが行う。断定的な売買指示は避け、根拠・反証条件・リスクを明示する。
 
@@ -13,7 +13,7 @@ description: 企業名だけを入力として、日本株の銘柄コードを�
 
 ```text
 API_BASE_URL=https://bfdkvlo2zi752fp5mhaq4koreq0ezvbd.lambda-url.ap-northeast-1.on.aws
-ENDPOINT=/stock/{ticker}/analysis?range=recent
+ENDPOINT=/stock/{ticker}/analysis?range=recent&schema=trade-v2
 投資スタイル=短期（1ヶ月以内程度）
 ```
 
@@ -38,7 +38,7 @@ ENDPOINT=/stock/{ticker}/analysis?range=recent
    - 例: 任天堂 -> `7974.T`
    - 候補が複数あり、どれか判断できない場合だけユーザーに確認する。
 2. 各 ticker ごとに endpoint URL を組み立てる。
-   - 形式: `${API_BASE_URL}/stock/${ticker}/analysis?range=recent`
+   - 形式: `${API_BASE_URL}/stock/${ticker}/analysis?range=recent&schema=trade-v2`
 3. 各 URL から JSON を取得する。
    - Codex の通常 sandbox では Lambda Function URL への DNS / outbound egress が `curl: (6) Could not resolve host` で失敗することがあるため、API 取得は可能な限り権限付き実行で行う。
    - 通常 sandbox で `curl: (6)` になっても、ただちに Lambda / API 障害と判断しない。同じ URL を権限付き実行で再確認してから取得失敗として扱う。
@@ -50,21 +50,39 @@ ENDPOINT=/stock/{ticker}/analysis?range=recent
    - Lambda 側を疑う失敗: HTTP 5xx、HTTP 429、Function URL の 4xx、JSON 形式不正、Lambda timeout 由来の応答。
    - Lambda 側を疑う場合は、CloudWatch の `UrlRequestCount` / `Url4xxCount` / `Url5xxCount` / `UrlRequestLatency` と Lambda metrics の `Invocations` / `Errors` / `Throttles` / `Duration` 確認を推奨する。
 5. 取得に成功した企業ごとに、取得データだけで短期（1ヶ月以内程度）目線の分析を行う。
+   - API が返す `feature`, `setup`, `risk` を主な根拠に使う。
+   - skill / LLM の役割は、API 判定の説明、反証条件の補足、複数銘柄比較に限定する。
+   - API が `setupType=no_trade` を返した場合、独自解釈で無理に買い/売り候補へ寄せない。
 6. 複数企業入力時は、個別分析をすべて行ったうえで分類サマリーを追加する。
 7. 一部の企業だけ取得に失敗しても、成功した企業の分析は継続し、失敗した企業は別枠で報告する。
 
 ## 分析観点
 
-- 価格トレンド: 直近終値、上昇/下降傾向、高値・安値の切り上げ/切り下げ
-- 移動平均: EMA 10 / 25 / 60。EMA 25 を主軸に、EMA 10 は初動、EMA 60 は地合い確認として使う
-- トレンド系: SuperTrend、Parabolic SAR、DMI/ADX
-- 過熱感: RSI、Slow Stochastic、Bollinger Bands
-- モメンタム: MACD
-- 出来高: volume と Volume MA20
+- `setup.regime`, `setup.setupType`, `setup.setupScore`, `setup.confidence`
+- `setup.reasons`, `setup.invalidations`
+- `risk.entryZone`, `risk.stopPrice`, `risk.target1`, `risk.target2`, `risk.minimumRR`, `risk.timeStopDays`, `risk.riskWarnings`
+- `feature.chartSummary`
+- `feature.metrics`
+  - `atr14`
+  - `gapPercent`
+  - `recentSwingHigh`, `recentSwingLow`
+  - `distanceFrom20dHighPercent`, `distanceFrom20dLowPercent`, `distanceFrom60dHighPercent`
+  - `volumeRatioVsMa20`
+  - `ema10Slope`, `ema25Slope`, `ema60Slope`
+  - `breakoutCandidate`
+- `feature.indicatorState`
+  - `superTrendDirection`
+  - `sarDirection`
+  - `macdDirection`
+  - `dmiDirection`
+  - `rsiState`
+  - `stochasticState`
+  - `bollingerState`
+- `feature.eventRisk`
 
-短期判断では、1ヶ月前後の方向感と直近数日から数週間の転換シグナルを優先する。analysis endpoint の recent は短期プロファイルとして `6mo` の日足と、`EMA10/25/60`、`SuperTrend(7,2.5)`、`Parabolic SAR(0.02,0.2)`、`DMI/ADX(10)`、`RSI(9)`、`Slow Stochastic(14,3,3)`、`Bollinger Bands(20,2)`、`MACD(8,17,6)`、`Volume MA20` を返す前提で扱う。
+短期判断では、まず API の `setup` と `risk` を読む。`feature` はその理由説明と反証条件の補強に使う。analysis endpoint の recent trade-v2 は `6mo` の日足と、短期向けテクニカル指標に加えて setup/risk まで返す前提で扱う。
 
-単独指標だけで判断しない。複数指標が同じ方向を示す場合に重みを置く。
+単独指標だけで判断しない。API 判定と feature の向きが矛盾する場合は `見送り` を優先する。
 
 ## 出力形式
 
@@ -77,12 +95,27 @@ ENDPOINT=/stock/{ticker}/analysis?range=recent
 
 現状認識:
 
-短期判断（5分類）:
+API 判定サマリー:
+
+相場レジーム:
+
+セットアップ種別:
+
+setupScore / confidence:
 
 強気材料:
 - ...
 
 弱気材料:
+- ...
+
+エントリーゾーン:
+- ...
+
+無効化条件:
+- ...
+
+時間切れ条件:
 - ...
 
 エントリーを検討できる条件:
@@ -95,6 +128,9 @@ ENDPOINT=/stock/{ticker}/analysis?range=recent
 - ...
 
 損切り・撤退の目安:
+- ...
+
+リスク警告:
 - ...
 
 データ上の限界:
@@ -130,17 +166,17 @@ ENDPOINT=/stock/{ticker}/analysis?range=recent
 ## 判断ルール
 
 - `買い`、`売り` と断定しない。
-- 短期判断の主分類は `売り転換シグナルあり`、`下降中`、`様子見推奨`、`上昇中`、`買い転換シグナルあり` のいずれかで表現する。
+- 判定主体は API とし、skill は API 判定を説明する。
+- `setupType=no_trade`、`minimumRR` 不足、`riskWarnings` が強い場合は `様子見推奨` を優先する。
 - データが矛盾する場合は `様子見推奨` を優先する。
 - 判断期間は短期（1ヶ月以内程度）に限定し、中期・長期判断は出力しない。
 - endpoint に含まれない情報を根拠にしない。必要なら「追加確認が必要」と明記する。
-- 複数企業入力時の分類サマリーは、個別レポートの `短期判断（5分類）` を要約する補助ラベルとして扱う。分類サマリーだけで個別分析を省略しない。
-- `買い転換シグナルあり` は、下落またはもみ合いから上方向へ転換し始めた場合に限る。終値の EMA 10 / 25 回復、EMA 10 の上向き転換、SuperTrend / Parabolic SAR の改善、MACD のシグナル上抜けまたはヒストグラム改善、+DI 優位、出来高増を伴う上昇のうち複数が直近で一致することを重視する。
-- `上昇中` は、すでに上昇トレンドが継続している場合に使う。終値が EMA 10 / 25 を上回り、EMA 10 / 25 / 60 の並びや傾き、SuperTrend、Parabolic SAR、MACD、DMI の多くが強気方向を維持しているが、直近の転換初動ではない状態を指す。
-- `様子見推奨` は、指標が割れている、過熱感が強い、出来高の裏付けが弱い、方向感が乏しい、または転換初動と判断する根拠が不足する場合に使う。
-- `下降中` は、すでに下降トレンドが継続している場合に使う。終値が EMA 10 / 25 を下回り、EMA 10 / 25 / 60 の並びや傾き、SuperTrend、Parabolic SAR、MACD、DMI の多くが弱気方向を維持しているが、直近の下方向転換初動ではない状態を指す。
-- `売り転換シグナルあり` は、上昇またはもみ合いから下方向へ転換し始めた場合に限る。終値の EMA 10 / 25 割れ、EMA 10 の下向き転換、SuperTrend / Parabolic SAR の悪化、MACD のシグナル下抜けまたはヒストグラム悪化、-DI 優位、出来高増を伴う下落のうち複数が直近で一致することを重視する。
-- `買い転換シグナルあり` は購入推奨を意味しない。上方向への転換兆候が強いことを示す要約ラベルとして使う。
-- `売り転換シグナルあり` は売り推奨を意味しない。弱い方向への転換兆候が強いことを示す要約ラベルとして使う。
-- エントリー条件では、直近の反発初動だけでなく、出来高の伴い方と EMA 10 / EMA 25 / SuperTrend / MACD の改善が複数そろうかを優先する。
-- 利確・撤退条件では、短期リバウンドの失速やボラティリティ拡大を踏まえ、利確目安と損切り目安を分けて書く。
+- 複数企業入力時の分類サマリーは、API 判定を次の補助ラベルへ正規化して要約する。
+  - `買い転換シグナルあり`: `setupType=breakout_long` または `rebound_long` かつ `confidence=high`
+  - `上昇中`: `regime=trend_up` かつ `setupType=pullback_long|breakout_long`
+  - `様子見推奨`: `setupType=no_trade` または `minimumRR` 不足
+  - `下降中`: `regime=trend_down` かつ `setupType=no_trade`
+  - `売り転換シグナルあり`: `setupType=rally_fade_short`
+- `reasons`, `invalidations`, `riskWarnings` を要約して、人間が執行可否を判断しやすい順に並べる。
+- エントリー条件では `entryZone`, `minimumRR`, `timeStopDays` を必ず確認する。
+- 利確・撤退条件では `target1`, `target2`, `stopPrice`, `holdUntilCondition` を優先して説明する。
