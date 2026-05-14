@@ -40,9 +40,10 @@ ENDPOINT=/stock/{ticker}/analysis?range=recent&schema=trade-v2
 2. 各 ticker ごとに endpoint URL を組み立てる。
    - 形式: `${API_BASE_URL}/stock/${ticker}/analysis?range=recent&schema=trade-v2`
 3. 各 URL から JSON を取得する。
-   - Codex の通常 sandbox では Lambda Function URL への DNS / outbound egress が `curl: (6) Could not resolve host` で失敗することがあるため、API 取得は可能な限り権限付き実行で行う。
-   - 通常 sandbox で `curl: (6)` になっても、ただちに Lambda / API 障害と判断しない。同じ URL を権限付き実行で再確認してから取得失敗として扱う。
-   - 一時的な DNS / network 失敗があり得るため、`curl: (6) Could not resolve host`、接続失敗、timeout はすぐ失敗扱いにせず、短い間隔で 2〜3 回 retry する。
+   - この固定 API 取得では、初回から権限付き `curl` で JSON を取得する。承認済みの `curl` prefix が利用できる場合は、通常 sandbox の事前試行を挟まず権限付き実行を優先する。
+   - 権限付き実行が拒否された、または実行ポリシー上利用できない場合だけ、通常 sandbox の `curl` にフォールバックする。
+   - 一時的な DNS / network 失敗があり得るため、権限付き `curl` で `curl: (6) Could not resolve host`、接続失敗、timeout が出てもすぐ失敗扱いにせず、短い間隔で 2〜3 回 retry する。
+   - 通常 sandbox へフォールバックして `curl: (6)` になった場合も、ただちに Lambda / API 障害と判断しない。権限付き実行が利用可能な状態に戻ってから同じ URL を再確認して取得失敗として扱う。
    - `curl: (6) Could not resolve host` は AWS Lambda Function URL に到達する前の DNS / outbound egress 失敗として扱う。Lambda handler error、timeout、throttling とは切り分ける。
    - DNS 確認が必要な場合は DoH（例: `https://1.1.1.1/dns-query`）で A / AAAA レコードを補助確認してよい。ただし名前解決できても、実行環境からの direct connect が許可される保証にはならない。
 4. 取得できない場合は、ticker と URL を示して失敗理由を簡潔に報告する。
