@@ -5,6 +5,11 @@ description: Git 操作（ブランチ作成、コミット、push、PR 作成�
 
 # git 操作ルール
 
+## 命名規則
+
+- ブランチ名と worktree 名の命名は `branch-worktree-naming` skill に従う
+  - source of truth は `branch-worktree-naming` とし、この skill では命名規則を重複定義しない
+
 ## push
 
 - mainブランチへの直push禁止

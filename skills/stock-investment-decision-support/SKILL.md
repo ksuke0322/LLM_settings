@@ -40,13 +40,14 @@ ENDPOINT=/stock/{ticker}/analysis?range=recent&schema=trade-v2
 2. 各 ticker ごとに endpoint URL を組み立てる。
    - 形式: `${API_BASE_URL}/stock/${ticker}/analysis?range=recent&schema=trade-v2`
 3. 各 URL から JSON を取得する。
-   - この固定 API 取得では、初回から権限付き `curl` で JSON を取得する。承認済みの `curl` prefix が利用できる場合は、通常 sandbox の事前試行を挟まず権限付き実行を優先する。
-   - 権限付き実行が拒否された、または実行ポリシー上利用できない場合だけ、通常 sandbox の `curl` にフォールバックする。
-   - 一時的な DNS / network 失敗があり得るため、権限付き `curl` で `curl: (6) Could not resolve host`、接続失敗、timeout が出てもすぐ失敗扱いにせず、短い間隔で 2〜3 回 retry する。
-   - 通常 sandbox へフォールバックして `curl: (6)` になった場合も、ただちに Lambda / API 障害と判断しない。権限付き実行が利用可能な状態に戻ってから同じ URL を再確認して取得失敗として扱う。
+   - この固定 API 取得では、初回から Playwright/browser fetch で JSON を取得する。ブラウザコンテキストで `fetch(url)` を実行し、HTTP status、`response.ok`、JSON parse 成功を確認する。
+   - 一時的な timeout、HTTP 429、HTTP 5xx、JSON parse error があり得るため、すぐ失敗扱いにせず、短い間隔で 2〜3 回 retry する。HTTP 429 は少し長めに待って単独 retry する。
+   - Playwright/browser fetch が失敗した場合だけ、診断・代替取得として `curl` にフォールバックする。
+   - `curl` フォールバックで `curl: (6)` になった場合も、ただちに Lambda / API 障害と判断しない。Playwright/browser fetch の失敗内容と合わせて切り分ける。
    - `curl: (6) Could not resolve host` は AWS Lambda Function URL に到達する前の DNS / outbound egress 失敗として扱う。Lambda handler error、timeout、throttling とは切り分ける。
    - DNS 確認が必要な場合は DoH（例: `https://1.1.1.1/dns-query`）で A / AAAA レコードを補助確認してよい。ただし名前解決できても、実行環境からの direct connect が許可される保証にはならない。
 4. 取得できない場合は、ticker と URL を示して失敗理由を簡潔に報告する。
+   - Playwright/browser fetch の失敗理由と、`curl` フォールバックの結果を分けて示す。
    - Lambda Function URL へ届いていない可能性が高い失敗: DNS 解決失敗、接続失敗、TLS 接続前の timeout。
    - Lambda 側を疑う失敗: HTTP 5xx、HTTP 429、Function URL の 4xx、JSON 形式不正、Lambda timeout 由来の応答。
    - Lambda 側を疑う場合は、CloudWatch の `UrlRequestCount` / `Url4xxCount` / `Url5xxCount` / `UrlRequestLatency` と Lambda metrics の `Invocations` / `Errors` / `Throttles` / `Duration` 確認を推奨する。
