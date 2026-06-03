@@ -1,11 +1,13 @@
 ---
 name: japan-top-companies-screening
-description: 東証33業種を基準に、日本株の各業種で短中期の売買候補になりうる「トップ企業」を洗い出し、毎日監視する重点候補まで圧縮する。日本企業の業種別リーダー候補、時価総額上位かつ財務安全性の高い企業、短中期で監視する候補群を抽出したいときに使用する。株価のテクニカル売買判定そのものではなく、候補銘柄の母集団形成と重点監視リスト作成に使う。
+description: 東証33業種を基準に、日本株の各業種で短中期の売買候補になりうる「トップ企業」を洗い出し、daily trigger check 用の重点監視候補まで圧縮する。日本企業の業種別リーダー候補、時価総額上位かつ財務安全性の高い企業、短中期で監視する候補群を抽出したいときに使用する。株価のテクニカル売買判定そのものではなく、候補銘柄の母集団形成と large_cap watchlist state 作成に使う。
 ---
 
 # Japan Top Companies Screening
 
 東証33業種ベースで候補企業を機械的に絞り、最後に定性補正を入れて各業種1〜3社へ落とす。さらに重点監視用に 10〜15社まで圧縮する。初回は母集団から新規抽出し、2回目以降は前回の重点監視銘柄をレビューして `継続` `除外` `新規追加` を判定する。知名度や売上順位だけではなく、時価総額、流動性、収益力、財務安全性、業界地位を組み合わせて判断する。
+
+この skill は `large_cap` 系の候補抽出専用であり、`japan-high-beta-breakout-screening` の短期高ボラ候補と混ぜない。後段の `stock-investment-decision-support` へ渡すときは、企業名だけでなく選定理由を維持した state を残す前提で使う。
 
 ## 基本方針
 
@@ -15,8 +17,23 @@ description: 東証33業種を基準に、日本株の各業種で短中期の�
 - 最新株価、時価総額、財務指標は変わるので、毎回 current data を確認する。
 - ここでは候補抽出まで行う。チャートの買いシグナル判定は別タスクとして分ける。
 - 毎日監視の対象は全33業種をそのまま追わず、母集団から重点監視リストへ圧縮する。
+- daily で行うのは full rerun ではなく `trigger check` を前提にした監視候補の維持である。
 - 重点監視の更新では、毎回 1 から全銘柄を作り直すより、前回銘柄の残留可否を先に判定する。
 - 後段でテクニカル分析に進む場合は `stock-investment-decision-support` の利用を検討する。
+
+## automation / state file 連携
+
+- この skill は `auto1a` 相当の watchlist producer として扱う。
+- 正本 state file は `/Users/sawairikeisuke/documents/stock-analysis/large_cap_watchlist.json` を想定する。
+- 後続 automation は automation 定義の書き換えではなく、この state file を読む。
+- この skill 自身は `large_cap` 候補だけを出力し、`high_beta` 候補や保有レビュー対象は扱わない。
+
+## state 出力契約
+
+- 後続へ渡す最小項目は `ticker` `company` `bucket=large_cap` `decision_profile=large_cap` `thesis_type` `selection_reason` `event_risk` `priority` `status=watch`。
+- `selection_reason` は `定量` と `定性` を混ぜず、短くてもよいので後段で再利用できる形にする。
+- `thesis_type` は `sector_leader` `quality_large_cap` `relative_strength` など、large_cap 側で再利用しやすいラベルへ正規化する。
+- `event_risk` は決算接近、資本政策、業界イベントなど、daily trigger check で見直すべき項目を優先して書く。
 
 ## 入力解釈
 
@@ -76,6 +93,7 @@ description: 東証33業種を基準に、日本株の各業種で短中期の�
 10. 出力を整える。
    - `初回抽出モード` では従来どおり候補企業名、証券コード、選定理由、留意点を添える。
    - `継続レビュー モード` では `前回からの継続 / 除外 / 保留 / 新規追加` を分けて出す。
+   - automation 連携を意識する場合は、各候補に `decision_profile=large_cap` と `thesis_type` を付ける。
    - 最後に、今回の重点監視へ残した企業名だけをカンマ区切りで1行出す。
 
 ## 評価ルール
@@ -91,6 +109,7 @@ description: 東証33業種を基準に、日本株の各業種で短中期の�
 - 継続レビューでは、新規発掘より先に `前回銘柄を残すべき理由が維持されているか` を判定する。
 - `除外` は強い根拠があるときに限り、判断に迷う場合は `保留` を使う。
 - 重点監視の入れ替えは毎回大きく動かさず、合理的な理由がある銘柄だけを差し替える。
+- 出力ラベルは screening 段階では `watch` を正とし、後段の執行判断に先回りして `entry_ready` を乱発しない。
 
 ## データソースの優先順
 
@@ -129,6 +148,10 @@ description: 東証33業種を基準に、日本株の各業種で短中期の�
 
 重点監視銘柄名:
 企業A, 企業B, 企業C
+
+state 出力:
+| 企業 | 証券コード | bucket | decision_profile | thesis_type | selection_reason | event_risk | priority | status |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
 ```
 
 ### 継続レビュー モード
@@ -160,6 +183,10 @@ description: 東証33業種を基準に、日本株の各業種で短中期の�
 
 重点監視銘柄名:
 企業A, 企業B, 企業C
+
+state 出力:
+| 企業 | 証券コード | bucket | decision_profile | thesis_type | selection_reason | event_risk | priority | status |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
 ```
 
 必要に応じて、各業種の「本命」「次点」を分けてよい。daily 監視を前提にする場合は、母集団だけで終わらず重点監視まで圧縮する。継続レビューでは、レビュー結果と入れ替え理由を必ず明示する。

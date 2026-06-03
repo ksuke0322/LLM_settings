@@ -1,11 +1,13 @@
 ---
 name: japan-high-beta-breakout-screening
-description: 日本株の中から、1〜2週間程度で値幅が出やすい順張り候補を抽出し、短期監視リストまで圧縮する。大型安定株に限定せず、中型株、テーマ株、高ボラティリティ銘柄も対象にし、出来高急増、直近高値接近・更新、相対強度、ATR、材料継続性を重視する。安定企業の母集団形成ではなく、短期値幅狙いの高リスク高リターン候補を探すときに使う。
+description: 日本株の中から、1〜2週間程度で値幅が出やすい順張り候補を抽出し、短期監視リストまで圧縮する。大型安定株に限定せず、中型株、テーマ株、高ボラティリティ銘柄も対象にし、出来高急増、直近高値接近・更新、相対強度、ATR、材料継続性を重視する。安定企業の母集団形成ではなく、high_beta watchlist state を作る高リスク高リターン候補抽出に使う。
 ---
 
 # Japan High Beta Breakout Screening
 
 日本株から、短期で値幅が出やすい順張り候補を抽出する。既存の `japan-top-companies-screening` が安定大型株の監視母集団を作るのに対し、この skill は `1〜2週間程度の短期値幅` を優先する。財務安全性は最低限の確認に留め、出来高、価格モメンタム、テーマ性、材料継続性、リスク管理を重視する。
+
+この skill は `high_beta` 系の候補抽出専用であり、large_cap 系候補と同じ cadence や同じ防衛基準で扱わない。後段の `stock-investment-decision-support` へ渡すときは、鮮度と無効化条件を state に残す前提で使う。
 
 ## 基本方針
 
@@ -16,6 +18,21 @@ description: 日本株の中から、1〜2週間程度で値幅が出やすい�
 - 判断に使う主要データを確認できない場合は推測で補わず、`未確認` として保留以下にする。
 - 後段の個別売買判断には `stock-investment-decision-support` の利用を検討する。
 - スクリーニング基準は [references/criteria.md](references/criteria.md) を使う。
+- 鮮度切れを避けるため、候補は毎営業日 review し、前日候補を惰性で残さない。
+
+## automation / state file 連携
+
+- この skill は `auto1b` 相当の watchlist producer として扱う。
+- 正本 state file は `/Users/sawairikeisuke/documents/stock-analysis/high_beta_watchlist.json` を想定する。
+- 後続 automation は automation 定義の書き換えではなく、この state file を読む。
+- この skill 自身は `high_beta` 候補だけを出力し、large_cap 候補や保有レビュー対象は扱わない。
+
+## state 出力契約
+
+- 後続へ渡す最小項目は `ticker` `company` `bucket=high_beta` `decision_profile=high_beta` `thesis_type=breakout|pullback|theme_momentum` `selection_reason` `catalyst` `event_risk` `invalidation_hint` `monitoring_valid_until` `priority` `status=watch`。
+- `catalyst` は単なる好材料有無ではなく、資金流入継続の仮説を短く残す。
+- `invalidation_hint` は `出来高失速` `高値更新失敗` `支持割れ` など、翌日 review で真っ先に潰す条件を書く。
+- `monitoring_valid_until` は通常 1〜3 営業日程度の鮮度管理に使う。
 
 ## 入力解釈
 
@@ -61,6 +78,7 @@ description: 日本株の中から、1〜2週間程度で値幅が出やすい�
    - 継続レビューでは、前回銘柄の継続可否を先に判定してから差し替える。
 8. 出力を整える。
    - 候補ごとに、採用理由、高リスク理由、監視条件、撤退目安を出す。
+   - automation 連携を意識する場合は、各候補に `decision_profile=high_beta` `catalyst` `invalidation_hint` `monitoring_valid_until` を付ける。
    - 最後に、企業名だけをカンマ区切りで1行にする。
 
 ## 評価ルール
@@ -74,6 +92,7 @@ description: 日本株の中から、1〜2週間程度で値幅が出やすい�
 - 材料の一次確認は TDnet または会社IRを優先する。
 - 確認できない項目は採用理由に使わない。
 - 迷う場合は、採用ではなく `保留` にする。
+- 出力ラベルは screening 段階では `watch` を正とし、執行判断の代わりに使わない。
 
 ## データソースの優先順
 
@@ -110,6 +129,10 @@ description: 日本株の中から、1〜2週間程度で値幅が出やすい�
 
 短期監視銘柄名:
 企業A, 企業B, 企業C
+
+state 出力:
+| 企業 | 証券コード | bucket | decision_profile | thesis_type | selection_reason | catalyst | event_risk | invalidation_hint | monitoring_valid_until | priority | status |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 ```
 
 ### 継続レビュー モード
@@ -141,6 +164,10 @@ description: 日本株の中から、1〜2週間程度で値幅が出やすい�
 
 短期監視銘柄名:
 企業A, 企業B, 企業C
+
+state 出力:
+| 企業 | 証券コード | bucket | decision_profile | thesis_type | selection_reason | catalyst | event_risk | invalidation_hint | monitoring_valid_until | priority | status |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 ```
 
 ## 注意

@@ -6,9 +6,9 @@
       "sourceType": "github",
       "sourceUrl": "https://github.com/vercel-labs/skills.git",
       "skillPath": "skills/find-skills/SKILL.md",
-      "skillFolderHash": "c2f31172b6f256272305a5e6e7228b258446899f",
+      "skillFolderHash": "3013fdeb8a11b10b1eb795ec3ae8bfca38f7c26d",
       "installedAt": "2026-01-31T05:44:14.962Z",
-      "updatedAt": "2026-01-31T05:44:14.962Z"
+      "updatedAt": "2026-06-03T06:47:10.237Z"
     },
     "playwright-skill": {
       "source": "lackeyjb/playwright-skill",
@@ -37,24 +37,6 @@
       "installedAt": "2026-01-31T11:20:09.154Z",
       "updatedAt": "2026-01-31T11:20:09.154Z"
     },
-    "software-architecture": {
-      "source": "NeoLabHQ/context-engineering-kit",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/NeoLabHQ/context-engineering-kit.git",
-      "skillPath": "plugins/ddd/skills/software-architecture/SKILL.md",
-      "skillFolderHash": "9f12829d3a81b5889573d770039e4f845bf19e91",
-      "installedAt": "2026-01-31T11:20:09.197Z",
-      "updatedAt": "2026-01-31T11:20:09.197Z"
-    },
-    "kaizen": {
-      "source": "NeoLabHQ/context-engineering-kit",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/NeoLabHQ/context-engineering-kit.git",
-      "skillPath": "plugins/kaizen/skills/kaizen/SKILL.md",
-      "skillFolderHash": "4ae42e1685b8ae2bc3f1eba9cd5c62897f6cefea",
-      "installedAt": "2026-01-31T11:20:09.237Z",
-      "updatedAt": "2026-01-31T11:20:09.237Z"
-    },
     "test-driven-development": {
       "source": "NeoLabHQ/context-engineering-kit",
       "sourceType": "github",
@@ -72,15 +54,6 @@
       "skillFolderHash": "bde2a70a9dcb2a5f40ca19baa5a8190b8311ee08",
       "installedAt": "2026-01-31T11:21:48.644Z",
       "updatedAt": "2026-01-31T11:21:48.644Z"
-    },
-    "brainstorming": {
-      "source": "obra/superpowers",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/obra/superpowers.git",
-      "skillPath": "skills/brainstorming/SKILL.md",
-      "skillFolderHash": "761c2f359474328f40d73db9cb4cc1f5721917e5",
-      "installedAt": "2026-01-31T11:22:33.624Z",
-      "updatedAt": "2026-01-31T11:22:33.624Z"
     },
     "test-fixing": {
       "source": "mhattingpete/claude-skills-marketplace",
@@ -126,6 +99,16 @@
       "skillFolderHash": "fada5fefe0a7dad4bab0f251c5ccec1383e04f98",
       "installedAt": "2026-02-20T06:51:10.408Z",
       "updatedAt": "2026-02-20T06:51:10.408Z"
+    },
+    "grill-me": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/mattpocock/skills.git",
+      "skillPath": "skills/productivity/grill-me/SKILL.md",
+      "skillFolderHash": "2a1ad17028306ebe45f0e49703fa28b9b2e7f499",
+      "pluginName": "mattpocock-skills",
+      "installedAt": "2026-06-03T06:47:52.807Z",
+      "updatedAt": "2026-06-03T06:47:52.807Z"
     }
   },
   "dismissed": {
@@ -133,10 +116,17 @@
   },
   "lastSelectedAgents": [
     "amp",
+    "antigravity",
+    "antigravity-cli",
+    "cline",
     "codex",
+    "cursor",
+    "deepagents",
     "gemini-cli",
     "github-copilot",
-    "kimi-cli",
-    "opencode"
+    "kimi-code-cli",
+    "opencode",
+    "warp",
+    "zed"
   ]
 }

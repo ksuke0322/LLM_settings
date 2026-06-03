@@ -1,10 +1,11 @@
 ---
 name: single-task-pr-policy
-description: 開発タスクの実行単位とスコープを制御するための方針スキル。原則として 1 タスク = 1 PR とし、複数タスクを同一 PR にまとめない。各タスクは専用ブランチを作成してから開始し、ブランチ作成前には main を最新化し、git status / git diff により不要な差分が含まれていないことを確認する。すべてのコード変更は TDD ワークフローに従って行い、PR 作成時は定められた Git / PR ルールを遵守する。
+description: repo 全体で共通に適用する 1 タスク = 1 PR 方針。複数タスクを同一 PR にまとめないこと、作業開始前に専用ブランチを切ること、ブランチ作成前の差分確認、TDD ワークフロー参照、Git / PR 安全ルール参照を定義する。`specs/flow` 固有の task lifecycle や worktree 運用は扱わない。
 ---
 
 ## タスク実行方針
 
+- この skill は repo-wide の実行単位方針だけを扱う。`specs/flow` 固有の task lifecycle、done 定義、worktree 運用は `task-flow-non-speckit` を正本とする
 - 1タスク1PRを原則とし、複数タスクをまとめて実行しないでください
 - 各タスクは専用のブランチを切ってから作業を開始してください。ブランチの方針は下記の「ブランチ」の章を参照してください。
 - すべてのコード変更は TDD ワークフローに従って行ってください（詳細は skills/workflow/SKILL.md を参照）

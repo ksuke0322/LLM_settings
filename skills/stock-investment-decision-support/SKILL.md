@@ -1,11 +1,13 @@
 ---
 name: stock-investment-decision-support
-description: 企業名だけを入力として、日本株の銘柄コードを特定し、固定の trend_viewer trade-v2 analysis API から短期向け recent 分析 JSON を取得して、短期（1ヶ月以内程度）の売買判断材料レポートを作る。任天堂、トヨタ、ソニーなど企業名から短期目線の銘柄分析を依頼されたときに使用する。
+description: 企業名だけを入力として、日本株の銘柄コードを特定し、固定の trend_viewer trade-v2 analysis API から短期向け recent 分析 JSON を取得して、短期（1ヶ月以内程度）の売買判断材料レポートを作る。手入力の企業名列挙だけでなく、large_cap / high_beta の watchlist state を読み込んで執行判断へ変換するときにも使用する。
 ---
 
 # Stock Investment Decision Support
 
 企業名から銘柄コードを特定し、trend_viewer の trade-v2 analysis endpoint を使って短期（1ヶ月以内程度）の売買判断材料レポートを作る。
+
+この skill は新規エントリー判断専用であり、保有後の管理は `stock-investment-position-review` へ分離する。`japan-top-companies-screening` と `japan-high-beta-breakout-screening` の出力を受けるときは、企業名の羅列へ潰さず、上流の thesis を残した state consumer として扱う。
 
 これは投資助言ではない。最終判断はユーザーが行う。断定的な売買指示は避け、根拠・反証条件・リスクを明示する。
 
@@ -19,7 +21,11 @@ ENDPOINT=/stock/{ticker}/analysis?range=recent&schema=trade-v2
 
 ## 入力
 
-ユーザー入力は企業名を想定する。単一企業でも複数企業でもよい。
+ユーザー入力は 2 系統を想定する。単一企業でも複数企業でもよい。
+
+### 1. 手入力モード
+
+企業名だけが渡される通常入力。
 
 ```text
 任天堂
@@ -31,32 +37,64 @@ ENDPOINT=/stock/{ticker}/analysis?range=recent&schema=trade-v2
 
 保有中か未保有かは聞かない。必要なら出力側で「新規で入る場合」「すでに保有している場合の利確・撤退条件」を軽く分ける。
 
+### 2. state consumer モード
+
+watchlist state から次の情報を受け取る。
+
+```text
+ticker / company / bucket / decision_profile / thesis_type / selection_reason / event_risk
+```
+
+high_beta 系では、必要に応じて次も受け取る。
+
+```text
+catalyst / invalidation_hint / monitoring_valid_until
+```
+
+正本 state file は次を想定する。
+
+- `/Users/sawairikeisuke/documents/stock-analysis/large_cap_watchlist.json`
+- `/Users/sawairikeisuke/documents/stock-analysis/high_beta_watchlist.json`
+
 ## 手順
 
-1. 入力された各企業について企業名から銘柄コードを特定する。
+1. 入力モードを確定する。
+   - 企業名だけなら `手入力モード`。
+   - `ticker` `bucket` `decision_profile` などがあれば `state consumer モード`。
+2. 各対象について銘柄コードを確定する。
    - 日本企業は原則として東証 ticker の `.T` を優先する。
    - 例: 任天堂 -> `7974.T`
+   - `state consumer モード` では state 側の ticker を優先し、company は表示名と上流 thesis の確認に使う。
    - 候補が複数あり、どれか判断できない場合だけユーザーに確認する。
-2. 各 ticker ごとに endpoint URL を組み立てる。
+3. 各 ticker ごとに endpoint URL を組み立てる。
    - 形式: `${API_BASE_URL}/stock/${ticker}/analysis?range=recent&schema=trade-v2`
-3. 各 URL から JSON を取得する。
+4. 各 URL から JSON を取得する。
    - この固定 API 取得では、初回から Playwright/browser fetch で JSON を取得する。ブラウザコンテキストで `fetch(url)` を実行し、HTTP status、`response.ok`、JSON parse 成功を確認する。
    - 一時的な timeout、HTTP 429、HTTP 5xx、JSON parse error があり得るため、すぐ失敗扱いにせず、短い間隔で 2〜3 回 retry する。HTTP 429 は少し長めに待って単独 retry する。
    - Playwright/browser fetch が失敗した場合だけ、診断・代替取得として `curl` にフォールバックする。
    - `curl` フォールバックで `curl: (6)` になった場合も、ただちに Lambda / API 障害と判断しない。Playwright/browser fetch の失敗内容と合わせて切り分ける。
    - `curl: (6) Could not resolve host` は AWS Lambda Function URL に到達する前の DNS / outbound egress 失敗として扱う。Lambda handler error、timeout、throttling とは切り分ける。
    - DNS 確認が必要な場合は DoH（例: `https://1.1.1.1/dns-query`）で A / AAAA レコードを補助確認してよい。ただし名前解決できても、実行環境からの direct connect が許可される保証にはならない。
-4. 取得できない場合は、ticker と URL を示して失敗理由を簡潔に報告する。
+5. 取得できない場合は、ticker と URL を示して失敗理由を簡潔に報告する。
    - Playwright/browser fetch の失敗理由と、`curl` フォールバックの結果を分けて示す。
    - Lambda Function URL へ届いていない可能性が高い失敗: DNS 解決失敗、接続失敗、TLS 接続前の timeout。
    - Lambda 側を疑う失敗: HTTP 5xx、HTTP 429、Function URL の 4xx、JSON 形式不正、Lambda timeout 由来の応答。
    - Lambda 側を疑う場合は、CloudWatch の `UrlRequestCount` / `Url4xxCount` / `Url5xxCount` / `UrlRequestLatency` と Lambda metrics の `Invocations` / `Errors` / `Throttles` / `Duration` 確認を推奨する。
-5. 取得に成功した企業ごとに、取得データだけで短期（1ヶ月以内程度）目線の分析を行う。
+6. 取得に成功した企業ごとに、取得データだけで短期（1ヶ月以内程度）目線の分析を行う。
    - API が返す `feature`, `setup`, `risk` を主な根拠に使う。
    - skill / LLM の役割は、API 判定の説明、反証条件の補足、複数銘柄比較に限定する。
    - API が `setupType=no_trade` を返した場合、独自解釈で無理に買い/売り候補へ寄せない。
-6. 複数企業入力時は、各企業について単一企業入力時と同じ粒度で `相場レジーム`, `セットアップ種別`, `setupScore / confidence`, `無効化条件`, `時間切れ条件`, `利確の目安`, `損切り・撤退の目安`, `リスク警告` まで必ず出したうえで、最後に分類サマリーを追加する。
-7. 一部の企業だけ取得に失敗しても、成功した企業の分析は継続し、失敗した企業は別枠で報告する。
+   - `state consumer モード` では `selection_reason` `thesis_type` `event_risk` `catalyst` を API 判定の補助説明として引き継ぐ。ただし endpoint にない情報で API 判定を上書きしない。
+7. `portfolio_rules.json` が使える場合は、個別判断の前に `max_new_entries_per_day_high_beta` `max_theme_overlap` `earnings_blackout_days` を確認し、portfolio gate の警告を先に出す。
+8. 複数企業入力時は、各企業について単一企業入力時と同じ粒度で `相場レジーム`, `セットアップ種別`, `setupScore / confidence`, `無効化条件`, `時間切れ条件`, `利確の目安`, `損切り・撤退の目安`, `リスク警告` まで必ず出したうえで、最後に分類サマリーを追加する。
+9. 一部の企業だけ取得に失敗しても、成功した企業の分析は継続し、失敗した企業は別枠で報告する。
+
+## automation / state file 連携
+
+- `auto2a` は `large_cap_watchlist.json` を読む large_cap 専用 consumer として運用する。
+- `auto2b` は `high_beta_watchlist.json` を読む high_beta 専用 consumer として運用する。
+- large_cap と high_beta を同じ run や同じ比較表に混ぜない。
+- portfolio gate 用の補助設定は `/Users/sawairikeisuke/documents/stock-analysis/portfolio_rules.json` を正本とする。
 
 ## 分析観点
 
@@ -86,6 +124,12 @@ ENDPOINT=/stock/{ticker}/analysis?range=recent&schema=trade-v2
 
 単独指標だけで判断しない。API 判定と feature の向きが矛盾する場合は `見送り` を優先する。
 
+## 判定ラベルの正規化
+
+- この skill の出力状態は `watch` または `entry_ready` を正とする。
+- screening 段階の `watch` を、そのまま執行可能と読み替えない。
+- `entry_ready` は `setupType`、`minimumRR`、`timeStopDays`、portfolio gate の 4 点を満たしたときだけ使う。
+
 ## 出力形式
 
 単一企業入力でも複数企業入力でも、**各企業の個別分析は必ず Markdown テーブル形式で出す**。
@@ -97,9 +141,9 @@ ENDPOINT=/stock/{ticker}/analysis?range=recent&schema=trade-v2
 - カラム順は固定する
 
 ```md
-| 対象企業 | 銘柄コード | 短期判断（5分類） | 相場レジーム | セットアップ種別 | setupScore / confidence | エントリーゾーン | 利確の目安 | 損切り・撤退の目安 | 時間切れ条件 |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 任天堂 | 7974.T | 様子見推奨 | range | no_trade | 42 / low | ... | ... | ... | ... |
+| 対象企業 | 銘柄コード | 状態 | 短期判断（5分類） | 相場レジーム | セットアップ種別 | setupScore / confidence | エントリーゾーン | 利確の目安 | 損切り・撤退の目安 | 時間切れ条件 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 任天堂 | 7974.T | watch | 様子見推奨 | range | no_trade | 42 / low | ... | ... | ... | ... |
 ```
 
 ### 個別分析テーブル 2
@@ -108,9 +152,9 @@ ENDPOINT=/stock/{ticker}/analysis?range=recent&schema=trade-v2
 - 長くなるセルは簡潔な句読点区切りで圧縮する
 
 ```md
-| 対象企業 | 現状認識 | 強気材料 | 弱気材料 | 無効化条件 | エントリーを検討できる条件 | 見送る条件 | リスク警告 |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 任天堂 | ... | ... | ... | ... | ... | ... | ... |
+| 対象企業 | 現状認識 | 上流 thesis | 強気材料 | 弱気材料 | 無効化条件 | エントリーを検討できる条件 | 見送る条件 | リスク警告 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 任天堂 | ... | sector_leader / selection_reason 要約 | ... | ... | ... | ... | ... | ... |
 ```
 
 ### 単一企業入力時の補足
@@ -159,11 +203,14 @@ ENDPOINT=/stock/{ticker}/analysis?range=recent&schema=trade-v2
 
 - `買い`、`売り` と断定しない。
 - 判定主体は API とし、skill は API 判定を説明する。
+- `state consumer モード` でも、上流 thesis を根拠に API の `no_trade` を無視しない。
 - 単一入力でも複数入力でも、各銘柄に対する判定項目は同一とする。複数入力だからという理由で `regime`, `setupType`, `invalidations`, `timeStopDays`, `riskWarnings` を省略しない。
 - `setupType=no_trade`、`minimumRR` 不足、`riskWarnings` が強い場合は `様子見推奨` を優先する。
 - データが矛盾する場合は `様子見推奨` を優先する。
 - 判断期間は短期（1ヶ月以内程度）に限定し、中期・長期判断は出力しない。
 - endpoint に含まれない情報を根拠にしない。必要なら「追加確認が必要」と明記する。
+- `large_cap` と `high_beta` を同じ資金枠、同じ警戒水準、同じ優先度で比較しない。
+- high_beta で `monitoring_valid_until` を過ぎた候補は、API が強気でも stale 候補として注意を明記する。
 - 複数企業入力時の分類サマリーは、API 判定を次の補助ラベルへ正規化して要約する。
   - `買い転換シグナルあり`: `setupType=breakout_long` または `rebound_long` かつ `confidence=high`
   - `上昇中`: `regime=trend_up` かつ `setupType=pullback_long|breakout_long`
