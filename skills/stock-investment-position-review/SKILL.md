@@ -38,6 +38,9 @@ review_profile の既定値=auto
 - 正本 state file は `/Users/sawairikeisuke/documents/stock-analysis/current_holdings.json` を想定する。
 - portfolio gate 用の補助設定は `/Users/sawairikeisuke/documents/stock-analysis/portfolio_rules.json` を読む。
 - watchlist state は読んでもよいが、新規候補採用のためには使わない。用途は保有銘柄の由来確認までに留める。
+- `/Users/sawairikeisuke/Documents/stock-analysis` 配下の state / output を更新した場合は、作業後に差分確認を行い、今回更新したファイルだけを commit して push まで進める。
+  - push 先はこの repo の `main` とし、許可条件は `git-workflow-safety` の `stock-analysis` 例外に従う。
+  - 差分がない場合は commit / push しない。commit または push に失敗した場合はそこで停止して報告する。
 
 ## review_profile
 

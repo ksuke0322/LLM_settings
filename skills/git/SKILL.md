@@ -14,6 +14,9 @@ description: Git 操作（ブランチ作成、コミット、push、PR 作成�
 
 - mainブランチへの直push禁止
   - すべての変更は作業ブランチを切り、PR 経由でマージする
+- ただし `/Users/sawairikeisuke/Documents/stock-analysis` の運用だけは例外とする
+  - ユーザーが明示的に許可した場合に限り、`main` 直pushを許可する
+  - この例外は `stock-analysis` 配下の state / script / output 更新に限定し、他 repo へ広げない
 - `git push --force` は禁止
 - 例外として、自分だけが使用している PR ブランチに限り
   `git push --force-with-lease` のみ許可する

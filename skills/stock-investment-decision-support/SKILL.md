@@ -95,6 +95,9 @@ catalyst / invalidation_hint / monitoring_valid_until
 - `auto2b` は `high_beta_watchlist.json` を読む high_beta 専用 consumer として運用する。
 - large_cap と high_beta を同じ run や同じ比較表に混ぜない。
 - portfolio gate 用の補助設定は `/Users/sawairikeisuke/documents/stock-analysis/portfolio_rules.json` を正本とする。
+- `/Users/sawairikeisuke/Documents/stock-analysis` 配下の state / script / output を更新した場合は、作業後に差分確認を行い、今回更新したファイルだけを commit して push まで進める。
+  - push 先はこの repo の `main` とし、許可条件は `git-workflow-safety` の `stock-analysis` 例外に従う。
+  - 差分がない場合は commit / push しない。commit または push に失敗した場合はそこで停止して報告する。
 
 ## 分析観点
 

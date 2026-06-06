@@ -27,6 +27,9 @@ description: 東証33業種を基準に、日本株の各業種で短中期の�
 - 正本 state file は `/Users/sawairikeisuke/documents/stock-analysis/large_cap_watchlist.json` を想定する。
 - 後続 automation は automation 定義の書き換えではなく、この state file を読む。
 - この skill 自身は `large_cap` 候補だけを出力し、`high_beta` 候補や保有レビュー対象は扱わない。
+- `/Users/sawairikeisuke/Documents/stock-analysis` 配下の state file を更新した場合は、作業後に差分確認を行い、今回更新したファイルだけを commit して push まで進める。
+  - push 先はこの repo の `main` とし、許可条件は `git-workflow-safety` の `stock-analysis` 例外に従う。
+  - 差分がない場合は commit / push しない。commit または push に失敗した場合はそこで停止して報告する。
 
 ## state 出力契約
 
