@@ -1,6 +1,6 @@
 ---
 name: task-flow-non-speckit
-description: `specs/flow` で管理する作業タスクに限定して利用する。`specs/flow` 運用時の task lifecycle 専用 skill として、タスク分割基準、ステータス定義、done 条件、worktree 運用、記述テンプレの前提を適用する。repo-wide の 1 task = 1 PR 方針そのものは `single-task-pr-policy` を参照する。
+description: "`specs/flow` で管理する作業タスクに限定して利用する。`specs/flow` 運用時の task lifecycle 専用 skill として、タスク分割基準、ステータス定義、done 条件、worktree 運用、記述テンプレの前提を適用する。repo-wide の 1 task = 1 PR 方針そのものは `single-task-pr-policy` を参照する。"
 ---
 
 # Task Flow
