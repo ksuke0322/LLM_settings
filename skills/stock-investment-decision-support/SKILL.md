@@ -1,13 +1,13 @@
 ---
 name: stock-investment-decision-support
-description: 企業名だけを入力として、日本株の銘柄コードを特定し、固定の trend_viewer trade-v2 analysis API から短期向け recent 分析 JSON を取得して、短期（1ヶ月以内程度）の売買判断材料レポートを作る。手入力の企業名列挙だけでなく、large_cap / high_beta の watchlist state を読み込んで執行判断へ変換するときにも使用する。
+description: "企業名だけを入力として、日本株の銘柄コードを特定し、固定の trend_viewer trade-v2 analysis API から短期向け recent 分析 JSON を取得して、短期の売買判断材料レポートを作る。手入力の企業名列挙だけでなく、large_cap と high_beta の watchlist state を読み込んで執行判断へ変換するときにも使用する。"
 ---
 
 # Stock Investment Decision Support
 
 企業名から銘柄コードを特定し、trend_viewer の trade-v2 analysis endpoint を使って短期（1ヶ月以内程度）の売買判断材料レポートを作る。
 
-この skill は新規エントリー判断専用であり、保有後の管理は `stock-investment-position-review` へ分離する。`japan-top-companies-screening` と `japan-high-beta-breakout-screening` の出力を受けるときは、企業名の羅列へ潰さず、上流の thesis を残した state consumer として扱う。
+この skill は新規エントリー判断専用であり、保有後の管理は `stock-investment-position-review` へ分離する。`japan-top-companies-screening` と `japan-high-beta-breakout-screening` の出力を受けるときは、企業名の羅列へ潰さず、上流の thesis と execution 補助情報を残した state consumer として扱う。
 
 これは投資助言ではない。最終判断はユーザーが行う。断定的な売買指示は避け、根拠・反証条件・リスクを明示する。
 
@@ -51,10 +51,45 @@ high_beta 系では、必要に応じて次も受け取る。
 catalyst / invalidation_hint / monitoring_valid_until
 ```
 
+execution 補助情報があれば、次も受け取ってよい。
+
+```text
+regime_fit / execution_caution / liquidity_tier / slippage_risk / theme_cluster / event_freshness / crowding_risk / entry_style_hint
+```
+
 正本 state file は次を想定する。
 
 - `/Users/sawairikeisuke/documents/stock-analysis/large_cap_watchlist.json`
 - `/Users/sawairikeisuke/documents/stock-analysis/high_beta_watchlist.json`
+
+## automation / state file 連携
+
+- `auto2a` は `large_cap_watchlist.json` を読む large_cap 専用 consumer として運用する。
+- `auto2b` は `high_beta_watchlist.json` を読む high_beta 専用 consumer として運用する。
+- large_cap と high_beta を同じ run や同じ比較表に混ぜない。
+- portfolio gate 用の補助設定は `/Users/sawairikeisuke/documents/stock-analysis/portfolio_rules.json` を正本とする。
+- `/Users/sawairikeisuke/Documents/stock-analysis` 配下の state / script / output を更新した場合は、作業後に差分確認を行い、今回更新したファイルだけを commit して push まで進める。
+  - push 先はこの repo の `main` とし、許可条件は `git-workflow-safety` の `stock-analysis` 例外に従う。
+  - 差分がない場合は commit / push しない。commit または push に失敗した場合はそこで停止して報告する。
+
+## execution decision contract
+
+- top-level の状態は `watch` または `entry_ready` を維持する。
+- ただし、二値だけで終わらせず `entry_quality` `entry_style` `execution_window` `position_risk_note` `stale_reason` を併記する。
+- `entry_ready` は「今すぐ何も考えず買う」ではなく、「条件付きで執行検討に進める」の意味とする。
+- `watch` は setup が弱い場合だけでなく、regime 不一致、slippage 懸念、theme 過密、材料鮮度劣化でも使う。
+
+## entry quality tiers
+
+- `A`: setup、RR、time stop、liquidity、regime が概ね揃う
+- `B`: setup はあるが、執行タイミングや crowding で注意が必要
+- `C`: 監視対象としては残すが、今は執行優先度が低い
+
+## size-blind vs size-aware warning
+
+- この skill は position sizing の最終決定をしない。
+- ただし、`slippage_risk` や `liquidity_tier` から「サイズを大きく入れるべきではない」警告は出す。
+- 最終サイズ決定は将来の `portfolio-risk-allocator` か、ユーザーの裁量へ委ねる。
 
 ## 手順
 
@@ -74,30 +109,23 @@ catalyst / invalidation_hint / monitoring_valid_until
    - Playwright/browser fetch が失敗した場合だけ、診断・代替取得として `curl` にフォールバックする。
    - `curl` フォールバックで `curl: (6)` になった場合も、ただちに Lambda / API 障害と判断しない。Playwright/browser fetch の失敗内容と合わせて切り分ける。
    - `curl: (6) Could not resolve host` は AWS Lambda Function URL に到達する前の DNS / outbound egress 失敗として扱う。Lambda handler error、timeout、throttling とは切り分ける。
-   - DNS 確認が必要な場合は DoH（例: `https://1.1.1.1/dns-query`）で A / AAAA レコードを補助確認してよい。ただし名前解決できても、実行環境からの direct connect が許可される保証にはならない。
+   - DNS 確認が必要な場合は DoH で A / AAAA レコードを補助確認してよい。ただし名前解決できても、実行環境からの direct connect が許可される保証にはならない。
 5. 取得できない場合は、ticker と URL を示して失敗理由を簡潔に報告する。
    - Playwright/browser fetch の失敗理由と、`curl` フォールバックの結果を分けて示す。
    - Lambda Function URL へ届いていない可能性が高い失敗: DNS 解決失敗、接続失敗、TLS 接続前の timeout。
    - Lambda 側を疑う失敗: HTTP 5xx、HTTP 429、Function URL の 4xx、JSON 形式不正、Lambda timeout 由来の応答。
-   - Lambda 側を疑う場合は、CloudWatch の `UrlRequestCount` / `Url4xxCount` / `Url5xxCount` / `UrlRequestLatency` と Lambda metrics の `Invocations` / `Errors` / `Throttles` / `Duration` 確認を推奨する。
-6. 取得に成功した企業ごとに、取得データだけで短期（1ヶ月以内程度）目線の分析を行う。
+6. 取得に成功した企業ごとに、取得データだけで短期目線の分析を行う。
    - API が返す `feature`, `setup`, `risk` を主な根拠に使う。
    - skill / LLM の役割は、API 判定の説明、反証条件の補足、複数銘柄比較に限定する。
-   - API が `setupType=no_trade` を返した場合、独自解釈で無理に買い/売り候補へ寄せない。
+   - API が `setupType=no_trade` を返した場合、独自解釈で無理に買い候補へ寄せない。
    - `state consumer モード` では `selection_reason` `thesis_type` `event_risk` `catalyst` を API 判定の補助説明として引き継ぐ。ただし endpoint にない情報で API 判定を上書きしない。
-7. `portfolio_rules.json` が使える場合は、個別判断の前に `max_new_entries_per_day_high_beta` `max_theme_overlap` `earnings_blackout_days` を確認し、portfolio gate の警告を先に出す。
-8. 複数企業入力時は、各企業について単一企業入力時と同じ粒度で `相場レジーム`, `セットアップ種別`, `setupScore / confidence`, `無効化条件`, `時間切れ条件`, `利確の目安`, `損切り・撤退の目安`, `リスク警告` まで必ず出したうえで、最後に分類サマリーを追加する。
-9. 一部の企業だけ取得に失敗しても、成功した企業の分析は継続し、失敗した企業は別枠で報告する。
-
-## automation / state file 連携
-
-- `auto2a` は `large_cap_watchlist.json` を読む large_cap 専用 consumer として運用する。
-- `auto2b` は `high_beta_watchlist.json` を読む high_beta 専用 consumer として運用する。
-- large_cap と high_beta を同じ run や同じ比較表に混ぜない。
-- portfolio gate 用の補助設定は `/Users/sawairikeisuke/documents/stock-analysis/portfolio_rules.json` を正本とする。
-- `/Users/sawairikeisuke/Documents/stock-analysis` 配下の state / script / output を更新した場合は、作業後に差分確認を行い、今回更新したファイルだけを commit して push まで進める。
-  - push 先はこの repo の `main` とし、許可条件は `git-workflow-safety` の `stock-analysis` 例外に従う。
-  - 差分がない場合は commit / push しない。commit または push に失敗した場合はそこで停止して報告する。
+7. 上流 execution 補助情報がある場合は、執行条件へ反映する。
+   - `regime_fit=weak` なら `watch` を優先しやすい。
+   - `liquidity_tier` や `slippage_risk` が悪い場合は `entry_quality` を落とす。
+   - `monitoring_valid_until` を過ぎた、または `event_freshness=stale` の場合は `stale_reason` に明記する。
+8. `portfolio_rules.json` が使える場合は、個別判断の前に `max_new_entries_per_day_high_beta` `max_theme_overlap` `earnings_blackout_days` を確認し、portfolio gate の警告を先に出す。
+9. 複数企業入力時は、各企業について単一企業入力時と同じ粒度で `相場レジーム`, `セットアップ種別`, `setupScore / confidence`, `無効化条件`, `時間切れ条件`, `利確の目安`, `損切り・撤退の目安`, `リスク警告` まで必ず出したうえで、最後に分類サマリーを追加する。
+10. 一部の企業だけ取得に失敗しても、成功した企業の分析は継続し、失敗した企業は別枠で報告する。
 
 ## 分析観点
 
@@ -131,7 +159,7 @@ catalyst / invalidation_hint / monitoring_valid_until
 
 - この skill の出力状態は `watch` または `entry_ready` を正とする。
 - screening 段階の `watch` を、そのまま執行可能と読み替えない。
-- `entry_ready` は `setupType`、`minimumRR`、`timeStopDays`、portfolio gate の 4 点を満たしたときだけ使う。
+- `entry_ready` は `setupType`、`minimumRR`、`timeStopDays`、portfolio gate、liquidity、regime の 6 点を満たしたときだけ使う。
 
 ## 出力形式
 
@@ -140,39 +168,24 @@ catalyst / invalidation_hint / monitoring_valid_until
 
 ### 個別分析テーブル 1
 
-- 最優先の判定・執行判断をまとめる
-- カラム順は固定する
-
 ```md
-| 対象企業 | 銘柄コード | 状態 | 短期判断（5分類） | 相場レジーム | セットアップ種別 | setupScore / confidence | エントリーゾーン | 利確の目安 | 損切り・撤退の目安 | 時間切れ条件 |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 任天堂 | 7974.T | watch | 様子見推奨 | range | no_trade | 42 / low | ... | ... | ... | ... |
+| 対象企業 | 銘柄コード | 状態 | entry_quality | entry_style | execution_window | 短期判断 | 相場レジーム | セットアップ種別 | setupScore / confidence | エントリーゾーン | 利確の目安 | 損切り・撤退の目安 | 時間切れ条件 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 任天堂 | 7974.T | watch | C | avoid_open | next_pullback | 様子見推奨 | range | no_trade | 42 / low | ... | ... | ... | ... |
 ```
 
 ### 個別分析テーブル 2
 
-- 判定理由と反証条件をまとめる
-- 長くなるセルは簡潔な句読点区切りで圧縮する
-
 ```md
-| 対象企業 | 現状認識 | 上流 thesis | 強気材料 | 弱気材料 | 無効化条件 | エントリーを検討できる条件 | 見送る条件 | リスク警告 |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 任天堂 | ... | sector_leader / selection_reason 要約 | ... | ... | ... | ... | ... | ... |
+| 対象企業 | 現状認識 | 上流 thesis | 強気材料 | 弱気材料 | 無効化条件 | position_risk_note | stale_reason | 見送る条件 | リスク警告 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 任天堂 | ... | sector_leader / selection_reason 要約 | ... | ... | ... | ... | ... | ... | ... |
 ```
 
 ### 単一企業入力時の補足
 
 - テーブルの前に `取得エンドポイント` を 1 行だけ置いてよい
 - テーブルの後に `データ上の限界` を箇条書きで付ける
-
-```text
-取得エンドポイント:
-
-データ上の限界:
-- 取得データは short-term recent (`6mo` の日足と短期向けテクニカル指標) に限定される
-- 決算、業績予想、ニュース、為替、金利、需給、地合いは含まれない
-- これは投資助言ではなく、提供データに基づく分析支援
-```
 
 ### 複数企業入力時の補足
 
@@ -214,12 +227,8 @@ catalyst / invalidation_hint / monitoring_valid_until
 - endpoint に含まれない情報を根拠にしない。必要なら「追加確認が必要」と明記する。
 - `large_cap` と `high_beta` を同じ資金枠、同じ警戒水準、同じ優先度で比較しない。
 - high_beta で `monitoring_valid_until` を過ぎた候補は、API が強気でも stale 候補として注意を明記する。
-- 複数企業入力時の分類サマリーは、API 判定を次の補助ラベルへ正規化して要約する。
-  - `買い転換シグナルあり`: `setupType=breakout_long` または `rebound_long` かつ `confidence=high`
-  - `上昇中`: `regime=trend_up` かつ `setupType=pullback_long|breakout_long`
-  - `様子見推奨`: `setupType=no_trade` または `minimumRR` 不足
-  - `下降中`: `regime=trend_down` かつ `setupType=no_trade`
-  - `売り転換シグナルあり`: `setupType=rally_fade_short`
+- `entry_style_hint` があれば尊重し、API setup が強くても `avoid_open` を上書きしない。
+- `liquidity_tier=thin_for_large_size` や `slippage_risk=high` の場合、`entry_ready` にしても `entry_quality` は原則 `B` 以下に留める。
 - 各企業の個別出力は、単一入力でも複数入力でも同じテーブル列を使う。
 - `reasons`, `invalidations`, `riskWarnings` を要約して、人間が執行可否を判断しやすい順に並べる。
 - エントリー条件では `entryZone`, `minimumRR`, `timeStopDays` を必ず確認する。

@@ -1,13 +1,13 @@
 ---
 name: japan-high-beta-breakout-screening
-description: 日本株の中から、1〜2週間程度で値幅が出やすい順張り候補を抽出し、短期監視リストまで圧縮する。大型安定株に限定せず、中型株、テーマ株、高ボラティリティ銘柄も対象にし、出来高急増、直近高値接近・更新、相対強度、ATR、材料継続性を重視する。安定企業の母集団形成ではなく、high_beta watchlist state を作る高リスク高リターン候補抽出に使う。
+description: "日本株の中から、1〜2週間程度で値幅が出やすい順張り候補を抽出し、短期監視リストまで圧縮する。大型安定株に限定せず、中型株、テーマ株、高ボラティリティ銘柄も対象にし、出来高急増、直近高値接近・更新、相対強度、ATR、材料継続性を重視する。安定企業の母集団形成ではなく、high_beta watchlist state を作る高リスク高リターン候補抽出に使う。"
 ---
 
 # Japan High Beta Breakout Screening
 
-日本株から、短期で値幅が出やすい順張り候補を抽出する。既存の `japan-top-companies-screening` が安定大型株の監視母集団を作るのに対し、この skill は `1〜2週間程度の短期値幅` を優先する。財務安全性は最低限の確認に留め、出来高、価格モメンタム、テーマ性、材料継続性、リスク管理を重視する。
+日本株から、短期で値幅が出やすい順張り候補を抽出する。既存の `japan-top-companies-screening` が安定大型株の監視母集団を作るのに対し、この skill は `1〜2週間程度の短期値幅` を優先する。財務安全性は最低限の確認に留め、出来高、価格モメンタム、テーマ性、材料継続性、リスク管理、実際の売買可能性を重視する。
 
-この skill は `high_beta` 系の候補抽出専用であり、large_cap 系候補と同じ cadence や同じ防衛基準で扱わない。後段の `stock-investment-decision-support` へ渡すときは、鮮度と無効化条件を state に残す前提で使う。
+この skill は `high_beta` 系の候補抽出専用であり、large_cap 系候補と同じ cadence や同じ防衛基準で扱わない。後段の `stock-investment-decision-support` へ渡すときは、鮮度、売買可能性、無効化条件を state に残す前提で使う。
 
 ## 基本方針
 
@@ -33,9 +33,16 @@ description: 日本株の中から、1〜2週間程度で値幅が出やすい�
 ## state 出力契約
 
 - 後続へ渡す最小項目は `ticker` `company` `bucket=high_beta` `decision_profile=high_beta` `thesis_type=breakout|pullback|theme_momentum` `selection_reason` `catalyst` `event_risk` `invalidation_hint` `monitoring_valid_until` `priority` `status=watch`。
+- 追記互換で `liquidity_tier` `slippage_risk` `theme_cluster` `event_freshness` `crowding_risk` `entry_style_hint` を持たせてよい。
 - `catalyst` は単なる好材料有無ではなく、資金流入継続の仮説を短く残す。
 - `invalidation_hint` は `出来高失速` `高値更新失敗` `支持割れ` など、翌日 review で真っ先に潰す条件を書く。
 - `monitoring_valid_until` は通常 1〜3 営業日程度の鮮度管理に使う。
+- `liquidity_tier` は実際の size を入れられるかの粗い tier を残す。
+- `slippage_risk` は `low` `medium` `high` 程度でよい。
+- `theme_cluster` は `AI半導体` `防衛` `量子` のように、同テーマ集中の把握に使う。
+- `event_freshness` は `fresh` `aging` `stale` 程度でよい。
+- `crowding_risk` は同テーマの過密、連続急騰、寄り付き偏重を短く残す。
+- `entry_style_hint` は `breakout_only` `pullback_only` `avoid_open` のように、執行補助に使う。
 
 ## 入力解釈
 
@@ -59,6 +66,24 @@ description: 日本株の中から、1〜2週間程度で値幅が出やすい�
 - 前回銘柄を `継続` `除外` `保留` に分類する。
 - 継続理由が弱くなった枠だけ、新規候補で補う。
 
+## tape / flow quality
+
+- 値上がり率だけでは採用しない。高値接近時の出来高維持、押し目時の売り圧、反発時の再加速を分けて見る。
+- 同じテーマに複数銘柄がある場合、先導株と二軍銘柄を分ける。
+- ギャップアップ後に売買代金が細る銘柄は、材料が良くても `crowding_risk` を上げる。
+
+## slippage / board risk
+
+- board data を完全に取得できない場合でも、売買代金と出来高継続性から大まかな `slippage_risk` を付ける。
+- 板が薄く寄り付きだけで値が飛ぶ銘柄は `entry_style_hint=avoid_open` を検討する。
+- 想定 size で入りにくい銘柄は、スコアが高くても保留以下へ落としてよい。
+
+## event freshness
+
+- 材料は `発表直後` `継続確認済み` `連想のみ` を分けて扱う。
+- TDnet や会社IRで一次確認できたものを優先する。
+- 数日経過し、価格だけ残って材料の鮮度が落ちたものは `event_freshness=aging` か `stale` にする。
+
 ## 手順
 
 1. 実行モードを確定する。
@@ -73,13 +98,16 @@ description: 日本株の中から、1〜2週間程度で値幅が出やすい�
    - 上方修正、自社株買い、大型受注、政策テーマ、セクター物色は加点する。
 5. リスク確認を行う。
    - 出来高失速、急騰しすぎ、決算直前、増資懸念、赤字継続、低流動性を確認する。
-6. 候補をスコアリングする。
+6. flow と execution の確認を行う。
+   - 同テーマ内での先導株か、板と売買代金が想定売買に耐えるか、寄り付き偏重でないかを見る。
+   - `liquidity_tier` `slippage_risk` `crowding_risk` `entry_style_hint` を付ける。
+7. 候補をスコアリングする。
    - `モメンタム` `出来高` `ボラティリティ` `材料継続性` `流動性` `リスク` を分けて見る。
    - 配点と採用基準は [references/criteria.md](references/criteria.md) の `スコアリング` を使う。
-7. 監視候補へ圧縮する。
+8. 監視候補へ圧縮する。
    - 初回抽出では `5〜10社` にする。
    - 継続レビューでは、前回銘柄の継続可否を先に判定してから差し替える。
-8. 出力を整える。
+9. 出力を整える。
    - 候補ごとに、採用理由、高リスク理由、監視条件、撤退目安を出す。
    - automation 連携を意識する場合は、各候補に `decision_profile=high_beta` `catalyst` `invalidation_hint` `monitoring_valid_until` を付ける。
    - 最後に、企業名だけをカンマ区切りで1行にする。
@@ -134,8 +162,8 @@ description: 日本株の中から、1〜2週間程度で値幅が出やすい�
 企業A, 企業B, 企業C
 
 state 出力:
-| 企業 | 証券コード | bucket | decision_profile | thesis_type | selection_reason | catalyst | event_risk | invalidation_hint | monitoring_valid_until | priority | status |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 企業 | 証券コード | bucket | decision_profile | thesis_type | selection_reason | catalyst | event_risk | invalidation_hint | monitoring_valid_until | liquidity_tier | slippage_risk | theme_cluster | event_freshness | crowding_risk | entry_style_hint | priority | status |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 ```
 
 ### 継続レビュー モード
@@ -169,8 +197,8 @@ state 出力:
 企業A, 企業B, 企業C
 
 state 出力:
-| 企業 | 証券コード | bucket | decision_profile | thesis_type | selection_reason | catalyst | event_risk | invalidation_hint | monitoring_valid_until | priority | status |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 企業 | 証券コード | bucket | decision_profile | thesis_type | selection_reason | catalyst | event_risk | invalidation_hint | monitoring_valid_until | liquidity_tier | slippage_risk | theme_cluster | event_freshness | crowding_risk | entry_style_hint | priority | status |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 ```
 
 ## 注意
