@@ -59,18 +59,26 @@ regime_fit / execution_caution / liquidity_tier / slippage_risk / theme_cluster 
 
 正本 state file は次を想定する。
 
-- `/Users/sawairikeisuke/documents/stock-analysis/large_cap_watchlist.json`
-- `/Users/sawairikeisuke/documents/stock-analysis/high_beta_watchlist.json`
+- `/Users/sawairikeisuke/Documents/stock-analysis/large_cap_watchlist.json`
+- `/Users/sawairikeisuke/Documents/stock-analysis/high_beta_watchlist.json`
 
 ## automation / state file 連携
 
 - `auto2a` は `large_cap_watchlist.json` を読む large_cap 専用 consumer として運用する。
 - `auto2b` は `high_beta_watchlist.json` を読む high_beta 専用 consumer として運用する。
 - large_cap と high_beta を同じ run や同じ比較表に混ぜない。
-- portfolio gate 用の補助設定は `/Users/sawairikeisuke/documents/stock-analysis/portfolio_rules.json` を正本とする。
+- portfolio gate 用の補助設定は `/Users/sawairikeisuke/Documents/stock-analysis/portfolio_rules.json` を正本とする。
 - `/Users/sawairikeisuke/Documents/stock-analysis` 配下の state / script / output を更新した場合は、作業後に差分確認を行い、今回更新したファイルだけを commit して push まで進める。
   - push 先はこの repo の `main` とし、許可条件は `git-workflow-safety` の `stock-analysis` 例外に従う。
   - 差分がない場合は commit / push しない。commit または push に失敗した場合はそこで停止して報告する。
+
+## freshness gate
+
+- `state consumer モード` では、参照する watchlist file に `as_of` が必須。automation run では `as_of` が当日でなければ stale とみなして停止する。
+- `auto2a` で参照する `large_cap_watchlist.json` は `ticker` `company` `bucket` `decision_profile` `thesis_type` `selection_reason` `event_risk` `priority` `status` が揃っていなければ malformed とみなして停止する。
+- `auto2b` で参照する `high_beta_watchlist.json` は上記に加えて `catalyst` `invalidation_hint` `monitoring_valid_until` が必須で、1件でも `monitoring_valid_until < today` なら stale とみなして停止する。
+- `portfolio_rules.json` を参照する場合は `max_new_entries_per_day_high_beta` `max_theme_overlap` `earnings_blackout_days` `max_positions_large_cap` `max_positions_high_beta` `max_risk_per_trade_pct` が揃っていなければ停止する。
+- stale を検出した場合は、`stale_reason` を付けて続行するのではなく automation run 自体を停止する。`stale_reason` は fresh file を前提に個別銘柄の鮮度注意を書く用途に限る。
 
 ## execution decision contract
 
@@ -122,7 +130,8 @@ regime_fit / execution_caution / liquidity_tier / slippage_risk / theme_cluster 
 7. 上流 execution 補助情報がある場合は、執行条件へ反映する。
    - `regime_fit=weak` なら `watch` を優先しやすい。
    - `liquidity_tier` や `slippage_risk` が悪い場合は `entry_quality` を落とす。
-   - `monitoring_valid_until` を過ぎた、または `event_freshness=stale` の場合は `stale_reason` に明記する。
+  - manual / ad-hoc run では `monitoring_valid_until` を過ぎた、または `event_freshness=stale` の場合は `stale_reason` に明記する。
+  - automation run では freshness gate を優先し、期限切れ candidate を含む state file は停止する。
 8. `portfolio_rules.json` が使える場合は、個別判断の前に `max_new_entries_per_day_high_beta` `max_theme_overlap` `earnings_blackout_days` を確認し、portfolio gate の警告を先に出す。
 9. 複数企業入力時は、各企業について単一企業入力時と同じ粒度で `相場レジーム`, `セットアップ種別`, `setupScore / confidence`, `無効化条件`, `時間切れ条件`, `利確の目安`, `損切り・撤退の目安`, `リスク警告` まで必ず出したうえで、最後に分類サマリーを追加する。
 10. 一部の企業だけ取得に失敗しても、成功した企業の分析は継続し、失敗した企業は別枠で報告する。
@@ -226,7 +235,7 @@ regime_fit / execution_caution / liquidity_tier / slippage_risk / theme_cluster 
 - 判断期間は短期（1ヶ月以内程度）に限定し、中期・長期判断は出力しない。
 - endpoint に含まれない情報を根拠にしない。必要なら「追加確認が必要」と明記する。
 - `large_cap` と `high_beta` を同じ資金枠、同じ警戒水準、同じ優先度で比較しない。
-- high_beta で `monitoring_valid_until` を過ぎた候補は、API が強気でも stale 候補として注意を明記する。
+- high_beta で `monitoring_valid_until` を過ぎた候補は、manual / ad-hoc run では API が強気でも stale 候補として注意を明記する。automation run では停止を優先する。
 - `entry_style_hint` があれば尊重し、API setup が強くても `avoid_open` を上書きしない。
 - `liquidity_tier=thin_for_large_size` や `slippage_risk=high` の場合、`entry_ready` にしても `entry_quality` は原則 `B` 以下に留める。
 - 各企業の個別出力は、単一入力でも複数入力でも同じテーブル列を使う。

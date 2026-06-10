@@ -1,4 +1,4 @@
 interface:
   display_name: "Japan High Beta Breakout Screening"
   short_description: "短期値幅狙いの日本株順張り候補を抽出"
-  default_prompt: "Use $japan-high-beta-breakout-screening to screen Japanese stocks for high-beta breakout candidates over the next 1-2 weeks."
+  default_prompt: "Use $japan-high-beta-breakout-screening to screen Japanese stocks for high-beta breakout candidates over the next 1-2 weeks, and stop if the referenced state file is stale or malformed."

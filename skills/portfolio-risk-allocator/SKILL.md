@@ -20,7 +20,17 @@ watchlist、decision、holdings review の結果を受けて、ポートフォ�
 - `high_beta_decisions.json`
 - `current_holdings.json`
 - `portfolio_rules.json`
+- 必要なら `paper_high_beta_positions.json` `paper_high_beta_history.json` `paper_high_beta_metrics.json`
+- sidecar を使う運用では `paper_high_beta_allocator_snapshot.json`
 - 必要なら `stock-investment-position-review` の最新要約
+
+## freshness gate
+
+- `high_beta_decisions.json` は `as_of` と `decisions` が必須。automation run では `as_of` が当日でなければ stale とみなして停止する。
+- `high_beta_decisions.json` の active candidate は `ticker` `company` `status` `monitoring_valid_until` を持つこと。`status=watch|entry_ready` の候補に 1 件でも `monitoring_valid_until < today` があれば stale とみなして停止する。
+- `portfolio_rules.json` は `max_positions_large_cap` `max_positions_high_beta` `max_new_entries_per_day_high_beta` `max_theme_overlap` `earnings_blackout_days` `max_risk_per_trade_pct` が揃っていなければ停止する。
+- `current_holdings.json` や `paper_high_beta_*.json` を参照する場合は `as_of` が必須。複数 file を同時に使うなら `as_of` が相互に矛盾していないことを確認し、明らかに古い file があれば停止する。
+- stale を検出した場合は `defer` に丸めて続行しない。`どの file のどの date / field が stale か` を明記して停止する。
 
 ## 出力契約
 

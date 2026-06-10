@@ -1,0 +1,4 @@
+interface:
+  display_name: "日本株短期売買判断サポート"
+  short_description: "日本株の新規エントリー候補を短期目線で評価"
+  default_prompt: "Use $stock-investment-decision-support to analyze Japanese stocks for short-term entry decisions, and stop if any referenced watchlist or rules file is stale or malformed."

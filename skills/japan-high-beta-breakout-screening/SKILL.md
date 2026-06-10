@@ -23,12 +23,19 @@ description: "日本株の中から、1〜2週間程度で値幅が出やすい�
 ## automation / state file 連携
 
 - この skill は `auto1b` 相当の watchlist producer として扱う。
-- 正本 state file は `/Users/sawairikeisuke/documents/stock-analysis/high_beta_watchlist.json` を想定する。
+- 正本 state file は `/Users/sawairikeisuke/Documents/stock-analysis/high_beta_watchlist.json` を想定する。
 - 後続 automation は automation 定義の書き換えではなく、この state file を読む。
 - この skill 自身は `high_beta` 候補だけを出力し、large_cap 候補や保有レビュー対象は扱わない。
 - `/Users/sawairikeisuke/Documents/stock-analysis` 配下の state file を更新した場合は、作業後に差分確認を行い、今回更新したファイルだけを commit して push まで進める。
   - push 先はこの repo の `main` とし、許可条件は `git-workflow-safety` の `stock-analysis` 例外に従う。
   - 差分がない場合は commit / push しない。commit または push に失敗した場合はそこで停止して報告する。
+
+## freshness gate
+
+- `継続レビュー モード` で既存 `high_beta_watchlist.json` を参照する場合、`as_of` `review_mode` `watchlist` が欠けていたら stale / malformed とみなして停止する。
+- automation run で参照する `high_beta_watchlist.json` の `as_of` が 3 calendar days を超えて古い場合は stale とみなし、継続レビューを続けず停止する。
+- 前回候補を引き継ぐ前提で、参照した candidate に `monitoring_valid_until` が欠けている場合も stale 契約違反として停止する。
+- stale を検出した場合は fresh screening に勝手に切り替えない。`どの file のどの date が古いか` を明記して停止する。
 
 ## state 出力契約
 

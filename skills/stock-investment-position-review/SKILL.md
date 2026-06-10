@@ -35,12 +35,22 @@ review_profile の既定値=auto
 ## automation / state file 連携
 
 - この skill は `auto3` 相当の保有レビュー consumer として扱う。
-- 正本 state file は `/Users/sawairikeisuke/documents/stock-analysis/current_holdings.json` を想定する。
-- portfolio gate 用の補助設定は `/Users/sawairikeisuke/documents/stock-analysis/portfolio_rules.json` を読む。
+- 正本 state file は `/Users/sawairikeisuke/Documents/stock-analysis/current_holdings.json` を想定する。
+- portfolio gate 用の補助設定は `/Users/sawairikeisuke/Documents/stock-analysis/portfolio_rules.json` を読む。
 - watchlist state は読んでもよいが、新規候補採用のためには使わない。用途は保有銘柄の由来確認までに留める。
 - `/Users/sawairikeisuke/Documents/stock-analysis` 配下の state / output を更新した場合は、作業後に差分確認を行い、今回更新したファイルだけを commit して push まで進める。
   - push 先はこの repo の `main` とし、許可条件は `git-workflow-safety` の `stock-analysis` 例外に従う。
   - 差分がない場合は commit / push しない。commit または push に失敗した場合はそこで停止して報告する。
+
+## freshness gate
+
+- automation run で `current_holdings.json` を参照する場合、`as_of` と `holdings` が必須。
+- 各 holding は最低でも `ticker` `company` `shares` `average_cost` `bucket` `review_profile` を持つこと。欠けていれば malformed とみなして停止する。
+- `portfolio_rules.json` を参照する場合は `max_positions_large_cap` `max_positions_high_beta` `max_new_entries_per_day_high_beta` `max_theme_overlap` `earnings_blackout_days` `max_risk_per_trade_pct` が揃っていなければ停止する。
+- watchlist state を由来確認に使う場合も、その file の `as_of` が古ければ補助参照に使わず停止する。stale な watchlist を根拠補強に使わない。
+- `current_holdings.json` は watchlist ほど当日性を要求しない。`as_of` が古いだけなら原則停止せず、`保有情報が古い可能性` を警告して続行してよい。
+- 停止するのは、必須項目欠落、pending fill で holdings 未確定、または `source` / `note` などから約定反映待ちと判断できる場合を優先する。
+- `source=memory_draft` だけを stale の根拠にはしない。dated draft でも保有内容が確定済みなら警告に留めてよい。
 
 ## review_profile
 
