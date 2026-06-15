@@ -20,21 +20,32 @@ description: "東証33業種を基準に、日本株の各業種で短中期の�
 - daily で行うのは full rerun ではなく `trigger check` を前提にした監視候補の維持である。
 - 重点監視の更新では、毎回 1 から全銘柄を作り直すより、前回銘柄の残留可否を先に判定する。
 - 後段でテクニカル分析に進む場合は `stock-investment-decision-support` の利用を検討する。
+- ここで扱うのは未保有の新規監視候補だけとし、確定保有中の銘柄は `stock-investment-position-review` 側へ分離する。
 
 ## automation / state file 連携
 
 - この skill は `auto1a` 相当の watchlist producer として扱う。
 - 正本 state file は `/Users/sawairikeisuke/Documents/stock-analysis/large_cap_watchlist.json` を想定する。
+- 保有除外の参照元として `/Users/sawairikeisuke/Documents/stock-analysis/current_holdings.json` も想定する。
 - 後続 automation は automation 定義の書き換えではなく、この state file を読む。
 - この skill 自身は `large_cap` 候補だけを出力し、`high_beta` 候補や保有レビュー対象は扱わない。
+- `current_holdings.json` の `holdings[].ticker` に含まれる確定保有銘柄は、母集団と重点監視の両方から除外する。
 - `/Users/sawairikeisuke/Documents/stock-analysis` 配下の state file を更新した場合は、作業後に差分確認を行い、今回更新したファイルだけを commit して push まで進める。
   - push 先はこの repo の `main` とし、許可条件は `git-workflow-safety` の `stock-analysis` 例外に従う。
   - 差分がない場合は commit / push しない。commit または push に失敗した場合はそこで停止して報告する。
+
+## context-mode 運用
+
+- `large_cap_watchlist.json` と `current_holdings.json` の検証は `ctx_execute_file` で行い、`as_of`、件数、欠落 field、保有除外 ticker だけを返す。
+- 業種ごとの候補集計、継続/除外/新規追加の集計、重点監視への圧縮も `ctx_execute` で中間計算し、長い表をそのまま会話へ出さない。
+- 外部サイトや docs を補助参照するときは、必要なら `ctx_fetch_and_index` → `ctx_search` を使い、ページ全文を会話へ載せない。
 
 ## freshness gate
 
 - `継続レビュー モード` で既存 `large_cap_watchlist.json` を参照する場合、`as_of` `review_mode` `watchlist` が欠けていたら stale / malformed とみなして停止する。
 - automation run で参照する `large_cap_watchlist.json` の `as_of` が 7 calendar days を超えて古い場合は stale とみなし、継続レビューを続けず停止する。
+- `current_holdings.json` を保有除外に使う場合、`as_of` `holdings` が欠けていたり、各 holding に `ticker` `company` `shares` `average_cost` `bucket` `review_profile` が欠けていたりすれば malformed とみなして停止する。
+- `current_holdings.json` は watchlist と同じ当日性を要求しない。`as_of` が古いだけなら warning に留め、pending fill や約定未確定の疑いがある場合だけ停止する。
 - stale を検出した場合は fresh screening に勝手に切り替えない。`どの file のどの date が古いか` を明記して停止する。
 
 ## state 出力契約
@@ -58,6 +69,7 @@ description: "東証33業種を基準に、日本株の各業種で短中期の�
 - ユーザーが特定サイトを指定した場合、そのサイトは一次スクリーニングに使ってよい。ただし、そのサイトだけを正本にしない。
 - ユーザーが短中期利益狙いと明示した場合、長期の名門企業でも流動性や資本効率が弱いものは優先度を下げる。
 - ユーザーが毎日監視を前提にしている場合、全33業種の候補をそのまま渡さず、`母集団` から `重点監視` へ圧縮して出す。
+- 確定保有中の銘柄は新規候補に含めず、買い増し可否や防衛判断は `stock-investment-position-review` に委ねる。
 - 前回銘柄レビューでは、入力は `前回選定日` と `前回監視銘柄` を基本形とする。
 - `前回選定日` がない場合でも進めてよいが、何が変わったかの説明はやや弱くなるのでその旨を明記する。
 - `market-regime-assessment` の出力がある場合は補助情報として参照してよいが、この skill の正本判定を置き換えない。
@@ -111,29 +123,36 @@ description: "東証33業種を基準に、日本株の各業種で短中期の�
 4. 一次スクリーニングを行う。
    - みんかぶ等で `時価総額` `ROE` `自己資本比率` `営業利益率` `売買代金` などを用いて候補を絞る。
    - 使う閾値は [references/criteria.md](references/criteria.md) を基準にする。
-5. 二次確認を行う。
+5. `current_holdings.json` を参照して確定保有銘柄を除外する。
+   - state file 検証と除外判定は `ctx_execute_file` で行い、ticker ベースの除外結果だけを使う。
+   - 除外判定は企業名ではなく `ticker` を正本にする。
+   - pending fill や約定未確定注文は保有確定として扱わない。
+   - 除外した銘柄は、後で `既存保有のため対象外` として出力できるように控える。
+6. 二次確認を行う。
    - 候補企業の直近決算、営業CF、フリーCF、有利子負債、利益安定性を確認する。
    - 明らかな一過性利益、赤字転落、過度な財務悪化があれば除外する。
-6. 定性補正を行う。
+7. 定性補正を行う。
    - 国内シェア、世界シェア、ブランド力、価格決定力、参入障壁、海外競争力を確認する。
    - 定量で僅差なら、業界内地位が高い方を上位に置く。
-7. regime 補正を行う。
+8. regime 補正を行う。
    - 相場 regime、業種相対強度、為替・金利・資源価格感応度を見て `regime_fit` を付ける。
    - 監視価値は高いが current regime と逆風なら、除外ではなく priority を落として残してよい。
-8. `初回抽出モード` なら各業種で `1〜3社` に絞る。
+9. `初回抽出モード` なら各業種で `1〜3社` に絞る。
    - 役割が似た銘柄ばかりに偏らないようにする。
    - 過熱感の強い銘柄は「有力だが要注意」と注記して残してよい。
-9. `継続レビュー モード` なら前回銘柄をレビューする。
+10. `継続レビュー モード` なら前回銘柄をレビューする。
+   - review_mode、watchlist 件数、stale 判定は `ctx_execute_file` で先に機械確認する。
    - 各銘柄を `継続` `除外` `保留` に分類する。
    - 判定理由は `定量変化` `定性変化` `regime 変化` に分けて書く。
    - `継続` を優先して残し、除外や保留で空いた枠だけ新規候補を補う。
-10. daily 監視用に圧縮する。
+11. daily 監視用に圧縮する。
    - `初回抽出モード` では母集団 33社前後から、重点監視 `10〜15社` を選ぶ。
    - `継続レビュー モード` では `継続` を先に残し、その後に新規追加候補を入れて重点監視 `10〜15社` に整える。
    - 圧縮基準は [references/criteria.md](references/criteria.md) の daily monitoring を使う。
-11. 出力を整える。
+12. 出力を整える。
    - `初回抽出モード` では従来どおり候補企業名、証券コード、選定理由、留意点を添える。
    - `継続レビュー モード` では `前回からの継続 / 除外 / 保留 / 新規追加` を分けて出す。
+   - `current_holdings.json` に基づいて除外した銘柄があれば、`既存保有のため対象外` として明示する。
    - automation 連携を意識する場合は、各候補に `decision_profile=large_cap` `thesis_type` `regime_fit` を付ける。
    - 最後に、今回の重点監視へ残した企業名だけをカンマ区切りで1行出す。
 
@@ -176,6 +195,10 @@ market regime:
 | 業種 | 候補企業 | 証券コード | 選定理由 | 留意点 |
 | --- | --- | --- | --- | --- |
 
+screening 対象外:
+| 企業 | 証券コード | 理由 |
+| --- | --- | --- |
+
 重点監視:
 | 企業 | 証券コード | 採用理由 | 監視ポイント |
 | --- | --- | --- | --- |
@@ -207,6 +230,10 @@ market regime:
 前回監視銘柄レビュー:
 | 企業 | 証券コード | 判定 | 理由 | 対応 |
 | --- | --- | --- | --- | --- |
+
+screening 対象外:
+| 企業 | 証券コード | 理由 |
+| --- | --- | --- |
 
 新規追加候補:
 | 企業 | 証券コード | 追加理由 | 監視ポイント |

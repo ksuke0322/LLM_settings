@@ -26,8 +26,33 @@ AI はユーザからの指示を受けて作業する際、以下の7つの原�
 
 ## Subagent policy
 
-- 独立して並列実行できる読み取り中心の作業では、可能なら subagents を使う。
-- 特に、調査、探索、観点別レビュー、ログ確認、テスト実行、候補ごとの個別分析は subagents への分担を優先する。
+- 独立して並列実行できる読み取り中心の作業では、親エージェント単独で進めず、まず subagents 利用可否を検討する。
+- 特に、調査、探索、観点別レビュー、ログ確認、テスト実行、候補ごとの個別分析は、subagents を第一候補とする。
 - 複数の subagents を使った場合は、親エージェントが全結果を待ってから統合し、最終回答をまとめる。
 - 正本ファイルの更新、state file の確定、automation memory の更新、commit、push などの書き込みは親エージェントだけが行う。
 - subagents は、独立性が高く、親が最後に統合判断できる場合に使う。依存順序が強い処理や競合しやすい書き込み処理では乱用しない。
+- subagents を使わず親エージェント単独で進めた場合は、進捗共有または最終報告で理由を一言明記する。
+
+## Command Execution Policy
+
+- シェルコマンドは、原則としてすべて `rtk` 経由で実行すること
+- 例: `git status` ではなく `rtk git status`
+- `functions.exec_command` で実行するコマンドも同様に、原則 `rtk` で始めること
+- 例外が必要な場合は、実行前の進捗共有または最終報告で理由を明記すること
+- `rtk` 自体の動作確認、`which rtk` のような存在確認、または `rtk` を通すと目的を満たせない操作のみ例外とする
+
+@/Users/sawairikeisuke/.codex/RTK.md
+
+## context-mode policy
+
+- 読み取り、検索、集計、解析、比較、テスト、ログ確認、API response 確認など、出力が大きくなりうる操作は原則として `context-mode` を使う。
+- 特に JSON / CSV / YAML / Markdown / ソースコード / ログ / `git diff` / `git log` / `rg` の大量出力は、直接会話に流さず `context-mode` で処理する。
+- 単一ファイルの解析は `ctx_execute_file` を優先し、件数、欠落 field、stale 判定、要注意点など必要な結果だけを返す。
+- 複数ファイルや API response、複数コマンドの集計は `ctx_execute` を優先し、生データ全量ではなく要約・抽出結果だけを返す。
+- 外部ドキュメントや長い参考資料は、必要に応じて `ctx_fetch_and_index` と `ctx_search` を使い、全文を会話へ載せない。
+- Playwright / browser 系の長い出力は直接会話へ出さず、可能なら file 保存してから `ctx_execute_file` で要約する。
+- `curl` や通常 shell は診断や小出力確認には使ってよいが、大きいレスポンス取得の第一手段にはしない。
+- 直接 Bash を使うのは、小出力確認と書き込み系操作だけにする。
+- `context-mode` を使わず shell を使う場合も、必要以上に長い出力を会話へ載せない。
+- 迷った場合は shell 直実行ではなく `context-mode` を優先する。
+- ただし、出力が大きくなりうる読み取り・解析系の操作では、`rtk` 付き shell 直実行より `context-mode` を優先する。

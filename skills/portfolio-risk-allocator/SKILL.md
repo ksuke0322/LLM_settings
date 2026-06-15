@@ -24,6 +24,12 @@ watchlist、decision、holdings review の結果を受けて、ポートフォ�
 - sidecar を使う運用では `paper_high_beta_allocator_snapshot.json`
 - 必要なら `stock-investment-position-review` の最新要約
 
+## context-mode 運用
+
+- 複数 JSON の整合確認は `ctx_execute` または `ctx_execute_file` でまとめて行い、raw file 全文は会話へ流さない。
+- `as_of` 整合、欠落 field、theme overlap、bucket exposure、新規採用余地は sandbox で計算し、最終ゲートだけを返す。
+- `paper_high_beta_*` を複数読む場合も、件数と警告だけを返し、全ポジションの生データは返さない。
+
 ## freshness gate
 
 - `high_beta_decisions.json` は `as_of` と `decisions` が必須。automation run では `as_of` が当日でなければ stale とみなして停止する。
@@ -46,6 +52,7 @@ watchlist、decision、holdings review の結果を受けて、ポートフォ�
 ## 手順
 
 1. current holdings と paper / decision の bucket を分けて読む。
+   - 可能なら `ctx_execute` で複数 file をまとめて読み、bucket 別件数と stale 判定を一括で出す。
 2. `portfolio_rules.json` の上限を確認する。
 3. 同テーマ重複、同 bucket 過密、決算接近、high-beta 過多を確認する。
 4. 新規採用余地を `max_new_entries_today` で整理する。

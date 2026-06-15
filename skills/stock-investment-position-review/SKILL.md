@@ -8,6 +8,7 @@ description: "保有中の日本株について、企業名または ticker と�
 保有中の日本株を、短期（1ヶ月以内程度）のポジション管理目線でレビューする。新規候補の横比較ではなく、既存ポジションに対する `保有継続 / 一部利確 / 撤退条件 / 追加買い可否` を先に出す。
 
 この skill は保有後レビュー専用であり、watchlist から新規候補を拾わない。新規エントリー判断は `stock-investment-decision-support`、候補抽出は screening 系 skill に分離する。
+確定保有中の銘柄に対する追加投資可否、利確、縮小、防衛、撤退の判断はこの skill の責務とし、screening 系 skill や `stock-investment-decision-support` 側で再採用しない。
 
 これは投資助言ではない。最終判断はユーザーが行う。断定的な売買指示は避け、根拠・反証条件・リスクを明示する。
 
@@ -22,6 +23,7 @@ description: "保有中の日本株について、企業名または ticker と�
   - 新規で買う候補を横並び比較したいだけ
   - 保有情報がなく、新規エントリーの執行可否を中心に見たい
   - 上記は `stock-investment-decision-support` を使う
+  - すでに保有している銘柄を screening の新規候補として入れ直したい
 
 ## 固定設定
 
@@ -31,6 +33,15 @@ ENDPOINT=/stock/{ticker}/analysis?range=recent&schema=trade-v2
 投資スタイル=短期（1ヶ月以内程度）
 review_profile の既定値=auto
 ```
+
+## context-mode 運用
+
+- 大きい I/O は原則 `context-mode` を使う。保有 state、portfolio rules、API JSON をそのまま会話へ流さない。
+- `current_holdings.json` や `portfolio_rules.json` の確認は `ctx_execute_file` で行い、件数、欠落 field、stale 判定、対象 ticker だけを返す。
+- trade-v2 API 取得は `ctx_execute` の `javascript` で `fetch(url)`、retry、JSON parse、要点抽出までをまとめて行う。
+- 複数保有銘柄のレビューでは raw JSON 全量を返さず、保有判断に必要な `setup` `risk` `latestClose` などの派生値だけを返す。
+- `ctx_execute` で取得不能な場合のみ Playwright/browser fetch に落とし、返り値は file 保存して `ctx_execute_file` で要約する。
+- `curl` は診断専用 fallback とし、JSON 本取得の第一手段にしない。
 
 ## automation / state file 連携
 
@@ -119,10 +130,12 @@ state file を使う場合の最小項目は `ticker` `company` `shares` `averag
 3. 各 ticker ごとに endpoint URL を組み立てる。
    - 形式: `${API_BASE_URL}/stock/${ticker}/analysis?range=recent&schema=trade-v2`
 4. 各 URL から JSON を取得する。
-   - 初回から Playwright/browser fetch で取得する。
-   - HTTP status、`response.ok`、JSON parse 成功、`asOf` を確認する。
-   - timeout、HTTP 429、HTTP 5xx、JSON parse error は短い間隔で 2〜3 回 retry する。HTTP 429 は少し長めに待って単独 retry する。
-   - browser fetch が失敗した場合だけ、診断用に `curl` へフォールバックする。
+   - 初回から `ctx_execute(language=\"javascript\")` で取得する。
+   - sandbox 内で HTTP status、`response.ok`、JSON parse 成功、`asOf` を確認する。
+   - timeout、HTTP 429、HTTP 5xx、JSON parse error は sandbox 内で短い間隔の 2〜3 回 retry を行う。HTTP 429 は少し長めに待って単独 retry する。
+   - 出力は raw JSON ではなく、保有レビューに必要な `setup` `risk` `latestClose` `feature.metrics` の要点に絞る。
+   - `ctx_execute` が失敗した場合だけ Playwright/browser fetch にフォールバックし、返り値は file 保存して `ctx_execute_file` で要約する。
+   - Playwright/browser fetch も失敗した場合だけ、診断用に `curl` へフォールバックする。
    - `curl: (6) Could not resolve host` は Lambda 未到達の DNS / outbound egress 失敗として扱い、API 障害と混同しない。
 5. 取得に失敗した銘柄は、ticker と URL と失敗理由を簡潔に示す。
 6. 成功した銘柄ごとに、`setup` と `risk` を主根拠に保有レビューを作る。
@@ -131,6 +144,7 @@ state file を使う場合の最小項目は `ticker` `company` `shares` `averag
    - `review_profile=large_cap` では trend 継続と支持線維持をやや重く見る。
    - `review_profile=high_beta` では `gapPercent`, `volumeRatioVsMa20`, `breakoutCandidate`, `timeStopDays` をやや重く見る。
 7. `portfolio_rules.json` が使える場合は、個別レビューの前に portfolio gate を確認する。
+   - gate 確認は `ctx_execute_file` または `ctx_execute` で行い、rules 全文ではなく警告だけを返す。
    - `max_positions_high_beta`
    - `max_theme_overlap`
    - `earnings_blackout_days`

@@ -19,22 +19,33 @@ description: "日本株の中から、1〜2週間程度で値幅が出やすい�
 - 後段の個別売買判断には `stock-investment-decision-support` の利用を検討する。
 - スクリーニング基準は [references/criteria.md](references/criteria.md) を使う。
 - 鮮度切れを避けるため、候補は毎営業日 review し、前日候補を惰性で残さない。
+- ここで扱うのは未保有の新規監視候補だけとし、確定保有中の銘柄は `stock-investment-position-review` 側へ分離する。
 
 ## automation / state file 連携
 
 - この skill は `auto1b` 相当の watchlist producer として扱う。
 - 正本 state file は `/Users/sawairikeisuke/Documents/stock-analysis/high_beta_watchlist.json` を想定する。
+- 保有除外の参照元として `/Users/sawairikeisuke/Documents/stock-analysis/current_holdings.json` も想定する。
 - 後続 automation は automation 定義の書き換えではなく、この state file を読む。
 - この skill 自身は `high_beta` 候補だけを出力し、large_cap 候補や保有レビュー対象は扱わない。
+- `current_holdings.json` の `holdings[].ticker` に含まれる確定保有銘柄は、短期監視候補から除外する。
 - `/Users/sawairikeisuke/Documents/stock-analysis` 配下の state file を更新した場合は、作業後に差分確認を行い、今回更新したファイルだけを commit して push まで進める。
   - push 先はこの repo の `main` とし、許可条件は `git-workflow-safety` の `stock-analysis` 例外に従う。
   - 差分がない場合は commit / push しない。commit または push に失敗した場合はそこで停止して報告する。
+
+## context-mode 運用
+
+- `high_beta_watchlist.json` と `current_holdings.json` の検証は `ctx_execute_file` で行い、`as_of`、件数、欠落 field、`monitoring_valid_until`、保有除外 ticker だけを返す。
+- 候補のスコア集計、継続/除外/保留/新規追加の整理、監視候補への圧縮は `ctx_execute` で中間計算し、長い表をそのまま会話へ出さない。
+- 外部サイトや docs を補助参照するときは、必要なら `ctx_fetch_and_index` → `ctx_search` を使い、ページ全文を会話へ載せない。
 
 ## freshness gate
 
 - `継続レビュー モード` で既存 `high_beta_watchlist.json` を参照する場合、`as_of` `review_mode` `watchlist` が欠けていたら stale / malformed とみなして停止する。
 - automation run で参照する `high_beta_watchlist.json` の `as_of` が 3 calendar days を超えて古い場合は stale とみなし、継続レビューを続けず停止する。
 - 前回候補を引き継ぐ前提で、参照した candidate に `monitoring_valid_until` が欠けている場合も stale 契約違反として停止する。
+- `current_holdings.json` を保有除外に使う場合、`as_of` `holdings` が欠けていたり、各 holding に `ticker` `company` `shares` `average_cost` `bucket` `review_profile` が欠けていたりすれば malformed とみなして停止する。
+- `current_holdings.json` は watchlist と同じ当日性を要求しない。`as_of` が古いだけなら warning に留め、pending fill や約定未確定の疑いがある場合だけ停止する。
 - stale を検出した場合は fresh screening に勝手に切り替えない。`どの file のどの date が古いか` を明記して停止する。
 
 ## state 出力契約
@@ -58,6 +69,7 @@ description: "日本株の中から、1〜2週間程度で値幅が出やすい�
 - 前回監視銘柄が渡された場合は、継続レビューとして `継続` `除外` `保留` `新規追加` を判定する。
 - ユーザー指定がなければ、監視候補は `5〜10社` に圧縮する。
 - 決算直前、重要イベント直前、急騰直後の銘柄は、採用しても注意度を明記する。
+- 確定保有中の銘柄は新規候補に含めず、買い増し可否や防衛判断は `stock-investment-position-review` に委ねる。
 
 ## 実行モード
 
@@ -100,22 +112,29 @@ description: "日本株の中から、1〜2週間程度で値幅が出やすい�
 3. 一次スクリーニングを行う。
    - 株探などで `値上がり率` `出来高急増` `ストップ高` `材料ニュース` `決算速報` を確認する。
    - TradingView などで `高値接近/更新` `出来高` `相対強度` `ATR` を確認する。
-4. 材料確認を行う。
+4. `current_holdings.json` を参照して確定保有銘柄を除外する。
+   - state file 検証と除外判定は `ctx_execute_file` で行い、ticker ベースの除外結果だけを使う。
+   - 除外判定は企業名ではなく `ticker` を正本にする。
+   - pending fill や約定未確定注文は保有確定として扱わない。
+   - 除外した銘柄は、後で `既存保有のため対象外` として出力できるように控える。
+5. 材料確認を行う。
    - TDnet、会社IR、ニュースで材料の種類と継続性を確認する。
    - 上方修正、自社株買い、大型受注、政策テーマ、セクター物色は加点する。
-5. リスク確認を行う。
+6. リスク確認を行う。
    - 出来高失速、急騰しすぎ、決算直前、増資懸念、赤字継続、低流動性を確認する。
-6. flow と execution の確認を行う。
+7. flow と execution の確認を行う。
    - 同テーマ内での先導株か、板と売買代金が想定売買に耐えるか、寄り付き偏重でないかを見る。
    - `liquidity_tier` `slippage_risk` `crowding_risk` `entry_style_hint` を付ける。
-7. 候補をスコアリングする。
+8. 候補をスコアリングする。
    - `モメンタム` `出来高` `ボラティリティ` `材料継続性` `流動性` `リスク` を分けて見る。
    - 配点と採用基準は [references/criteria.md](references/criteria.md) の `スコアリング` を使う。
-8. 監視候補へ圧縮する。
+9. 監視候補へ圧縮する。
+   - 継続レビュー時の stale 判定、前回銘柄の継続可否、候補圧縮の中間集計は `ctx_execute` / `ctx_execute_file` で機械化してよい。
    - 初回抽出では `5〜10社` にする。
    - 継続レビューでは、前回銘柄の継続可否を先に判定してから差し替える。
-9. 出力を整える。
+10. 出力を整える。
    - 候補ごとに、採用理由、高リスク理由、監視条件、撤退目安を出す。
+   - `current_holdings.json` に基づいて除外した銘柄があれば、`既存保有のため対象外` として明示する。
    - automation 連携を意識する場合は、各候補に `decision_profile=high_beta` `catalyst` `invalidation_hint` `monitoring_valid_until` を付ける。
    - 最後に、企業名だけをカンマ区切りで1行にする。
 
@@ -153,6 +172,10 @@ description: "日本株の中から、1〜2週間程度で値幅が出やすい�
 | 企業 | 証券コード | スコア | 採用理由 | 高リスク理由 | 監視条件 | 撤退目安 |
 | --- | --- | --- | --- | --- | --- | --- |
 
+screening 対象外:
+| 企業 | 証券コード | 理由 |
+| --- | --- | --- |
+
 保留候補:
 | 企業 | 証券コード | 保留理由 | 再確認ポイント |
 | --- | --- | --- | --- |
@@ -183,6 +206,10 @@ state 出力:
 前回監視銘柄レビュー:
 | 企業 | 証券コード | 判定 | 理由 | 対応 |
 | --- | --- | --- | --- | --- |
+
+screening 対象外:
+| 企業 | 証券コード | 理由 |
+| --- | --- | --- |
 
 新規追加候補:
 | 企業 | 証券コード | 追加理由 | 高リスク理由 | 監視条件 |

@@ -25,6 +25,12 @@ description: "日本株の短期運用に向けて、指数、業種相対強度
   - 日本金利、米金利
   - 原油、銅などの主要コモディティ
 
+## context-mode 運用
+
+- 指数、為替、金利、商品市況の複数ソースをまとめて扱う場合は `ctx_execute` で集計し、raw 出力は会話へ流さない。
+- 補助資料や docs を参照する場合は、必要なら `ctx_fetch_and_index` → `ctx_search` を使い、ページ全文を会話へ載せない。
+- 過去メモや stale snapshot を再利用する場合も、必要な date と判定だけを返し、生データを再掲しない。
+
 ## 出力契約
 
 - `regime`
@@ -39,6 +45,7 @@ description: "日本株の短期運用に向けて、指数、業種相対強度
 1. 主要指数の方向感を確認する。
 2. 業種 relative strength を確認する。
 3. 為替、金利、資源価格の向きを確認する。
+   - 複数ソースを使うときは `ctx_execute` で方向感だけを要約する。
 4. `risk_on` `neutral` `risk_off` のどれかに寄せる。
 5. `large_cap` と `high_beta` の優先度を決める。
 6. sector leaders と macro risks を短くまとめる。
