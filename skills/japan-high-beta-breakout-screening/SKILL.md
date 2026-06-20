@@ -1,242 +1,119 @@
 ---
 name: japan-high-beta-breakout-screening
-description: "日本株の中から、1〜2週間程度で値幅が出やすい順張り候補を抽出し、短期監視リストまで圧縮する。大型安定株に限定せず、中型株、テーマ株、高ボラティリティ銘柄も対象にし、出来高急増、直近高値接近・更新、相対強度、ATR、材料継続性を重視する。安定企業の母集団形成ではなく、high_beta watchlist state を作る高リスク高リターン候補抽出に使う。"
+description: "日本株の短期 high_beta 候補を抽出し、high_beta watchlist state を作るときに使う。"
 ---
 
 # Japan High Beta Breakout Screening
 
-日本株から、短期で値幅が出やすい順張り候補を抽出する。既存の `japan-top-companies-screening` が安定大型株の監視母集団を作るのに対し、この skill は `1〜2週間程度の短期値幅` を優先する。財務安全性は最低限の確認に留め、出来高、価格モメンタム、テーマ性、材料継続性、リスク管理、実際の売買可能性を重視する。
+短期で値幅が出やすい日本株の順張り候補を抽出し、`high_beta` watchlist まで圧縮する。安定大型株の母集団作成ではなく、`1〜2週間` の短期値幅と監視鮮度を優先する。
 
-この skill は `high_beta` 系の候補抽出専用であり、large_cap 系候補と同じ cadence や同じ防衛基準で扱わない。後段の `stock-investment-decision-support` へ渡すときは、鮮度、売買可能性、無効化条件を state に残す前提で使う。
+共通運用は [../stock-shared/references/common-operating-rules.md](../stock-shared/references/common-operating-rules.md) を前提にする。スクリーニング基準は [references/criteria.md](references/criteria.md) を使う。
 
 ## 基本方針
 
-- 目的は投資助言ではなく、短期監視候補の抽出支援である。
-- 安定性よりも、今まさに資金が入り、値幅が出る可能性を優先する。
-- 候補は高リスク前提で扱い、必ずリスク理由と撤退条件を併記する。
-- 出来高が薄い銘柄、板が極端に薄い銘柄、悪材料起点の乱高下は避ける。
-- 判断に使う主要データを確認できない場合は推測で補わず、`未確認` として保留以下にする。
-- 後段の個別売買判断には `stock-investment-decision-support` の利用を検討する。
-- スクリーニング基準は [references/criteria.md](references/criteria.md) を使う。
-- 鮮度切れを避けるため、候補は毎営業日 review し、前日候補を惰性で残さない。
-- ここで扱うのは未保有の新規監視候補だけとし、確定保有中の銘柄は `stock-investment-position-review` 側へ分離する。
+- 未保有の新規監視候補だけを扱う
+- large_cap と同じ cadence や防衛基準で扱わない
+- 候補には必ず `selection_reason` と `invalidation_hint` を付ける
+- 判断材料が未確認なら採用理由に使わず、`保留` 以下へ落とす
+- 既存保有の防衛判断は `stock-investment-position-review` に委ねる
 
-## automation / state file 連携
+## 正本 state
 
-- この skill は `auto1b` 相当の watchlist producer として扱う。
-- 正本 state file は `/Users/sawairikeisuke/Documents/stock-analysis/high_beta_watchlist.json` を想定する。
-- 保有除外の参照元として `/Users/sawairikeisuke/Documents/stock-analysis/current_holdings.json` も想定する。
-- 後続 automation は automation 定義の書き換えではなく、この state file を読む。
-- この skill 自身は `high_beta` 候補だけを出力し、large_cap 候補や保有レビュー対象は扱わない。
-- `current_holdings.json` の `holdings[].ticker` に含まれる確定保有銘柄は、短期監視候補から除外する。
-- `/Users/sawairikeisuke/Documents/stock-analysis` 配下の state file を更新した場合は、作業後に差分確認を行い、今回更新したファイルだけを commit して push まで進める。
-  - push 先はこの repo の `main` とし、許可条件は `git-workflow-safety` の `stock-analysis` 例外に従う。
-  - 差分がない場合は commit / push しない。commit または push に失敗した場合はそこで停止して報告する。
+- watchlist: `/Users/sawairikeisuke/Documents/stock-analysis/high_beta_watchlist.json`
+- 保有除外参照: `/Users/sawairikeisuke/Documents/stock-analysis/current_holdings.json`
 
-## context-mode 運用
+## lane 固有 freshness / schema
 
-- `high_beta_watchlist.json` と `current_holdings.json` の検証は `ctx_execute_file` で行い、`as_of`、件数、欠落 field、`monitoring_valid_until`、保有除外 ticker だけを返す。
-- 候補のスコア集計、継続/除外/保留/新規追加の整理、監視候補への圧縮は `ctx_execute` で中間計算し、長い表をそのまま会話へ出さない。
-- 外部サイトや docs を補助参照するときは、必要なら `ctx_fetch_and_index` → `ctx_search` を使い、ページ全文を会話へ載せない。
-
-## freshness gate
-
-- `継続レビュー モード` で既存 `high_beta_watchlist.json` を参照する場合、`as_of` `review_mode` `watchlist` が欠けていたら stale / malformed とみなして停止する。
-- automation run で参照する `high_beta_watchlist.json` の `as_of` が 3 calendar days を超えて古い場合は stale とみなし、継続レビューを続けず停止する。
-- 前回候補を引き継ぐ前提で、参照した candidate に `monitoring_valid_until` が欠けている場合も stale 契約違反として停止する。
-- `current_holdings.json` を保有除外に使う場合、`as_of` `holdings` が欠けていたり、各 holding に `ticker` `company` `shares` `average_cost` `bucket` `review_profile` が欠けていたりすれば malformed とみなして停止する。
-- `current_holdings.json` は watchlist と同じ当日性を要求しない。`as_of` が古いだけなら warning に留め、pending fill や約定未確定の疑いがある場合だけ停止する。
-- stale を検出した場合は fresh screening に勝手に切り替えない。`どの file のどの date が古いか` を明記して停止する。
+- この skill は `auto1b` 相当の watchlist producer として扱う
+- `high_beta_watchlist.json` は `as_of` `review_mode` `watchlist` が必須
+- `reserve_watchlist` は任意だが、使う場合は `status=reserve` で分離し、`watchlist` と混在させない
+- automation run では `as_of` が 3 calendar days を超えたら stale とみなして停止する
+- candidate に `monitoring_valid_until` が欠けていたら stale 契約違反として停止する
+- `current_holdings.json` を保有除外に使う場合、`holdings[].ticker` を正本に除外する
 
 ## state 出力契約
 
-- 後続へ渡す最小項目は `ticker` `company` `bucket=high_beta` `decision_profile=high_beta` `thesis_type=breakout|pullback|theme_momentum` `selection_reason` `catalyst` `event_risk` `invalidation_hint` `monitoring_valid_until` `priority` `status=watch`。
-- 追記互換で `liquidity_tier` `slippage_risk` `theme_cluster` `event_freshness` `crowding_risk` `entry_style_hint` を持たせてよい。
-- `catalyst` は単なる好材料有無ではなく、資金流入継続の仮説を短く残す。
-- `invalidation_hint` は `出来高失速` `高値更新失敗` `支持割れ` など、翌日 review で真っ先に潰す条件を書く。
-- `monitoring_valid_until` は通常 1〜3 営業日程度の鮮度管理に使う。
-- `liquidity_tier` は実際の size を入れられるかの粗い tier を残す。
-- `slippage_risk` は `low` `medium` `high` 程度でよい。
-- `theme_cluster` は `AI半導体` `防衛` `量子` のように、同テーマ集中の把握に使う。
-- `event_freshness` は `fresh` `aging` `stale` 程度でよい。
-- `crowding_risk` は同テーマの過密、連続急騰、寄り付き偏重を短く残す。
-- `entry_style_hint` は `breakout_only` `pullback_only` `avoid_open` のように、執行補助に使う。
+- 最小項目:
+  - `ticker`
+  - `company`
+  - `bucket=high_beta`
+  - `decision_profile=high_beta`
+  - `thesis_type=breakout|pullback|theme_momentum`
+  - `selection_reason`
+  - `catalyst`
+  - `event_risk`
+  - `invalidation_hint`
+  - `monitoring_valid_until`
+  - `priority`
+  - `status=watch`
+- `reserve_watchlist` の最小項目:
+  - `ticker`
+  - `company`
+  - `bucket=high_beta`
+  - `decision_profile=high_beta`
+  - `reserve_reason`
+  - `promotion_triggers`
+  - `invalidation_hint`
+  - `monitoring_valid_until`
+  - `priority`
+  - `status=reserve`
+- 追記互換:
+  - `liquidity_tier`
+  - `slippage_risk`
+  - `theme_cluster`
+  - `event_freshness`
+  - `crowding_risk`
+  - `entry_style_hint`
 
 ## 入力解釈
 
-- 入力は通常、日本株全体からの短期順張り候補抽出とみなす。
-- ユーザーがテーマ、業種、時価総額帯、市場区分を指定した場合は、その範囲に絞る。
-- 前回監視銘柄が渡された場合は、継続レビューとして `継続` `除外` `保留` `新規追加` を判定する。
-- ユーザー指定がなければ、監視候補は `5〜10社` に圧縮する。
-- 決算直前、重要イベント直前、急騰直後の銘柄は、採用しても注意度を明記する。
-- 確定保有中の銘柄は新規候補に含めず、買い増し可否や防衛判断は `stock-investment-position-review` に委ねる。
+- 指定がなければ日本株全体を対象にする
+- 前回 watchlist が渡された場合は `継続 / 除外 / 保留 / 新規追加` を判定する
+- 監視候補は既定で `5〜10社` に圧縮する
+- `reserve_watchlist` を使う場合、既定で `15社以内` に圧縮する
+- 確定保有中の銘柄は新規候補に含めない
 
 ## 実行モード
 
-### 1. 初回抽出モード
+### 初回抽出
 
-- 前回の監視銘柄が渡されていない場合に使う。
-- 値上がり率、出来高急増、直近高値更新、テーマ性から候補を広く拾う。
-- 最後に `5〜10社` の短期監視候補へ圧縮する。
+- 値上がり率、出来高急増、高値接近、テーマ性から広く拾う
+- 最後に短期監視 `5〜10社` へ圧縮する
+- `70〜74点` の惜しい候補は、条件を満たす場合だけ `reserve_watchlist` へ分離してよい
 
-### 2. 継続レビュー モード
+### 継続レビュー
 
-- 前回の監視銘柄が渡されている場合に使う。
-- 前回銘柄を `継続` `除外` `保留` に分類する。
-- 継続理由が弱くなった枠だけ、新規候補で補う。
-
-## tape / flow quality
-
-- 値上がり率だけでは採用しない。高値接近時の出来高維持、押し目時の売り圧、反発時の再加速を分けて見る。
-- 同じテーマに複数銘柄がある場合、先導株と二軍銘柄を分ける。
-- ギャップアップ後に売買代金が細る銘柄は、材料が良くても `crowding_risk` を上げる。
-
-## slippage / board risk
-
-- board data を完全に取得できない場合でも、売買代金と出来高継続性から大まかな `slippage_risk` を付ける。
-- 板が薄く寄り付きだけで値が飛ぶ銘柄は `entry_style_hint=avoid_open` を検討する。
-- 想定 size で入りにくい銘柄は、スコアが高くても保留以下へ落としてよい。
-
-## event freshness
-
-- 材料は `発表直後` `継続確認済み` `連想のみ` を分けて扱う。
-- TDnet や会社IRで一次確認できたものを優先する。
-- 数日経過し、価格だけ残って材料の鮮度が落ちたものは `event_freshness=aging` か `stale` にする。
+- 前回 watchlist を先に `継続 / 除外 / 保留` へ分類する
+- `reserve_watchlist` があれば `昇格 / 継続reserve / 失効` も判定する
+- 継続理由が弱くなった枠だけ新規候補で補う
 
 ## 手順
 
-1. 実行モードを確定する。
-2. 対象範囲を確定する。
-   - 指定がなければ日本株全体を対象にする。
-   - テーマ指定があれば、テーマ関連銘柄を優先する。
-3. 一次スクリーニングを行う。
-   - 株探などで `値上がり率` `出来高急増` `ストップ高` `材料ニュース` `決算速報` を確認する。
-   - TradingView などで `高値接近/更新` `出来高` `相対強度` `ATR` を確認する。
-4. `current_holdings.json` を参照して確定保有銘柄を除外する。
-   - state file 検証と除外判定は `ctx_execute_file` で行い、ticker ベースの除外結果だけを使う。
-   - 除外判定は企業名ではなく `ticker` を正本にする。
-   - pending fill や約定未確定注文は保有確定として扱わない。
-   - 除外した銘柄は、後で `既存保有のため対象外` として出力できるように控える。
-5. 材料確認を行う。
-   - TDnet、会社IR、ニュースで材料の種類と継続性を確認する。
-   - 上方修正、自社株買い、大型受注、政策テーマ、セクター物色は加点する。
-6. リスク確認を行う。
-   - 出来高失速、急騰しすぎ、決算直前、増資懸念、赤字継続、低流動性を確認する。
-7. flow と execution の確認を行う。
-   - 同テーマ内での先導株か、板と売買代金が想定売買に耐えるか、寄り付き偏重でないかを見る。
-   - `liquidity_tier` `slippage_risk` `crowding_risk` `entry_style_hint` を付ける。
-8. 候補をスコアリングする。
-   - `モメンタム` `出来高` `ボラティリティ` `材料継続性` `流動性` `リスク` を分けて見る。
-   - 配点と採用基準は [references/criteria.md](references/criteria.md) の `スコアリング` を使う。
-9. 監視候補へ圧縮する。
-   - 継続レビュー時の stale 判定、前回銘柄の継続可否、候補圧縮の中間集計は `ctx_execute` / `ctx_execute_file` で機械化してよい。
-   - 初回抽出では `5〜10社` にする。
-   - 継続レビューでは、前回銘柄の継続可否を先に判定してから差し替える。
-10. 出力を整える。
-   - 候補ごとに、採用理由、高リスク理由、監視条件、撤退目安を出す。
-   - `current_holdings.json` に基づいて除外した銘柄があれば、`既存保有のため対象外` として明示する。
-   - automation 連携を意識する場合は、各候補に `decision_profile=high_beta` `catalyst` `invalidation_hint` `monitoring_valid_until` を付ける。
-   - 最後に、企業名だけをカンマ区切りで1行にする。
-
-## 評価ルール
-
-- `出来高急増` は最重要条件として扱う。
-- `直近高値接近/更新` または `明確な上昇トレンド` を重視する。
-- 財務安全性は足切りに使うが、安定大型株ほど厳しく見ない。
-- 赤字企業や低自己資本でも候補に残してよいが、継続企業注記、増資・希薄化懸念、低流動性、材料未確認がある場合は除外を優先する。
-- 急騰後に出来高が失速している銘柄は優先度を下げる。
-- テーマ性は、単発ニュースではなく市場内で資金が継続しているかを見る。
-- 材料の一次確認は TDnet または会社IRを優先する。
-- 確認できない項目は採用理由に使わない。
-- 迷う場合は、採用ではなく `保留` にする。
-- 出力ラベルは screening 段階では `watch` を正とし、執行判断の代わりに使わない。
-
-## データソースの優先順
-
-1. 株探などの値上がり率、出来高急増、材料ニュース、決算速報
-2. TradingView などのチャート、出来高、相対強度、ATR
-3. TDnet、会社IR、決算資料
-4. みんかぶ、Yahoo!ファイナンスなどの補助データ
-
-単一サイトだけで決めず、価格・出来高・材料・流動性を分けて確認する。
+1. 実行モードと対象範囲を確定する。
+2. `current_holdings.json` を検証し、確定保有銘柄を ticker ベースで除外する。
+3. 価格位置、出来高、相対強度、材料継続性、流動性を確認する。
+4. `liquidity_tier` `slippage_risk` `crowding_risk` `entry_style_hint` を付ける。
+5. [references/criteria.md](references/criteria.md) の配点で候補を評価する。
+6. `75点以上` は `watchlist`、`70〜74点` で出来高・価格位置がどちらも 0 点でないものは `reserve_watchlist` 候補として分離する。
+7. 初回抽出なら `watchlist=5〜10社`、`reserve_watchlist<=15社`、継続レビューなら残留候補を優先して圧縮する。
+8. 候補ごとに採用理由、高リスク理由、監視条件、撤退目安を整える。
 
 ## 出力形式
 
-### 初回抽出モード
-
-```md
-対象範囲:
-抽出基準:
-
-短期監視候補:
-| 企業 | 証券コード | スコア | 採用理由 | 高リスク理由 | 監視条件 | 撤退目安 |
-| --- | --- | --- | --- | --- | --- | --- |
-
-screening 対象外:
-| 企業 | 証券コード | 理由 |
-| --- | --- | --- |
-
-保留候補:
-| 企業 | 証券コード | 保留理由 | 再確認ポイント |
-| --- | --- | --- | --- |
-
-除外ルール:
-
-- ...
-
-次に見るべき項目:
-
-- ...
-
-短期監視銘柄名:
-企業A, 企業B, 企業C
-
-state 出力:
-| 企業 | 証券コード | bucket | decision_profile | thesis_type | selection_reason | catalyst | event_risk | invalidation_hint | monitoring_valid_until | liquidity_tier | slippage_risk | theme_cluster | event_freshness | crowding_risk | entry_style_hint | priority | status |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-```
-
-### 継続レビュー モード
-
-```md
-対象範囲:
-前回選定日:
-抽出基準:
-
-前回監視銘柄レビュー:
-| 企業 | 証券コード | 判定 | 理由 | 対応 |
-| --- | --- | --- | --- | --- |
-
-screening 対象外:
-| 企業 | 証券コード | 理由 |
-| --- | --- | --- |
-
-新規追加候補:
-| 企業 | 証券コード | 追加理由 | 高リスク理由 | 監視条件 |
-| --- | --- | --- | --- | --- |
-
-今回の短期監視:
-| 企業 | 証券コード | スコア | 採用理由 | 高リスク理由 | 監視条件 | 撤退目安 |
-| --- | --- | --- | --- | --- | --- | --- |
-
-除外ルール:
-
-- ...
-
-次に見るべき項目:
-
-- ...
-
-短期監視銘柄名:
-企業A, 企業B, 企業C
-
-state 出力:
-| 企業 | 証券コード | bucket | decision_profile | thesis_type | selection_reason | catalyst | event_risk | invalidation_hint | monitoring_valid_until | liquidity_tier | slippage_risk | theme_cluster | event_freshness | crowding_risk | entry_style_hint | priority | status |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-```
+- 既定は `compact`
+- `compact`:
+  - `対象範囲`
+  - `短期監視候補`
+  - `reserve候補` の件数と代表理由
+  - `保留候補` の件数と代表理由
+  - `screening 対象外` の件数と代表理由
+  - `次に見るべき項目`
+  - `短期監視銘柄名`
+- `full`:
+  - 候補表、除外表、保留表、state 出力表を出してよい
+  - 長い state 行は必要時だけ再掲し、既定では JSON 正本を優先する
 
 ## 注意
 
-- これは高リスク高リターン候補の抽出であり、安定投資向けではない。
-- 候補には急落リスク、ギャップダウン、材料剥落、流動性低下のリスクがある。
-- データが古い、欠落している、サイト間で差異がある場合は明記する。
+- high_beta は高リスク前提で扱う
+- 急落、ギャップダウン、材料剥落、流動性低下のリスクを必ず併記する

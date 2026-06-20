@@ -1,4 +1,4 @@
 interface:
   display_name: "日本株ポートフォリオ配分ゲート"
   short_description: "日本株 automation の採用数、偏り、heat を整理する"
-  default_prompt: "Use $portfolio-risk-allocator to decide whether new Japanese equity candidates should be adopted, deferred, or blocked at the portfolio level, and stop if any referenced decision, holdings, paper, or rules file is stale or malformed."
+  default_prompt: "Use $portfolio-risk-allocator to decide whether new Japanese equity candidates should be adopted, deferred, or blocked at the portfolio level, keep context-mode first and compact output by default, and stop if any referenced decision, holdings, paper, or rules file is stale or malformed."

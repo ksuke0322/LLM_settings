@@ -1,4 +1,4 @@
 interface:
   display_name: "日本株保有ポジションレビュー"
   short_description: "保有中の日本株を短期の継続・利確・撤退目線でレビュー"
-  default_prompt: "Use $stock-investment-position-review to review my held Japanese stocks with share count and average cost, and stop if any referenced holdings or rules file is stale or malformed."
+  default_prompt: "Use $stock-investment-position-review to review my held Japanese stocks with share count and average cost, keep context-mode first and compact output by default, and stop if any referenced holdings or rules file is stale or malformed."

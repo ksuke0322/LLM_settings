@@ -1,18 +1,19 @@
 ---
 name: portfolio-risk-allocator
-description: "日本株の watchlist、decision、holdings review の結果を受けて、同時保有数、テーマ集中、bucket 偏り、日次の新規採用数を整理し、最終の採用可否と配分警告を返す。個別銘柄の分析を置き換えるのではなく、全体の資本配分ゲートとして使う。"
+description: "watchlist、decision、holdings review を受けて、portfolio 全体の採用可否と配分警告を返すときに使う。"
 ---
 
 # Portfolio Risk Allocator
 
-watchlist、decision、holdings review の結果を受けて、ポートフォリオ全体の過熱や偏りを止めるための最終ゲートを返す。個別銘柄の良し悪しより、「今どれだけ新規に入れてよいか」「同テーマが過密ではないか」を優先して見る。
+個別銘柄の良し悪しではなく、portfolio 全体の過熱、theme 集中、bucket 偏り、新規採用余地を止める最終ゲートを返す。
+
+共通運用は [../stock-shared/references/common-operating-rules.md](../stock-shared/references/common-operating-rules.md) を前提にする。判定原則は [references/rules.md](references/rules.md) を使う。
 
 ## 基本方針
 
-- 個別銘柄 skill の判定を上書きするのではなく、最終採用制約を返す。
-- `portfolio_rules.json` を正本にする。
-- `large_cap` と `high_beta` の枠、同テーマの重なり、日次新規採用数を管理する。
-- sizing の精密計算までは行わず、tier と警告に留める。
+- 個別銘柄 skill の判定を置き換えず、最終採用制約だけを返す
+- `portfolio_rules.json` を正本にする
+- `large_cap` と `high_beta` の枠、theme overlap、日次新規採用数を優先管理する
 
 ## 入力
 
@@ -21,22 +22,16 @@ watchlist、decision、holdings review の結果を受けて、ポートフォ�
 - `current_holdings.json`
 - `portfolio_rules.json`
 - 必要なら `paper_high_beta_positions.json` `paper_high_beta_history.json` `paper_high_beta_metrics.json`
-- sidecar を使う運用では `paper_high_beta_allocator_snapshot.json`
-- 必要なら `stock-investment-position-review` の最新要約
+- sidecar 運用では `paper_high_beta_allocator_snapshot.json`
 
-## context-mode 運用
+## lane 固有 freshness / schema
 
-- 複数 JSON の整合確認は `ctx_execute` または `ctx_execute_file` でまとめて行い、raw file 全文は会話へ流さない。
-- `as_of` 整合、欠落 field、theme overlap、bucket exposure、新規採用余地は sandbox で計算し、最終ゲートだけを返す。
-- `paper_high_beta_*` を複数読む場合も、件数と警告だけを返し、全ポジションの生データは返さない。
-
-## freshness gate
-
-- `high_beta_decisions.json` は `as_of` と `decisions` が必須。automation run では `as_of` が当日でなければ stale とみなして停止する。
-- `high_beta_decisions.json` の active candidate は `ticker` `company` `status` `monitoring_valid_until` を持つこと。`status=watch|entry_ready` の候補に 1 件でも `monitoring_valid_until < today` があれば stale とみなして停止する。
-- `portfolio_rules.json` は `max_positions_large_cap` `max_positions_high_beta` `max_new_entries_per_day_high_beta` `max_theme_overlap` `earnings_blackout_days` `max_risk_per_trade_pct` が揃っていなければ停止する。
-- `current_holdings.json` や `paper_high_beta_*.json` を参照する場合は `as_of` が必須。複数 file を同時に使うなら `as_of` が相互に矛盾していないことを確認し、明らかに古い file があれば停止する。
-- stale を検出した場合は `defer` に丸めて続行しない。`どの file のどの date / field が stale か` を明記して停止する。
+- `high_beta_decisions.json` は `as_of` `decisions` が必須
+- automation run では `high_beta_decisions.json` の `as_of` が当日でなければ停止する
+- active candidate は `ticker` `company` `status` `monitoring_valid_until` を持つこと
+- `status=watch|entry_ready` の candidate に `monitoring_valid_until < today` があれば停止する
+- `portfolio_rules.json` は `max_positions_large_cap` `max_positions_high_beta` `max_new_entries_per_day_high_beta` `max_theme_overlap` `earnings_blackout_days` `max_risk_per_trade_pct` が必須
+- `current_holdings.json` や `paper_high_beta_*.json` を同時参照する場合は `as_of` 整合を確認する
 
 ## 出力契約
 
@@ -51,31 +46,21 @@ watchlist、decision、holdings review の結果を受けて、ポートフォ�
 
 ## 手順
 
-1. current holdings と paper / decision の bucket を分けて読む。
-   - 可能なら `ctx_execute` で複数 file をまとめて読み、bucket 別件数と stale 判定を一括で出す。
+1. holdings と paper / decision を bucket 別に読む。
 2. `portfolio_rules.json` の上限を確認する。
-3. 同テーマ重複、同 bucket 過密、決算接近、high-beta 過多を確認する。
+3. theme overlap、bucket 過密、決算接近、high_beta 過多を確認する。
 4. 新規採用余地を `max_new_entries_today` で整理する。
-5. 各候補を `adopt` `defer` `block` のどれかへ寄せる。
+5. 各候補を `adopt` `defer` `block` へ寄せる。
 6. `suggested_size_tier` と `portfolio_heat` を返す。
 
 ## 判断ルール
 
-- `entry_ready` でも、theme overlap や bucket 上限で `defer` や `block` にしてよい。
-- high-beta は同時保有数と同日新規採用数の制限を強く見る。
-- 大きな含み益ポジションが多く、地合い悪化なら `portfolio_heat` を高めに出す。
-- 判断が割れる場合は `defer` を優先する。
+- `entry_ready` でも portfolio 制約で `defer` `block` にしてよい
+- high_beta は同時保有数と同日新規採用数の制限を強く見る
+- 判断が割れる場合は `defer` を優先する
 
 ## 出力形式
 
-```md
-portfolio allocation:
-- adopt: 6779.T
-- defer: 4047.T
-- block: 同テーマ3本目
-- max_new_entries_today: 1
-- theme_overlap_warning: AI半導体に偏り
-- bucket_exposure_warning: high_beta が上限付近
-- suggested_size_tier: half
-- portfolio_heat: elevated
-```
+- 既定は `compact`
+- `compact` は最終ゲート、主要 warning、size tier、heat を短く返す
+- `full` は bucket 別件数や theme overlap 明細を追加してよい
