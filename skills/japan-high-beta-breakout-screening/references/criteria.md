@@ -106,12 +106,17 @@
 
 ## 監視候補への圧縮
 
-- 初回抽出では `5〜10社` を基本にする
+- 毎回の確認対象は原則 `30〜40銘柄` とし、`30件` を最低必要件数にする
+- `30件未満` で run を終える場合は `incomplete` として扱い、watch/reserve の採否判定と state 更新は継続したうえで、`state_note` に `screened_count` と `minimum_required_count=30`、`review_summary` に `screening_incomplete=true` と `screening_shortfall_reason` を残す
+- `watchlist` の目安は `3〜5社`、`reserve_watchlist` の目安は `5〜8社` とする
 - `reserve_watchlist` を使う場合は `15社以内` を上限にする
-- 同じテーマに偏りすぎる場合は、最も強い銘柄だけを残す
+- `active themes` は各テーマ `4〜6銘柄`、`exploratory themes` は合計 `8〜12銘柄`、`theme universe 外の補助探索` は `2〜4銘柄` を目安に確認する
+- 同じテーマに偏りすぎる場合でも、母集団確認の段階では複数確認してよい。最終採用で偏りと crowding を評価する
 - 値幅が出そうでも、撤退条件が作れない銘柄は保留にする
 - 安定性よりも、今見る意味がある銘柄を優先する
 - スコアが同程度なら、出来高・価格位置・撤退条件の明確さ・slippage を優先する
+- 目標件数に届かない場合でも、watch/reserve の採用基準は緩めない
+- `previous watchlist / reserve_watchlist` → `active themes` → `exploratory themes` → `theme universe 外の補助探索` の順を完了しても `30件` に届かない場合に限り、その日の run を `incomplete` として close してよい
 
 ## 継続レビュー
 

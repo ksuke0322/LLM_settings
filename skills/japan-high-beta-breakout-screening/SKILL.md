@@ -64,13 +64,19 @@ description: "日本株の短期 high_beta 候補を抽出し、high_beta watchl
   - `event_freshness`
   - `crowding_risk`
   - `entry_style_hint`
+- top-level incomplete 表現:
+  - `state_note` には毎回 `screened_count` と `minimum_required_count=30` が読み取れる文面を残す
+  - `review_summary` には `screening_incomplete=true|false` と `screening_shortfall_reason` を残す
 
 ## 入力解釈
 
 - 指定がなければ日本株全体を対象にする
 - 前回 watchlist が渡された場合は `継続 / 除外 / 保留 / 新規追加` を判定する
-- 監視候補は既定で `5〜10社` に圧縮する
-- `reserve_watchlist` を使う場合、既定で `15社以内` に圧縮する
+- 毎回の確認対象は原則 `30〜40銘柄` とし、`30件` を最低必要件数にする
+- `30件未満` で run を終える場合、その run は `incomplete` として扱う
+- `incomplete` でも watch/reserve の採否判定と state 更新は行い、`state_note` と `review_summary` に件数不足を明記する
+- 出力目標は既定で `watchlist=3〜5社`、`reserve_watchlist=5〜8社` とする
+- `reserve_watchlist` を使う場合、上限は既定で `15社以内` に圧縮する
 - 確定保有中の銘柄は新規候補に含めない
 
 ## 実行モード
@@ -78,7 +84,7 @@ description: "日本株の短期 high_beta 候補を抽出し、high_beta watchl
 ### 初回抽出
 
 - 値上がり率、出来高急増、高値接近、テーマ性から広く拾う
-- 最後に短期監視 `5〜10社` へ圧縮する
+- 最後に `watchlist=3〜5社`、`reserve_watchlist=5〜8社` を目安に圧縮する
 - `70〜74点` の惜しい候補は、条件を満たす場合だけ `reserve_watchlist` へ分離してよい
 
 ### 継続レビュー
@@ -86,23 +92,29 @@ description: "日本株の短期 high_beta 候補を抽出し、high_beta watchl
 - 前回 watchlist を先に `継続 / 除外 / 保留` へ分類する
 - `reserve_watchlist` があれば `昇格 / 継続reserve / 失効` も判定する
 - 継続理由が弱くなった枠だけ新規候補で補う
+- 新規候補の探索順は `previous watchlist / reserve_watchlist の再判定` → `active themes` → `exploratory themes` → `theme universe 外の補助探索` とする
+- `active themes` は各テーマ `4〜6銘柄`、`exploratory themes` は合計 `8〜12銘柄`、`theme universe 外の補助探索` は `2〜4銘柄` を目安に確認する
+- 上の探索順を守ったうえで、原則 `screened_count >= 30` に届くまで追加探索を継続する
+- `theme universe 外の補助探索` まで完了しても `30件未満` の場合に限り、その日の run を `incomplete` として close してよい
 
 ## 手順
 
 1. 実行モードと対象範囲を確定する。
 2. `current_holdings.json` を検証し、確定保有銘柄を ticker ベースで除外する。
-3. 価格位置、出来高、相対強度、材料継続性、流動性を確認する。
-4. `liquidity_tier` `slippage_risk` `crowding_risk` `entry_style_hint` を付ける。
-5. [references/criteria.md](references/criteria.md) の配点で候補を評価する。
-6. `75点以上` は `watchlist`、`70〜74点` で出来高・価格位置がどちらも 0 点でないものは `reserve_watchlist` 候補として分離する。
-7. 初回抽出なら `watchlist=5〜10社`、`reserve_watchlist<=15社`、継続レビューなら残留候補を優先して圧縮する。
-8. 候補ごとに採用理由、高リスク理由、監視条件、撤退目安を整える。
+3. `previous watchlist / reserve_watchlist` を先に再判定し、不足分を `active themes` → `exploratory themes` → `theme universe 外の補助探索` の順で埋める。
+4. 価格位置、出来高、相対強度、材料継続性、流動性を確認し、`screened_count` を集計する。
+5. `liquidity_tier` `slippage_risk` `crowding_risk` `entry_style_hint` を付ける。
+6. [references/criteria.md](references/criteria.md) の配点で候補を評価する。
+7. `75点以上` は `watchlist`、`70〜74点` で出来高・価格位置がどちらも 0 点でないものは `reserve_watchlist` 候補として分離する。
+8. 初回抽出でも継続レビューでも、確認対象は原則 `30〜40銘柄` としつつ、`watchlist=3〜5社`、`reserve_watchlist=5〜8社`、`reserve_watchlist<=15社` を目安に圧縮する。
+9. `screened_count < 30` の場合でも基準未達銘柄を無理に採用せず、run を `incomplete` として `review_summary.screening_incomplete=true`、`review_summary.screening_shortfall_reason`、`state_note` の件数不足説明を必ず残す。
+10. 候補ごとに採用理由、高リスク理由、監視条件、撤退目安を整える。
 
 ## 出力形式
 
 - 既定は `compact`
 - `compact`:
-  - `対象範囲`
+  - `対象範囲` (`確認件数 N/30` を必ず含める)
   - `短期監視候補`
   - `reserve候補` の件数と代表理由
   - `保留候補` の件数と代表理由

@@ -38,9 +38,17 @@ review_profile の既定値=auto
 - この skill は `auto3` 相当の holdings review consumer
 - `current_holdings.json` は `as_of` `holdings` が必須
 - 各 holding は `ticker` `company` `shares` `average_cost` `bucket` `review_profile` が必須
+- execution-aware field として `last_user_action` `last_action_date` `last_review_decision` `decision_reason_note` を持てる
+- `last_user_action` は `kept` `trimmed` `exited` `ignored` に正規化する
+- `last_review_decision` は `hold` `trim` `defend` `exit` に正規化する
 - `portfolio_rules.json` は `max_positions_large_cap` `max_positions_high_beta` `max_new_entries_per_day_high_beta` `max_theme_overlap` `earnings_blackout_days` `max_risk_per_trade_pct` が必須
 - watchlist state を補助参照に使うなら stale file を根拠補強に使わない
 - `current_holdings.json` は watchlist ほど当日性を要求しないが、pending fill や必須 field 欠落は停止する
+- `auto3` では same-day 必須でなくても `as_of` と `age_days` を report / sidecar へ露出する
+- `thesis` `review_action` `status` または execution-aware field が欠ける holding は `execution_trace_incomplete` として扱う
+- 連続 `exit` holding には `未対応` `対応済み` `保有継続理由あり` のいずれか 1 行 trace を残す
+- `exit -> defend` など前日から top-level が変わった reversal では `decision_reason_note` に切替理由を 1 行残す
+- earnings blackout 判定は `next_earnings_date` を正本 field として参照し、`earnings_date` 欠落を未検証理由に使わない
 
 ## review_profile
 
@@ -98,6 +106,7 @@ review_profile の既定値=auto
 - `compact`:
   - 単一銘柄は保有判断、追加投資判断、損益率、利確 / 防衛 / 追加条件、リスク警告を返す
   - 複数銘柄は各銘柄 1 行サマリーと `保有判断サマリー` `追加投資サマリー` `取得失敗` を返す
+  - summary で銘柄を列挙するときは `ticker` ではなく `company` を優先し、必要な場合だけ `company (ticker)` を使う
 - `full`:
   - [references/output-contract.md](references/output-contract.md) の 2 表構成を使う
 
@@ -109,3 +118,4 @@ review_profile の既定値=auto
 - `target1` 接近や過熱が強く、含み益が大きい場合は `trim` を優先してよい
 - `high_beta` では `gapPercent` `volumeRatioVsMa20` `breakoutCandidate` `timeStopDays` を通常より重く扱う
 - `large_cap` では time stop 単独より trend 崩れや invalidation を重く見る
+- paper lane で使う場合も review の根拠と hold / sell 判定を sidecar から追えるように残す

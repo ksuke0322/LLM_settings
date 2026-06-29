@@ -24,6 +24,38 @@ stock 系 skill 共通の運用ルール。各 skill はこの文書を前提に
 - stale を見つけても勝手に fresh rerun や別 lane へ切り替えない
 - `current_holdings.json` は watchlist と同じ当日性を原則要求しないが、必須 field 欠落や pending fill 疑いは停止する
 
+## Automation Prompt Boundary
+
+- automation prompt は run-specific wrapper として扱う
+- prompt に残してよいのは、承認不要の指示、実行 mode、canonical input / output / sidecar path、補助 state / 補助 skill の参照、publish 実行、今回だけの override に限定する
+- prompt で重複定義しないもの:
+  - 閾値、探索順、件数目安
+  - stale gate と malformed stop の詳細
+  - 出力 field の意味
+  - sidecar の必須列
+  - trace / incomplete / allocator の恒久ルール
+- これらの恒久ルールは shared / skill / reference を正本にする
+
+## Producer Continuation Contract
+
+- `continuation_review` では前回 state を先に再判定し、その後の補充探索は lane 固有 skill のルールに従う
+- producer prompt は helper state や overlay skill を指定してよいが、score、priority、圧縮、採否基準は lane skill を正本にする
+- `market-regime-assessment` は producer では overlay としてだけ使い、単独で除外判断をしない
+
+## Consumer / Sidecar Contract
+
+- required sidecar path は prompt が指定してよい
+- sidecar に何を残すか、stale / malformed / incomplete をどう表現するかは shared / skill / reference を正本にする
+- state 更新を伴う lane で同日 sidecar が必須な場合、その incomplete 判定は skill 側の契約に従う
+- prompt は sidecar の path だけを渡し、列定義や failure semantics は再記述しない
+
+## Paper Simulation Contract
+
+- paper lane は `current_holdings.json` と分離し、paper state だけを更新対象にする
+- stale decision day では新規買いを止め、既存 paper 保有の hold / sell review 継続可否は lane skill の契約に従う
+- stale guard や sell-only / hold-only の結果は sidecar へ残す
+- 初期化時は canonical な空構造だけを作り、サンプル約定や例示データは作らない
+
 ## Write / Publish Policy
 
 - `/Users/sawairikeisuke/Documents/stock-analysis` 配下の state / script / output を更新した場合は差分確認を行う

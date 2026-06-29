@@ -13,6 +13,7 @@
   - `保有判断サマリー`
   - `追加投資サマリー`
   - `取得失敗`
+  - summary 内の銘柄列挙は `対象企業` 名を既定とし、必要な場合だけ `対象企業 (銘柄コード)` を使う
 
 ## Full
 
@@ -34,3 +35,7 @@
 
 - 長い保有継続理由、R倍数文脈、drawdown 補足は state / sidecar を優先する
 - `compact` では行動判断に必要な要約だけを返す
+- `auto3` では `as_of` `age_days` `execution_trace_incomplete` を sidecar / report から再確認できるように残す
+- 連続 `exit` 銘柄には `未対応` `対応済み` `保有継続理由あり` の 1 行 trace を残す
+- `current_holdings.json` では各 holding の `last_user_action` `last_action_date` `last_review_decision` `decision_reason_note` を execution-aware field として優先する
+- reversal がある銘柄は sidecar でも `reversal` と切替理由を 1 行で残し、state の `decision_reason_note` と対応づける

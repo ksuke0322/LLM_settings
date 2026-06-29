@@ -32,6 +32,7 @@ description: "watchlist、decision、holdings review を受けて、portfolio �
 - `status=watch|entry_ready` の candidate に `monitoring_valid_until < today` があれば停止する
 - `portfolio_rules.json` は `max_positions_large_cap` `max_positions_high_beta` `max_new_entries_per_day_high_beta` `max_theme_overlap` `earnings_blackout_days` `max_risk_per_trade_pct` が必須
 - `current_holdings.json` や `paper_high_beta_*.json` を同時参照する場合は `as_of` 整合を確認する
+- auto-4 の paper lane では allocator 入力を `high_beta_decisions.json` `paper_high_beta_positions.json` `paper_high_beta_history.json` `portfolio_rules.json` に限定し、`current_holdings.json` は参照しない
 
 ## 出力契約
 
@@ -43,6 +44,17 @@ description: "watchlist、decision、holdings review を受けて、portfolio �
 - `bucket_exposure_warning`
 - `suggested_size_tier`
 - `portfolio_heat`
+- `available_slots`
+- `rules_source`
+- `adopted_count`
+- `rejected_count`
+
+## auto-4 paper lane contract
+
+- 新規買い候補は `status=entry_ready` を出発点にしてよい
+- ただし実際に採用候補として通すのは `auto4_buy_allowed=true` のものだけとする
+- allocator の最終結果は `adopt` `defer` `block` とし、auto-4 側は `adopt` だけを新規 paper 約定候補に使う
+- allocator snapshot には少なくとも `available_slots` `rules_source` `adopted_count` `rejected_count` を残す
 
 ## 手順
 

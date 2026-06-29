@@ -65,6 +65,8 @@ description: "東証33業種を基準に、日本株の large_cap 候補を洗�
 
 - 前回重点監視を先に `継続 / 除外 / 保留` へ分類する
 - 空いた枠だけ新規候補で補う
+- `market-regime-assessment` を使う場合も overlay として扱い、単独で除外判断をしない
+- `review_summary` `focus_names` `screening_excluded` が追える state / sidecar を残す
 
 ## 手順
 
@@ -75,6 +77,7 @@ description: "東証33業種を基準に、日本株の large_cap 候補を洗�
 5. 財務安全性、収益力、業界地位、regime 適合を確認する。
 6. 母集団を作り、重点監視 `10〜15社` へ圧縮する。
 7. 継続レビュー時は残留理由と差し替え理由を明示する。
+8. 今回の run で採用なしでも、見送った業種や候補が `review_summary` `focus_names` `screening_excluded` から追えるようにする。
 
 ## 出力形式
 
