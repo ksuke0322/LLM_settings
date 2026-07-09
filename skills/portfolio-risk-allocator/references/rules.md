@@ -8,6 +8,7 @@
 - `max_theme_overlap`
 - `earnings_blackout_days`
 - `max_risk_per_trade_pct`
+- `max_position_value_jpy_high_beta`
 
 ## Allocation Outputs
 

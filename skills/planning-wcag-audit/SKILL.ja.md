@@ -1,6 +1,6 @@
 ---
 name: planning-wcag-audit
-description: WCAG audit planning support based on WAIC test guidelines. Helps determine audit scope, page selection method, and generates audit plan documents.
+description: WAIC試験実施ガイドラインに基づき、特定サイトのWCAG監査範囲、対象ページ、試験環境、実施計画を策定する。組織全体の中長期改善計画には planning-a11y-improvement を使用する。
 argument-hint: Site URL or description (optional)
 allowed-tools: Read Grep Glob AskUserQuestion Write
 ---
@@ -66,7 +66,7 @@ WAICガイドラインに基づき、以下の方式から選定します。
 5. 重複チェック・統合
 6. 最終確認
 
-> **Note**: URL収集にPlaywrightを使用する場合は、追加でブラウザ操作ツール（browser_navigate, browser_snapshot, browser_run_code等）が必要です。
+> **Note**: URL収集には、利用可能なブラウザ操作機能、sitemap.xml、CMS一覧などを使用します。ブラウザ操作が利用できない場合は、ユーザーにURL一覧の提供を依頼します。
 
 **サンプル数の目安（基本: 約40ページ、半数以上が代表ページ）**
 
@@ -82,9 +82,11 @@ WAICガイドラインに基づき、以下の方式から選定します。
 
 **確認項目**
 - ブラウザ（主要ブラウザの対象範囲）
-- 支援技術（AT）
+- 支援技術（想定する使用環境 / アクセシビリティ・サポーテッドの前提）
 - デバイス（デスクトップ / モバイル）
 - 使用ツール（自動チェック、コントラスト等）
+
+> **Note**: 支援技術（スクリーンリーダー等）を用いた実機操作確認そのものは、各WCAG達成基準の適合判定に必須の手順ではありません。ただし、使用する達成方法が想定環境でアクセシビリティ・サポーテッドであるかは、必要に応じて技術的根拠として確認します。改善目的で行うAT検証は、このWCAG試験とは分けて別タスクとして計画してください。
 
 **質問例**
 ```
@@ -96,7 +98,7 @@ WAICガイドラインに基づき、以下の方式から選定します。
 
 ## Step 5: 監査計画書の生成
 
-`references/audit-plan-template.ja.md` のテンプレートに沿って計画書を作成し、`Write` ツールで保存します。
+`references/audit-plan-template.ja.md` のテンプレートに沿って計画書を作成し、ワークスペースへの書込みが可能ならMarkdownファイルとして保存します。
 
 **出力の要件**
 - 監査概要、試験方法、対象ページ一覧を明記

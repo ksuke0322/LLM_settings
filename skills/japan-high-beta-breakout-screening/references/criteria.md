@@ -37,10 +37,15 @@
 
 ### 判定基準
 
-- `採用`: 75点以上、かつ出来高・価格位置のどちらも0点ではない
-- `準採用`: 70〜74点、かつ出来高・価格位置のどちらも0点ではない
+- score は順位付け・説明補助として使い、watch / reserve を score だけで hard gate しない
+- `採用`: 通常は 75点以上を優先し、出来高・価格位置のどちらも0点ではない
+- `準採用`: 通常は 70〜74点を優先し、出来高・価格位置のどちらも0点ではない
 - `保留`: 60〜74点、または主要根拠の一部が未確認
 - `除外`: 59点以下、または除外候補に該当する
+- `aging` でも出来高と price action が維持されるものは watch候補へ残してよい
+- `crowding_risk=high` でも low-float chase でなければ即 reserve/除外にしない
+- 完全 reclaim 前でも、下値維持 + 出来高改善 + day2 以降の継続性が揃うなら watch候補に上げてよい
+- theme分散は soft guidance とし、同テーマが増えても hard gate にせず comment で理由を残す
 
 ### 準採用の扱い
 
@@ -106,8 +111,8 @@
 
 ## 監視候補への圧縮
 
-- 毎回の確認対象は原則 `30〜40銘柄` とし、`30件` を最低必要件数にする
-- `30件未満` で run を終える場合は `incomplete` として扱い、watch/reserve の採否判定と state 更新は継続したうえで、`state_note` に `screened_count` と `minimum_required_count=30`、`review_summary` に `screening_incomplete=true` と `screening_shortfall_reason` を残す
+- 毎回の確認対象は原則 `40〜50銘柄` とし、`40件` を最低必要件数にする
+- `40件未満` で run を終える場合は `incomplete` として扱い、watch/reserve の採否判定と state 更新は継続したうえで、`state_note` に `screened_count` と `minimum_required_count=40`、`review_summary` に `screening_incomplete=true` と `screening_shortfall_reason` を残す
 - `watchlist` の目安は `3〜5社`、`reserve_watchlist` の目安は `5〜8社` とする
 - `reserve_watchlist` を使う場合は `15社以内` を上限にする
 - `active themes` は各テーマ `4〜6銘柄`、`exploratory themes` は合計 `8〜12銘柄`、`theme universe 外の補助探索` は `2〜4銘柄` を目安に確認する
@@ -116,7 +121,7 @@
 - 安定性よりも、今見る意味がある銘柄を優先する
 - スコアが同程度なら、出来高・価格位置・撤退条件の明確さ・slippage を優先する
 - 目標件数に届かない場合でも、watch/reserve の採用基準は緩めない
-- `previous watchlist / reserve_watchlist` → `active themes` → `exploratory themes` → `theme universe 外の補助探索` の順を完了しても `30件` に届かない場合に限り、その日の run を `incomplete` として close してよい
+- `previous watchlist / reserve_watchlist` → `active themes` → `exploratory themes` → `theme universe 外の補助探索` の順を完了しても `40件` に届かない場合に限り、その日の run を `incomplete` として close してよい
 
 ## 継続レビュー
 

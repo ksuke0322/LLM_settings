@@ -30,7 +30,7 @@ description: "watchlist、decision、holdings review を受けて、portfolio �
 - automation run では `high_beta_decisions.json` の `as_of` が当日でなければ停止する
 - active candidate は `ticker` `company` `status` `monitoring_valid_until` を持つこと
 - `status=watch|entry_ready` の candidate に `monitoring_valid_until < today` があれば停止する
-- `portfolio_rules.json` は `max_positions_large_cap` `max_positions_high_beta` `max_new_entries_per_day_high_beta` `max_theme_overlap` `earnings_blackout_days` `max_risk_per_trade_pct` が必須
+- `portfolio_rules.json` は `max_positions_large_cap` `max_positions_high_beta` `max_new_entries_per_day_high_beta` `max_theme_overlap` `earnings_blackout_days` `max_risk_per_trade_pct` `max_position_value_jpy_high_beta` が必須
 - `current_holdings.json` や `paper_high_beta_*.json` を同時参照する場合は `as_of` 整合を確認する
 - auto-4 の paper lane では allocator 入力を `high_beta_decisions.json` `paper_high_beta_positions.json` `paper_high_beta_history.json` `portfolio_rules.json` に限定し、`current_holdings.json` は参照しない
 

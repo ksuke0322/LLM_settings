@@ -1,6 +1,6 @@
 ---
 name: auditing-wcag
-description: WCAG 2.2 AA conformance auditor. Systematically verifies success criteria through automated, interactive, and manual testing methods.
+description: Perform formal WCAG 2.2 A/AA conformance audits and assign Pass/Fail/NT/NA to every success criterion with evidence. Use reviewing-a11y instead for issue discovery and improvement feedback.
 argument-hint: URL or file path to audit
 allowed-tools: Read Grep Glob WebFetch Task mcp__playwright__browser_snapshot mcp__playwright__browser_navigate mcp__playwright__browser_click mcp__playwright__browser_type mcp__playwright__browser_press_key
 ---
@@ -29,7 +29,7 @@ You perform WCAG 2.2 AA conformance audits. Report Pass/Fail/NT/NA per success c
 ### 1. Input Acceptance
 - Accept a URL or local file path.
 - For multiple pages, confirm the list and entry points.
-- For local files, use `Read` to capture contents (runtime behavior cannot be executed).
+- For local files, use the available file-reading capability (runtime behavior cannot be executed).
 
 ### 2. Scope Contract
 Confirm and get agreement on:
@@ -41,7 +41,8 @@ Confirm and get agreement on:
 ### 3. Automated Checks
 - Use Playwright to navigate and capture the accessibility tree.
 - Apply `references/automated-checks.md`.
-- If Playwright is unavailable, use `WebFetch` for HTML-only checks and limit findings accordingly.
+- If browser interaction is unavailable, run the checks via the `a11y-audit` CLI (see "Automated Checks CLI" below).
+- If the CLI also cannot run, retrieve HTML with the available web capability and limit judgments accordingly.
 - Use `references/coverage-matrix.md` to ensure A/AA coverage.
 
 ### 4. Interactive Checks
@@ -75,28 +76,49 @@ Confirm and get agreement on:
 - `references/output-format.md`
 - `references/coverage-matrix.md`
 
-## Automated Test Scripts
+## Automated Checks CLI
 
-The `references/scripts/` directory contains Playwright-based test scripts for detailed automated checks. These scripts generate JSON results and annotated screenshots.
+Automated checks are run via the `a11y-audit` CLI included in the npm package [`@a11y-skills/audit`](https://www.npmjs.com/package/@a11y-skills/audit) (requires Node 18+; peer dependencies are fetched automatically by npm 7+).
 
-| Script | Criterion | Description |
-|---|---|---|
-| `axe-audit.ts` | Multiple | axe-core comprehensive check |
-| `reflow-check.ts` | 1.4.10 | Horizontal scroll at 320px |
-| `text-spacing-check.ts` | 1.4.12 | Text spacing override clipping |
-| `zoom-200-check.ts` | 1.4.4 | 200% zoom content loss |
-| `orientation-check.ts` | 1.3.4 | Orientation lock detection |
-| `autocomplete-audit.ts` | 1.3.5 | Missing/invalid autocomplete |
-| `time-limit-detector.ts` | 2.2.1 | Timer/meta refresh detection |
-| `auto-play-detection.ts` | 1.4.2, 2.2.2 | Auto-play content detection |
-| `focus-indicator-check.ts` | 2.4.7 | Focus indicator visibility |
-| `target-size-check.ts` | 2.5.5, 2.5.8 | Target size measurement |
-
-**Usage:**
+**Setup (first time only):**
 ```bash
-cd references/scripts
-npm install
-TEST_PAGE="https://example.com" npx playwright test <script-name>.ts
+npx playwright install chromium
 ```
 
-See `references/scripts/README.md` for detailed documentation.
+**Run all checks:**
+```bash
+npx -y @a11y-skills/audit --url "https://example.com"
+```
+
+**Run specific checks:**
+```bash
+npx -y @a11y-skills/audit --url "https://example.com" --checks axe-audit,focus-indicator-check
+```
+
+**With annotated screenshots (focus-indicator):**
+```bash
+npx -y @a11y-skills/audit --url "https://example.com" --checks focus-indicator-check --screenshot
+```
+
+**Custom output directory (default: `./a11y-audit-results`):**
+```bash
+npx -y @a11y-skills/audit --url "https://example.com" --output-dir ./results
+```
+
+**Exit codes:** `0` = no violations / `1` = violations found / `2` = runtime error
+
+| Check name | Criterion | Description |
+|---|---|---|
+| `axe-audit` | Multiple | axe-core comprehensive check |
+| `reflow-check` | 1.4.10 | Horizontal scroll at 320px |
+| `text-spacing-check` | 1.4.12 | Text spacing override clipping |
+| `zoom-200-check` | 1.4.4 | 200% zoom content loss |
+| `orientation-check` | 1.3.4 | Orientation lock detection |
+| `autocomplete-audit` | 1.3.5 | Missing/invalid autocomplete |
+| `time-limit-detector` | 2.2.1 | Timer/meta refresh detection |
+| `auto-play-detection` | 1.4.2, 2.2.2 | Auto-play content detection |
+| `focus-indicator-check` | 2.4.7 | Focus indicator visibility |
+| `target-size-check` | 2.5.5, 2.5.8 | Target size measurement |
+| `keyboard-trap-check` | 2.1.2 | Keyboard trap detection |
+
+See the [`@a11y-skills/audit` README](https://www.npmjs.com/package/@a11y-skills/audit) for detailed documentation.

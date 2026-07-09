@@ -67,7 +67,7 @@ ENDPOINT=/stock/{ticker}/analysis?range=recent&schema=trade-v2
 - `large_cap_watchlist.json` は `as_of` が当日を含む過去 7 日以内で、`ticker` `company` `bucket` `decision_profile` `thesis_type` `selection_reason` `event_risk` `priority` `status` が必須
 - `high_beta_watchlist.json` は `as_of` が当日で、`catalyst` `invalidation_hint` `monitoring_valid_until` が必須
 - `monitoring_valid_until < today` の high_beta candidate が 1 件でもあれば stale とみなして停止する
-- `portfolio_rules.json` は `max_new_entries_per_day_high_beta` `max_theme_overlap` `earnings_blackout_days` `max_positions_large_cap` `max_positions_high_beta` `max_risk_per_trade_pct` が必須
+- `portfolio_rules.json` は `max_new_entries_per_day_high_beta` `max_theme_overlap` `earnings_blackout_days` `max_positions_large_cap` `max_positions_high_beta` `max_risk_per_trade_pct` `max_position_value_jpy_high_beta` が必須
 - `auto2b` では `current_holdings.json` を occupancy gate に使わない
 
 ## automation / sidecar contract
@@ -98,9 +98,11 @@ ENDPOINT=/stock/{ticker}/analysis?range=recent&schema=trade-v2
 - high_beta decision consumer では automation 向け補助項目として次も持てる
   - `auto4_buy_allowed`
   - `auto4_block_reason`
+  - `auto4_execution_caution`
 - `entry_ready` は「条件付きで執行検討に進める」の意味とする
 - `auto4_buy_allowed` は「同日の auto-4 paper 約定を許可するか」を表す automation 向け gate とする
 - `auto4_block_reason` は `avoid_open` `needs_open_retest` `needs_freshness_recheck` `aging_event_freshness` `crowding_high` `needs_fresh_catalyst_check` などの短い正規化 code を使う
+- `auto4_execution_caution` は `needs_open_retest` など、block ではないが条件付き許可として残す注意 code に使ってよい
 - high_beta consumer では `entry_ready` と `auto4_buy_allowed` を分離し、human-facing の執行候補と機械約定可否を混同しない
 - auto2b sidecar の `publish_mode` は `normal` `stale_day_noop` `hard_stop` の 3 値に正規化する
 
@@ -139,7 +141,12 @@ ENDPOINT=/stock/{ticker}/analysis?range=recent&schema=trade-v2
 - `entry_ready` は `setupType` `minimumRR` `timeStopDays` `portfolio gate` `liquidity` `regime` を満たしたときだけ使う
 - `setupType=no_trade`、`minimumRR` 不足、強い `riskWarnings` では `watch` を優先する
 - `auto4_buy_allowed=true` は `entry_ready` のうち、当日終値ベースの機械約定でも意図が崩れない候補に限定する
-- `entry_style=avoid_open`、`execution_window=after_open_retest|after_freshness_recheck`、`event_freshness=aging`、`crowding_risk=high`、fresh catalyst 再確認要件がある場合は `entry_ready` を維持しても `auto4_buy_allowed=false` を優先する
+- `entry_style=avoid_open`、`execution_window=after_freshness_recheck`、`event_freshness=aging`、`crowding_risk=high`、fresh catalyst 再確認要件がある場合は `entry_ready` を維持しても `auto4_buy_allowed=false` を優先する
+- `execution_window=after_open_retest` は単独では `auto4_buy_allowed=false` にしない。`needs_open_retest` を条件付き許可として残すかどうかは、次を順番に機械的に評価する(自然言語判断で run ごとに揺らさない):
+  1. `feature.indicatorState` の `rsiState` `stochasticState` `bollingerState` のうち `overbought` が3件以上(全指標がoverbought) → `auto4_buy_allowed=false`、`auto4_block_reason=needs_open_retest`
+  2. 1に該当せず、`feature.metrics.distanceFrom20dHighPercent` が-10%以上の急伸(値飛びしやすい)→ 同様に `auto4_buy_allowed=false`、`auto4_block_reason=needs_open_retest`
+  3. 1・2のいずれにも該当しない → `auto4_buy_allowed=true` を既定とし、`auto4_execution_caution=needs_open_retest` を残す(条件付き許可)
+  - この判定は `setupScore` や `entry_quality` の高さで上書きしない
 
 ## 出力形式
 
@@ -158,3 +165,5 @@ ENDPOINT=/stock/{ticker}/analysis?range=recent&schema=trade-v2
 - `entry_style_hint=avoid_open` は API setup が強くても上書きしない
 - `slippage_risk=high` や `liquidity_tier` 悪化時は `entry_quality` を落とす
 - `entry_ready` を `watch` へ落とさずに残す場合でも、auto-4 自動約定が不適切なら `auto4_buy_allowed=false` と `auto4_block_reason` を必ず併記する
+- `needs_open_retest` を条件付き許可にした場合は、`auto4_buy_allowed=true` のまま `auto4_execution_caution=needs_open_retest` を残す
+- `execution_window=after_open_retest` の可否判定は「判定ラベルの正規化」の機械的基準(overbought件数 / distanceFrom20dHighPercent)を優先し、それ以外の定性判断で上書きしない

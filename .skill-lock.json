@@ -6,9 +6,9 @@
       "sourceType": "github",
       "sourceUrl": "https://github.com/vercel-labs/skills.git",
       "skillPath": "skills/find-skills/SKILL.md",
-      "skillFolderHash": "3013fdeb8a11b10b1eb795ec3ae8bfca38f7c26d",
+      "skillFolderHash": "eb6a23305aea6e340d14b9de3766e721f9f4861b",
       "installedAt": "2026-01-31T05:44:14.962Z",
-      "updatedAt": "2026-06-03T06:47:10.237Z"
+      "updatedAt": "2026-07-02T14:44:19.622Z"
     },
     "playwright-skill": {
       "source": "lackeyjb/playwright-skill",
@@ -69,46 +69,64 @@
       "sourceType": "github",
       "sourceUrl": "https://github.com/masuP9/a11y-specialist-skills.git",
       "skillPath": "skills/auditing-wcag/SKILL.md",
-      "skillFolderHash": "22651759f9542c1b319dab1e76c92423e1d406b5",
+      "skillFolderHash": "bd3e4b269b788121ca3a7ec631ac7049303c4577",
       "installedAt": "2026-02-20T06:51:10.349Z",
-      "updatedAt": "2026-02-20T06:51:10.349Z"
+      "updatedAt": "2026-07-02T14:44:21.334Z"
     },
     "planning-a11y-improvement": {
       "source": "masuP9/a11y-specialist-skills",
       "sourceType": "github",
       "sourceUrl": "https://github.com/masuP9/a11y-specialist-skills.git",
       "skillPath": "skills/planning-a11y-improvement/SKILL.md",
-      "skillFolderHash": "e8d747f9b1b55ba46dd71a3789fa546387df52fc",
+      "skillFolderHash": "b1fbd323e3e9dbdd09f28a7e44d661cb155b4493",
       "installedAt": "2026-02-20T06:51:10.372Z",
-      "updatedAt": "2026-02-20T06:51:10.372Z"
+      "updatedAt": "2026-07-02T14:44:23.126Z"
     },
     "planning-wcag-audit": {
       "source": "masuP9/a11y-specialist-skills",
       "sourceType": "github",
       "sourceUrl": "https://github.com/masuP9/a11y-specialist-skills.git",
       "skillPath": "skills/planning-wcag-audit/SKILL.md",
-      "skillFolderHash": "0b532d1d1fb8f7be3aba5c497a4c24ea1d8927f6",
+      "skillFolderHash": "2496dd650ee2831e6f18837db35c5f03e7ef0e1d",
       "installedAt": "2026-02-20T06:51:10.391Z",
-      "updatedAt": "2026-02-20T06:51:10.391Z"
+      "updatedAt": "2026-07-02T14:44:24.999Z"
     },
     "reviewing-a11y": {
       "source": "masuP9/a11y-specialist-skills",
       "sourceType": "github",
       "sourceUrl": "https://github.com/masuP9/a11y-specialist-skills.git",
       "skillPath": "skills/reviewing-a11y/SKILL.md",
-      "skillFolderHash": "fada5fefe0a7dad4bab0f251c5ccec1383e04f98",
+      "skillFolderHash": "3fef802cfcd198381bb609d6b36ec7a732c2a609",
       "installedAt": "2026-02-20T06:51:10.408Z",
-      "updatedAt": "2026-02-20T06:51:10.408Z"
+      "updatedAt": "2026-07-02T14:44:26.838Z"
     },
     "grill-me": {
       "source": "mattpocock/skills",
       "sourceType": "github",
       "sourceUrl": "https://github.com/mattpocock/skills.git",
       "skillPath": "skills/productivity/grill-me/SKILL.md",
-      "skillFolderHash": "2a1ad17028306ebe45f0e49703fa28b9b2e7f499",
-      "pluginName": "mattpocock-skills",
+      "skillFolderHash": "8320e7b87f7b208f50ce165b1dd43d1e93c8e801",
       "installedAt": "2026-06-03T06:47:52.807Z",
-      "updatedAt": "2026-06-03T06:47:52.807Z"
+      "updatedAt": "2026-07-02T14:44:28.137Z"
+    },
+    "swiftui-expert-skill": {
+      "source": "avdlee/swiftui-agent-skill",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/avdlee/swiftui-agent-skill.git",
+      "skillPath": "swiftui-expert-skill/SKILL.md",
+      "skillFolderHash": "813404b84a2b3de4f920be8671971bcb014d82ef",
+      "pluginName": "swiftui-expert",
+      "installedAt": "2026-07-02T14:43:22.027Z",
+      "updatedAt": "2026-07-02T14:43:22.027Z"
+    },
+    "swiftui-pro": {
+      "source": "twostraws/swiftui-agent-skill",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/twostraws/swiftui-agent-skill.git",
+      "skillPath": "swiftui-pro/SKILL.md",
+      "skillFolderHash": "09b8fff9743cfc94eea3ada3727e3ec369ff10fb",
+      "installedAt": "2026-07-02T14:43:30.375Z",
+      "updatedAt": "2026-07-02T14:43:30.375Z"
     }
   },
   "dismissed": {
