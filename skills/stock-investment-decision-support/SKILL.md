@@ -57,6 +57,7 @@ ENDPOINT=/stock/{ticker}/analysis?range=recent&schema=trade-v2
 ## 正本 state
 
 - large_cap watchlist: `/Users/sawairikeisuke/Documents/stock-analysis/large_cap_watchlist.json`
+- large_cap decisions: `/Users/sawairikeisuke/Documents/stock-analysis/large_cap_decisions.json`
 - high_beta watchlist: `/Users/sawairikeisuke/Documents/stock-analysis/high_beta_watchlist.json`
 - portfolio rules: `/Users/sawairikeisuke/Documents/stock-analysis/portfolio_rules.json`
 
@@ -74,8 +75,10 @@ ENDPOINT=/stock/{ticker}/analysis?range=recent&schema=trade-v2
 
 - `auto2a`
   - required sidecar path は automation prompt が指定する
-  - sidecar の固定 field は `decision_date` `watchlist_as_of` `age_days` `freshness_rule` `classification_summary` `fetch_failures` `earnings_blackout_check` `lane_discipline` `contract_breach`
+  - canonical output は `large_cap_decisions.json` とし、前営業日の同 state を confirmation 遷移の入力に使う
+  - sidecar の固定 field は `decision_date` `watchlist_as_of` `age_days` `freshness_rule` `classification_summary` `confirmation_summary` `fetch_failures` `earnings_blackout_check` `lane_discipline` `contract_breach`
   - `earnings_blackout_check` は `pass` `not_applicable` `observational_exception` の 3 値に正規化し、`daysToEarnings` 欠損時は `observational_exception` と理由を 1 行で残す
+  - `confirmation_summary` は `pending` `confirmed` `failed` 件数を必ず含める
   - `age_days > 7` のときは state 更新へ進まず、`contract_breach` を明示した no-op sidecar を残す
 - `auto2b`
   - required sidecar path は automation prompt が指定する
@@ -100,6 +103,13 @@ ENDPOINT=/stock/{ticker}/analysis?range=recent&schema=trade-v2
   - `auto4_block_reason`
   - `auto4_execution_caution`
 - `entry_ready` は「条件付きで執行検討に進める」の意味とする
+- large_cap decision は `execution_ready` `execution_block_reason` `signal_date` `confirmation_status` を持つ
+- 初日の `breakout_long / entry_ready` は候補を維持し、`execution_ready=false` `execution_block_reason=needs_next_session_confirmation` `confirmation_status=pending` とする
+- 前営業日が `pending` の breakout は、当日の setup が actionable、signal 時の価格支持を維持、出来高 follow-through が非劣化の3条件を満たす場合だけ `confirmed / execution_ready=true` とする。満たさない場合は `watch / failed / execution_ready=false`
+- non-breakout は `confirmation_status=not_required` とし、既存の setup / minimumRR 判定を変えない
+- `next_earnings_date` または `earnings_date_as_of` が欠損・7日超 stale の場合、候補を維持して `execution_ready=false` `execution_block_reason=earnings_date_unknown` とする
+- `next_earnings_date` が `portfolio_rules.json.earnings_blackout_days` 以内の場合、候補を維持して `execution_ready=false` `execution_block_reason=earnings_blackout` とする
+- auto2a は `/Users/sawairikeisuke/Documents/stock-analysis/large_cap_execution_gate.js` を使って上記遷移と sidecar 集計を決定し、日次の手動確認を要求しない
 - `auto4_buy_allowed` は「同日の auto-4 paper 約定を許可するか」を表す automation 向け gate とする
 - `auto4_block_reason` は `avoid_open` `needs_open_retest` `needs_freshness_recheck` `aging_event_freshness` `crowding_high` `needs_fresh_catalyst_check` などの短い正規化 code を使う
 - `auto4_execution_caution` は `needs_open_retest` など、block ではないが条件付き許可として残す注意 code に使ってよい
