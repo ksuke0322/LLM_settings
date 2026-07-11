@@ -76,6 +76,7 @@ ENDPOINT=/stock/{ticker}/analysis?range=recent&schema=trade-v2
 - `auto2a`
   - required sidecar path は automation prompt が指定する
   - canonical output は `large_cap_decisions.json` とし、前営業日の同 state を confirmation 遷移の入力に使う
+  - 初回 run で canonical output が存在しない場合は前回 state なしとして作成し、confirmation metadata のない既存 `entry_ready` は `pending / execution_ready=false` から開始する
   - sidecar の固定 field は `decision_date` `watchlist_as_of` `age_days` `freshness_rule` `classification_summary` `confirmation_summary` `fetch_failures` `earnings_blackout_check` `lane_discipline` `contract_breach`
   - `earnings_blackout_check` は `pass` `not_applicable` `observational_exception` の 3 値に正規化し、`daysToEarnings` 欠損時は `observational_exception` と理由を 1 行で残す
   - `confirmation_summary` は `pending` `confirmed` `failed` 件数を必ず含める
