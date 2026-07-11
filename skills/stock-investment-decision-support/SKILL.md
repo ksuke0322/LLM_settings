@@ -96,6 +96,8 @@ ENDPOINT=/stock/{ticker}/analysis?range=recent&schema=trade-v2
   - `position_risk_note`
   - `stale_reason`
 - high_beta decision consumer では automation 向け補助項目として次も持てる
+  - `latest_close`（number）
+  - `atr14`（number）
   - `auto4_buy_allowed`
   - `auto4_block_reason`
   - `auto4_execution_caution`
@@ -145,8 +147,10 @@ ENDPOINT=/stock/{ticker}/analysis?range=recent&schema=trade-v2
 - `execution_window=after_open_retest` は単独では `auto4_buy_allowed=false` にしない。`needs_open_retest` を条件付き許可として残すかどうかは、次を順番に機械的に評価する(自然言語判断で run ごとに揺らさない):
   1. `feature.indicatorState` の `rsiState` `stochasticState` `bollingerState` のうち `overbought` が3件以上(全指標がoverbought) → `auto4_buy_allowed=false`、`auto4_block_reason=needs_open_retest`
   2. 1に該当せず、`feature.metrics.distanceFrom20dHighPercent` が-10%以上の急伸(値飛びしやすい)→ 同様に `auto4_buy_allowed=false`、`auto4_block_reason=needs_open_retest`
-  3. 1・2のいずれにも該当しない → `auto4_buy_allowed=true` を既定とし、`auto4_execution_caution=needs_open_retest` を残す(条件付き許可)
+  3. 1・2に該当せず、`feature.metrics.atr14 / latest_close >= 0.08` → `entry_ready` は維持し、`auto4_buy_allowed=false`、`auto4_block_reason=needs_open_retest`
+  4. 1〜3のいずれにも該当しない → `auto4_buy_allowed=true` を既定とし、`auto4_execution_caution=needs_open_retest` を残す(条件付き許可)
   - この判定は `setupScore` や `entry_quality` の高さで上書きしない
+  - high_beta の canonical decision には判定に使った `latest_close` と `atr14` を自然言語 note ではなく number として保存する
 
 ## 出力形式
 
@@ -166,4 +170,4 @@ ENDPOINT=/stock/{ticker}/analysis?range=recent&schema=trade-v2
 - `slippage_risk=high` や `liquidity_tier` 悪化時は `entry_quality` を落とす
 - `entry_ready` を `watch` へ落とさずに残す場合でも、auto-4 自動約定が不適切なら `auto4_buy_allowed=false` と `auto4_block_reason` を必ず併記する
 - `needs_open_retest` を条件付き許可にした場合は、`auto4_buy_allowed=true` のまま `auto4_execution_caution=needs_open_retest` を残す
-- `execution_window=after_open_retest` の可否判定は「判定ラベルの正規化」の機械的基準(overbought件数 / distanceFrom20dHighPercent)を優先し、それ以外の定性判断で上書きしない
+- `execution_window=after_open_retest` の可否判定は「判定ラベルの正規化」の機械的基準（overbought件数 / distanceFrom20dHighPercent / ATR14比）を優先し、それ以外の定性判断で上書きしない
