@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "story_page_url": "https://www.notion.so/story",
+  "prompt_page_url": "https://www.notion.so/prompt",
+  "cool_number": 1,
+  "artifacts": {
+    "blend": "__PACKAGE_DIR__/windmill_cool1.blend",
+    "world_reference": "__PACKAGE_DIR__/ref/world_reference.png",
+    "cool_reference": "__PACKAGE_DIR__/ref/cool1_reference.png",
+    "reference_pack": ["__PACKAGE_DIR__/ref/cool1_front.png"],
+    "animatic": "__PACKAGE_DIR__/output/cool1_animatic.mp4",
+    "final_still": "__PACKAGE_DIR__/output/cool1_final.png",
+    "video": "__PACKAGE_DIR__/output/cool1.mp4",
+    "story_video": "__PACKAGE_DIR__/output/windmill_story.mp4"
+  },
+  "reproduction": {
+    "blender_version": "4.3.0",
+    "render_engine": "BLENDER_EEVEE_NEXT",
+    "color_management": "AgX Medium High Contrast",
+    "seed": 42,
+    "polyhaven_assets": []
+  },
+  "gates": {
+    "story_beat": {"status": "pass", "reviewer": "human", "evidence": "__PACKAGE_DIR__/evidence/story_beat.md"},
+    "animatic": {"status": "pass", "reviewer": "human", "evidence": "__PACKAGE_DIR__/evidence/animatic_review.md"},
+    "technical_spike": {"status": "waived", "reviewer": "human", "evidence": "__PACKAGE_DIR__/evidence/spike.md", "reason": "既知の構造のみ", "impact": "新規技術リスクなし", "approved_by": "owner"},
+    "visual_acceptance": {"status": "pass", "reviewer": "independent-agent", "evidence": "__PACKAGE_DIR__/evidence/visual_review.md"},
+    "common_sense_review": {"status": "pass", "reviewer": "independent-agent", "evidence": "__PACKAGE_DIR__/evidence/common_sense.md"},
+    "still_human_review": {"status": "pass", "reviewer": "human", "evidence": "__PACKAGE_DIR__/evidence/still_review.md"},
+    "motion_qa": {"status": "pass", "reviewer": "human", "evidence": "__PACKAGE_DIR__/evidence/motion_qa.md"},
+    "continuity_review": {"status": "pass", "reviewer": "human", "evidence": "__PACKAGE_DIR__/evidence/continuity.md"},
+    "story_final_review": {"status": "pass", "reviewer": "human", "evidence": "__PACKAGE_DIR__/evidence/story_final.md"},
+    "app_integration_qa": {"status": "pass", "reviewer": "human", "evidence": "__PACKAGE_DIR__/evidence/app_qa.md"}
+  }
+}

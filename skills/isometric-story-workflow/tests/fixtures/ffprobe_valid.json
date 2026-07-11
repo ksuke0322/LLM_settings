@@ -1,0 +1,20 @@
+{
+  "streams": [
+    {
+      "codec_type": "video",
+      "codec_name": "h264",
+      "pix_fmt": "yuv420p",
+      "width": 1080,
+      "height": 1920,
+      "r_frame_rate": "30/1",
+      "avg_frame_rate": "30/1",
+      "duration": "9.0"
+    }
+  ],
+  "format": {"format_name": "mov,mp4,m4a,3gp,3g2,mj2", "duration": "9.0", "tags": {"major_brand": "isom"}},
+  "frames": [
+    {"media_type": "video", "best_effort_timestamp_time": "0.000000"},
+    {"media_type": "video", "best_effort_timestamp_time": "0.033333"},
+    {"media_type": "video", "best_effort_timestamp_time": "0.066667"}
+  ]
+}
