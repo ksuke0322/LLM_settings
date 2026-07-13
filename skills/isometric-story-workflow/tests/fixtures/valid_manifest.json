@@ -28,7 +28,6 @@
     "common_sense_review": {"status": "pass", "reviewer": "independent-agent", "evidence": "__PACKAGE_DIR__/evidence/common_sense.md"},
     "still_human_review": {"status": "pass", "reviewer": "human", "evidence": "__PACKAGE_DIR__/evidence/still_review.md"},
     "motion_qa": {"status": "pass", "reviewer": "human", "evidence": "__PACKAGE_DIR__/evidence/motion_qa.md"},
-    "continuity_review": {"status": "pass", "reviewer": "human", "evidence": "__PACKAGE_DIR__/evidence/continuity.md"},
     "story_final_review": {"status": "pass", "reviewer": "human", "evidence": "__PACKAGE_DIR__/evidence/story_final.md"},
     "app_integration_qa": {"status": "pass", "reviewer": "human", "evidence": "__PACKAGE_DIR__/evidence/app_qa.md"}
   }

@@ -97,7 +97,7 @@ class ValidateStoryPackageTests(unittest.TestCase):
 
     def test_render_phase_allows_future_gates_to_be_pending(self):
         manifest = copy.deepcopy(self.manifest)
-        for gate_name in ("motion_qa", "continuity_review", "story_final_review", "app_integration_qa"):
+        for gate_name in ("motion_qa", "story_final_review", "app_integration_qa"):
             manifest["gates"][gate_name] = {"status": "pending"}
         manifest["artifacts"].pop("story_video")
         self.assertEqual([], self._validate(manifest, through="render"))

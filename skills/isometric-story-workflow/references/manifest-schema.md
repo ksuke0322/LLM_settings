@@ -39,7 +39,6 @@
     "common_sense_review": {"status": "pass", "reviewer": "independent-agent", "evidence": "/absolute/path/evidence/common_sense.md"},
     "still_human_review": {"status": "pass", "reviewer": "name", "evidence": "/absolute/path/evidence/still.md"},
     "motion_qa": {"status": "pass", "reviewer": "name", "evidence": "/absolute/path/evidence/motion.md"},
-    "continuity_review": {"status": "pass", "reviewer": "name", "evidence": "/absolute/path/evidence/continuity.md"},
     "story_final_review": {"status": "pass", "reviewer": "name", "evidence": "/absolute/path/evidence/story_final.md"},
     "app_integration_qa": {"status": "pass", "reviewer": "name", "evidence": "/absolute/path/evidence/app.md"}
   }
@@ -48,10 +47,12 @@
 
 ## 記入規則
 
+- `story_page_url`は設計書ページ(設計内容の正本)、`prompt_page_url`はプロンプトDBページ(本番制作差分)を指す。
 - パスはすべて絶対パスとし、対象ファイルが存在していなければならない。
 - 空欄、`TBD`、`後で決める`、`未定`は禁止する。
 - gateの`status`は`pending`、`pass`、`waived`のいずれか。未実施の将来gateだけ`pending`を使い、完了済みgateを`pending`へ戻さない。
-- `waived`を許可するのは`technical_spike`、`visual_acceptance`、`motion_qa`、`continuity_review`のみで、`reason`、`impact`、`approved_by`が必須。Story Beat、animatic、8B常識レビュー、静止画人間レビュー、ストーリー最終レビュー、App Integration QAは必ず`pass`にする。
+- `waived`を許可するのは`technical_spike`、`visual_acceptance`、`motion_qa`のみで、`reason`、`impact`、`approved_by`が必須。Story Beat、animatic、8B常識レビュー、静止画人間レビュー、ストーリー最終レビュー、App Integration QAは必ず`pass`にする。
+- クール間連続性の検査は`motion_qa`ゲートに統合済み(独立した`continuity_review`ゲートは廃止)。連続性証跡は`motion_qa`の`evidence`に含める。
 - `reference_pack`は最低1枚を指定する。
 - PolyHavenを使わない場合のみ`polyhaven_assets`を空配列にできる。
 - クール動画名には`cool<N>`を含める。本編通し動画は`story_video`へ同じ絶対パスを全クールmanifestから記録する。

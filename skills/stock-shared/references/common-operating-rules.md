@@ -41,6 +41,8 @@ stock 系 skill 共通の運用ルール。各 skill はこの文書を前提に
 - `continuation_review` では前回 state を先に再判定し、その後の補充探索は lane 固有 skill のルールに従う
 - producer prompt は helper state や overlay skill を指定してよいが、score、priority、圧縮、採否基準は lane skill を正本にする
 - `market-regime-assessment` は producer では overlay としてだけ使い、単独で除外判断をしない
+- high_beta producer は継続監視価値を管理し、trade-v2 の当日 setup / oscillator / entry zone / RR を候補除外の hard gate にしない
+- high_beta reserve の promote / demote / expire / remove は producer だけが確定し、consumer は reserve を decision state に混入させない
 
 ## Consumer / Sidecar Contract
 

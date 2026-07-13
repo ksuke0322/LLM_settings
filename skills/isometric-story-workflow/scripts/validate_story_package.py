@@ -36,12 +36,11 @@ GATE_PHASES = {
     "common_sense_review": "render",
     "still_human_review": "render",
     "motion_qa": "motion",
-    "continuity_review": "motion",
     "story_final_review": "app",
     "app_integration_qa": "app",
 }
 PHASE_ORDER = {"render": 0, "motion": 1, "app": 2}
-WAIVABLE_GATES = {"technical_spike", "visual_acceptance", "motion_qa", "continuity_review"}
+WAIVABLE_GATES = {"technical_spike", "visual_acceptance", "motion_qa"}
 FORBIDDEN_PLACEHOLDERS = {"tbd", "後で決める", "未定"}
 
 

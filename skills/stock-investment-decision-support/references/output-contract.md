@@ -38,3 +38,6 @@
 - `auto2b` の `publish_mode` は `normal` `stale_day_noop` `hard_stop` の 3 値に正規化する
 - `auto2b` sidecar では `stale_day` `same_day_freshness_ok` と、`auto4_buy_allowed=false` 候補の block reason を残す
 - `auto2b` sidecar / report では、`needs_open_retest` を block ではなく条件付き許可として扱う場合、`auto4_execution_caution` または Notes 文面で残す
+- `auto2b` sidecar では `input_watchlist_count` `reserve_count` `reserve_tickers` `reserve_handling` `source_lifecycle_summary` `fetch_failures` を固定 field として残す
+- `reserve_handling` は `producer_managed_not_evaluated` に固定し、reserve は decision table と API fetch 対象に含めない
+- high_beta decision item は `source_first_seen_date` `source_stage_entered_date` `source_shelf_age_trading_days` `source_transition_reason_code` を持つ

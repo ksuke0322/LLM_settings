@@ -64,9 +64,11 @@ ENDPOINT=/stock/{ticker}/analysis?range=recent&schema=trade-v2
 
 - `auto2a` は `large_cap_watchlist.json` を読む large_cap 専用 consumer
 - `auto2b` は `high_beta_watchlist.json` を読む high_beta 専用 consumer
+- `auto2b` は active `watchlist` を最大10件まで全件評価する
+- `reserve_watchlist` は 1b が管理し、trade-v2 API、昇格、decision 生成の対象外とする
 - `large_cap_watchlist.json` は `as_of` が当日を含む過去 7 日以内で、`ticker` `company` `bucket` `decision_profile` `thesis_type` `selection_reason` `event_risk` `priority` `status` が必須
-- `high_beta_watchlist.json` は `as_of` が当日で、`catalyst` `invalidation_hint` `monitoring_valid_until` が必須
-- `monitoring_valid_until < today` の high_beta candidate が 1 件でもあれば stale とみなして停止する
+- `high_beta_watchlist.json` は `as_of` が当日で、active `watchlist` は `catalyst` `invalidation_hint` `monitoring_valid_until`、reserve は producer の reserve schema と lifecycle field が必須
+- `as_of != today` は `stale_day_noop` とする。当日 state で active / reserve 間の ticker 重複、bucket 混入、必須 field 欠落、`monitoring_valid_until < today` が1件でもあれば `hard_stop` とし、canonical decision state は更新しない
 - `portfolio_rules.json` は `max_new_entries_per_day_high_beta` `max_theme_overlap` `earnings_blackout_days` `max_positions_large_cap` `max_positions_high_beta` `max_risk_per_trade_pct` `max_position_value_jpy_high_beta` が必須
 - `auto2b` では `current_holdings.json` を occupancy gate に使わない
 
@@ -81,10 +83,13 @@ ENDPOINT=/stock/{ticker}/analysis?range=recent&schema=trade-v2
   - required sidecar path は automation prompt が指定する
   - stale day / 休場日 / upstream 未更新日でも required sidecar は必須で、`publish_mode=stale_day_noop` の no-op publish を残す
   - sidecar の固定 field は `decision_date` `audit_date` `snapshot_as_of` `same_day_freshness_ok` `stale_day` `entry_ready_tickers` `watch_tickers` `entry_style_summary` `execution_window_summary` `monitoring_valid_until` `publish_mode` `contract_breach`
+  - 追加固定 field は `input_watchlist_count` `reserve_count` `reserve_tickers` `reserve_handling` `source_lifecycle_summary` `fetch_failures`
   - `same_day_freshness_ok` と `stale_day` は監査日基準で評価し、snapshot 自己評価を残す場合は `snapshot_same_day_freshness_ok` に分離する
   - same-day freshness や `monitoring_valid_until` 不一致で state 更新を止める場合でも、`stale_day` `same_day_freshness_ok` `publish_mode` などの failure trace を sidecar に残す
   - decision state を更新した run では same-day sidecar も必須とし、state だけ更新して sidecar が欠ける run は incomplete 扱いにする
   - watchlist の `entry_style_hint` / `monitoring_comment` と decision の `entry_style` / `execution_window` の対応を 1 行 summary で残す
+  - `watchlist` が0件で `reserve_watchlist` だけがある場合は API を呼ばず、空 decision を `publish_mode=normal` で更新する
+  - active API の一部または全部が失敗した場合は部分 state を publish せず `hard_stop` とし、`fetch_failures` を sidecar に残す
 
 ## execution decision contract
 
@@ -99,6 +104,16 @@ ENDPOINT=/stock/{ticker}/analysis?range=recent&schema=trade-v2
   - `auto4_buy_allowed`
   - `auto4_block_reason`
   - `auto4_execution_caution`
+- high_beta decision state の top-level には次を持つ
+  - `input_watchlist_count`
+  - `reserve_count`
+  - `reserve_tickers`
+  - `reserve_handling=producer_managed_not_evaluated`
+- high_beta decision item は source lifecycle trace として次を持つ
+  - `source_first_seen_date`
+  - `source_stage_entered_date`
+  - `source_shelf_age_trading_days`
+  - `source_transition_reason_code`
 - `entry_ready` は「条件付きで執行検討に進める」の意味とする
 - `auto4_buy_allowed` は「同日の auto-4 paper 約定を許可するか」を表す automation 向け gate とする
 - `auto4_block_reason` は `avoid_open` `needs_open_retest` `needs_freshness_recheck` `aging_event_freshness` `crowding_high` `needs_fresh_catalyst_check` などの短い正規化 code を使う
@@ -110,6 +125,7 @@ ENDPOINT=/stock/{ticker}/analysis?range=recent&schema=trade-v2
 
 1. 入力モードを確定する。
 2. 各対象の ticker を確定する。
+   - auto2b では active `watchlist` だけを対象にし、`reserve_watchlist` は件数・ticker・`producer_managed_not_evaluated` の trace だけを残す。
 3. `ctx_execute` の `javascript` で API をまとめて取得し、retry と JSON parse を sandbox 内で完結させる。
 4. `ctx_execute` で失敗した場合だけ Playwright/browser fetch、さらに失敗した場合だけ診断用 `curl` へ落とす。
 5. `setup` `risk` `feature.metrics` を主根拠に短期判断を作る。
