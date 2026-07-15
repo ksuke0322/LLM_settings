@@ -33,17 +33,34 @@
   },
   "gates": {
     "story_beat": {"status": "pass", "reviewer": "name", "evidence": "/absolute/path/evidence/story_beat.md"},
-    "animatic": {"status": "pass", "reviewer": "name", "evidence": "/absolute/path/evidence/animatic.md"},
+    "animatic": {"status": "pass", "reviewer": "name", "evidence": "/absolute/path/evidence/animatic.md", "review_package": {"path": "/absolute/path/review/story_design_review.md", "primary_assets": ["/absolute/path/output/cool1_animatic.mp4"], "presentation": "codex_inline_ui"}},
     "technical_spike": {"status": "waived", "reviewer": "name", "evidence": "/absolute/path/evidence/spike.md", "reason": "known structure", "impact": "none", "approved_by": "owner"},
     "visual_acceptance": {"status": "pass", "reviewer": "independent-agent", "evidence": "/absolute/path/evidence/visual.md"},
     "common_sense_review": {"status": "pass", "reviewer": "independent-agent", "evidence": "/absolute/path/evidence/common_sense.md"},
-    "still_human_review": {"status": "pass", "reviewer": "name", "evidence": "/absolute/path/evidence/still.md"},
+    "still_human_review": {"status": "pass", "reviewer": "name", "evidence": "/absolute/path/evidence/still.md", "review_package": {"path": "/absolute/path/review/cool1_still_review.md", "primary_assets": ["/absolute/path/output/cool1_final.png"], "presentation": "claude_artifact"}},
     "motion_qa": {"status": "pass", "reviewer": "name", "evidence": "/absolute/path/evidence/motion.md"},
-    "story_final_review": {"status": "pass", "reviewer": "name", "evidence": "/absolute/path/evidence/story_final.md"},
+    "story_final_review": {"status": "pass", "reviewer": "name", "evidence": "/absolute/path/evidence/story_final.md", "review_package": {"path": "/absolute/path/review/story_final_review.md", "primary_assets": ["/absolute/path/output/story_complete.mp4"], "presentation": "standalone_file"}},
     "app_integration_qa": {"status": "pass", "reviewer": "name", "evidence": "/absolute/path/evidence/app.md"}
   }
 }
 ```
+
+## 人間レビュー用`review_package`
+
+`animatic`、`still_human_review`、`story_final_review`が`pass`の場合、各gateは次の`review_package`を必須とする。
+
+```json
+{
+  "path": "/absolute/path/review/cool1_still_review.md",
+  "primary_assets": ["/absolute/path/output/cool1_final.png"],
+  "presentation": "codex_inline_ui"
+}
+```
+
+- `path`: 成果物本体、絶対パス、確認観点、承認/修正記録欄を含む独立Markdownレビュー・パケットの絶対パス。実在する通常ファイルでなければならない。
+- `primary_assets`: レビュー時にUIで提示する静止画または動画の絶対パスを1件以上。すべて実在する通常ファイルでなければならない。
+- `presentation`: `codex_inline_ui`（Codexの会話内インライン表示）、`claude_artifact`（Claude CodeのArtifact）、`standalone_file`（UIが使えない場合の独立ファイル）のいずれか。
+- `status: pending`の将来gateに`review_package`は不要。`evidence`はレビュー後の判定証跡であり、レビュー依頼用の`review_package`とは別に記録する。
 
 ## 記入規則
 

@@ -15,17 +15,29 @@ description: アイソメトリックポモドーロアプリ用に新しいテ�
   - 「ストーリーが切り替わる」ときは対象がゼロから始まる。「クールが切り替わる」が同じストーリー内なら前クールの完成形を引き継ぐ。
 - **画像・動画をユーザーに提示する際は必ず絶対パスで貼る**(相対パスは作業ディレクトリとの二重連結でリンク切れを起こす事故が実際に発生した)。チャット内にインライン表示できる場合は表示し、加えて絶対パスも明記する。
 - 物語・animatic・Acceptance Matrix・Motion QA・App Integration QAの詳細は`references/quality-gates.md`を必ず参照する。クール成果物manifestは`references/manifest-schema.md`に従い、`scripts/validate_story_package.py`で検証する。
+- 反復実行での再読コストを抑えるため、ステップ2〜5で検証専用の`story_contract.json`を作成し、ステップ6以降は定量validatorの結果を先に読む。構造と更新規則は`references/story-contract-schema.md`を正本とする。
+
+## レビュー成果物の提示
+
+人間レビューを依頼するときは、会話文だけで依頼してはならない。成果物本体と補足説明を分離し、レビュー・パケットを独立したMarkdownファイルとして保存する。パケットには対象一覧、主要成果物の絶対パス、確認観点、承認/修正記録欄を含める。`evidence`はレビュー後の判定証跡、`review_package`はレビュー依頼時に確認する成果物として扱い、混在させない。
+
+- **Codex**: 主要な静止画・動画を絶対パス付きMarkdownで会話内にインライン表示し、レビュー・パケットへのファイルリンクを渡す。会話本文は確認対象、パケットへのリンク、求める判断だけにする。ローカルMarkdownをArtifact相当の専用プレビューとしては扱わない。
+- **Claude Code**: レビュー・パケットをArtifactとして作成し、成果物本体、確認観点、承認/修正欄をArtifact内で確認可能にする。
+- **フォールバック**: インライン表示またはArtifactが使えない場合も、絶対パスを含む独立Markdownレビュー・パケットをファイルとして渡す。UI機能の不在を理由にレビューを省略しない。
+- 人間レビューgateが`pass`になる場合、manifestの`review_package`にパケットの絶対パス、UI提示した主要成果物の絶対パス配列、提示方式を記録する。詳細は`references/manifest-schema.md`を正本とする。
 
 ## ワークフロー全体
 
 1. **(ストーリー単位)** 参考イメージ収集
 2. **(ストーリー単位)** Story Beat Sheet・オブジェクト一覧表・寸法比例表等の作成(下記「ワークシート」節)
 3. **(ストーリー単位)** 共通の寸法変数・カメラ・トランジションの型を一括設計
+3.25. **(ストーリー単位)** 設計書とプロンプトDBから`story_contract.json`を作成し、`validate_story_contract.py`を通す
 3.5. **(ストーリー単位)** 世界観リファレンス画像と必要なReference Packを生成し、設計書ページに添付
 4. **(ストーリー単位)** 低品質animaticと必要な技術spikeを作成し、人間レビュー — 必須の停止点
 5. **(ストーリー単位)** テーマ固有差分(寸法変数・オブジェクト一覧・state構成)を`references/prompt-db-template.md`に従ってBlender用プロンプトDBへ保存(ルール本体は再掲しない)
 6. **(クール単位ループ)** 設計書ページ+プロンプトDBページを明示fetchし、クール用ファイル・クール別チェック画像・manifestを準備
 7. **(クール単位ループ)** fetchしたテーマ固有差分+クール別チェック画像+`blender-isometric-rules`スキルで該当クールを実際に制作。制作は**7a ブロックアウト精緻化 → 7b 個別作り込み → 7c テクスチャリング**の3工程を順に踏む(プリミティブ直置き+後付けだけで完成としない)
+7.5. **(クール単位ループ)** 全アセット棚卸し(作り込みティア監査)。全オブジェクトを種類単位で機械列挙し、ティア・本物マテリアル・作り込み・接地の未達をゼロにする — 必須hard gate
 8. **(クール単位ループ)** 構造的自己レビューに加え、独立サブエージェントによる(8A)Acceptance Matrixレビューと(8B)常識・実物資料レビューを未解決の必須項目ゼロまでループ
 9. **(クール単位ループ)** 人間が目視レビュー(最終frame静止画が対象) — 必須の停止点
 9.5. **(クール単位ループ)** ステップ9の承認が得られたら、そのクールのプレビュー動画を書き出す(正式なフロー。追加の指示待ちは不要)
@@ -33,7 +45,7 @@ description: アイソメトリックポモドーロアプリ用に新しいテ�
 11. 次のクールへ進む(6に戻る。ステップ3.5・5の共通設計は再利用)
 12. 全クール完了後、ストーリー全体の動画レビューとApp Integration QAを行い、manifestを検証
 
-ステップ1〜5(3.5を含む)はストーリーごとに1回だけ実施し、以降のクールループでは再利用する。
+ステップ1〜5(3.25・3.5を含む)はストーリーごとに1回だけ実施し、以降のクールループでは再利用する。
 
 ### ステップ1: 参考イメージ収集
 - 最初に入力となるNotion「ストーリー案」ページを明示fetchし、一言要約、クール構成、世界観ガイドライン、技術リスクを設計書の初期入力として取り込む。URLを暗黙の前提だけで扱わない。
@@ -48,6 +60,12 @@ description: アイソメトリックポモドーロアプリ用に新しいテ�
 完成形の主役シルエットが画面中央の正方形セーフエリアに収まる構成になっているか、Notion「本番ストーリー案」ページの世界観ガイドライン「構図原則」を確認しながら設計する。
 最初にStory Beat Sheetを埋め、各クールの開始状態、因果、主役変化、感情的報酬、視線誘導、秒・frame設計、easing、同時動作上限、技術リスクを確定する。物語の因果が説明できない状態でオブジェクト分解へ進まない。
 
+### ステップ3.25: ストーリー契約の定量preflight
+
+- 設計書を一度fetchした後、`references/story-contract-schema.md`に従って`test_gen_ai/<ストーリー名の英文表記>/story_contract.json`を作る。Notionの長文説明やルール本文を複製しない。
+- `python3 /Users/sawairikeisuke/.agents/skills/isometric-story-workflow/scripts/validate_story_contract.py <story_contract.json> --json-only`が合格するまでステップ3.5・4へ進まない。
+- 以後のクールでは、最初にNotion両ページの更新識別子だけを確認する。一致時は両ページ全文の再fetchではなく契約ファイルを使う。不一致時だけ両ページを再fetchし、契約を更新して同validatorを再実行する。
+
 ### ステップ3.5: 世界観リファレンス画像生成
 - 目的: スタイル・配色・雰囲気が全クールを通じて一貫しているかを、テキストだけでなく画像でも確認できるようにする。クール単位の実装チェックには使わない(クール2以降の要素も含む「最終形」の画像のため)。
 - 入力: ストーリー全文(一言要約+各クールで完成するものの説明。Notion「ストーリー設計ワークシート」相当)と、ステップ2・3で確定した設計内容(オブジェクト一覧表・質感タイプ・World/ライティング設計表・配色・画面方針メモ)。クール1・クール2以降の区別なく、ストーリー全体の完成形を1枚に統合してよい。
@@ -56,7 +74,7 @@ description: アイソメトリックポモドーロアプリ用に新しいテ�
 - Reference Pack(正面・側面・接合部close-up、最低1枚)の要否と優先順位は`references/quality-gates.md`の「Reference Pack」節を正本とする。
 
 ### ステップ4: 人間レビュー
-- 設計書DB配下のページ、世界観リファレンス画像、Reference Pack、低品質animaticを対象に、生成を始める前に物語・時間設計・視線誘導・設計の曖昧さを確定させる。
+- 設計書DB配下のページ、世界観リファレンス画像、Reference Pack、低品質animatic、必要なspikeを`review/story_design_review.md`のレビュー・パケットへまとめ、クライアント別の提示規約に従ってレビューを依頼する。生成を始める前に物語・時間設計・視線誘導・設計の曖昧さを確定させる。
 - Story Beat Sheetで技術リスクが1件でもある場合、グレーマテリアルまたは簡易形状のspikeを作り、リスクを先に検証する。省略する場合は理由・影響・承認者をwaiverとして残す。
 - 技術リスクには回転pivot・loop・重い散布だけでなく、**ステップ7bの高コストな作り込み手法**(曲面へのレリーフのUV破綻・継ぎ目、ディスプレイスメント適用時のメッシュ密度/レンダーコスト等)も含める。本制作前にspikeでUV破綻とコストを潰す(実装手法は`blender-isometric-rules`2.5章参照)。
 - Animaticと必要なspikeの承認なしで次に進まない。詳細は`references/quality-gates.md`を参照する。
@@ -65,9 +83,10 @@ description: アイソメトリックポモドーロアプリ用に新しいテ�
 - ルール全文(`blender-isometric-rules`)はSkillが実装時に自動で効くため、Notion側に再掲しない(二重管理になる)。
 - 設計内容(寸法比例表・オブジェクト一覧・World/配色・質感・Story Beat等)は**設計書ページを正本とし、プロンプトDBに再転記しない**(設計書とプロンプトDBの二重管理を避ける)。プロンプトDBページには、設計書に載らない**本番制作固有の差分だけ**(制作パス・.blend名・state遷移の実フレーム・クール間引き継ぎ手順・manifest計画)と、設計書への参照を書く。
 - 保存する内容は`references/prompt-db-template.md`(本番制作差分テンプレート)に従う(空欄・TBD不可)。テンプレート末尾の「保存前の最終確認」チェックリストを1項目ずつ確認してから保存し、設計書ページと相互リンクする。
+- 保存後、`story_contract.json`の`source.prompt_page_url`と`source.prompt_revision`を更新し、`validate_story_contract.py`を再実行する。
 
 ### ステップ6: クール用ファイルを準備
-- **必ず最初に**、対応する**設計書ページ(寸法・オブジェクト・World・Story Beat等の設計内容の正本)**と、ステップ5で保存した**プロンプトDBページ(state遷移フレーム・引き継ぎ・manifest計画等の制作差分)**の**両方**をNotionから明示的にfetchする。テーマ固有データはSkillのように自動では効かないため、この2点fetchを省略してはならない。
+- **必ず最初に**、対応する設計書ページとプロンプトDBページの更新識別子を確認する。`story_contract.json`の`source.revision`および`source.prompt_revision`と一致する場合は契約ファイルを入力に使う。不一致時は該当ページを明示fetchし、契約を更新して`validate_story_contract.py`を通す。テーマ固有データを暗黙の前提だけで扱ってはならない。
 - 作業ディレクトリは`/Users/sawairikeisuke/Documents/Blender/isometric/test_gen_ai/<ストーリー名の英文表記>/`を新規作成し、その配下で作業する。`.blend`はディレクトリ直下に分かりやすい名前(例: `lighthouse.blend`)で保存し、レンダリング結果は`output/`サブディレクトリに置く。
 - クール1: ストーリー用の新規`.blend`ファイルを作成する。
 - クール2以降: 前クール完成時の`.blend`を複製し、新しいクール用ファイルとして保存する(ゼロから作り直さない)。複製後は`blender-isometric-rules`7章のルールR(クール間引き継ぎ)を必ず適用する。
@@ -91,6 +110,31 @@ description: アイソメトリックポモドーロアプリ用に新しいテ�
 
 #### ステップ7c: テクスチャリング
 - マテリアル適用・質感ムラ・Bump・PolyHavenアセット適用を行う。実装ルールは`blender-isometric-rules`3章「マテリアル・質感」に委譲する(質感レンジ・PolyHaven適用時の自己判断差し替え禁止など)。
+
+#### ステップ7d: 定量scene・継続性・timeline preflight
+
+- Blenderからクール別scene snapshotとtimeline snapshotを抽出し、契約ファイルと合わせて`validate_scene_contract.py`、クール2以降は`validate_cool_continuity.py`、`validate_timeline.py`を実行する。
+- scene validatorはsafe area、Collection、アセット初出、ティア、材質、作り込み、接地、stage内、寸法比、背景密度を、continuity validatorは前クール完成物・World・共有材質の未承認差分を、timeline validatorは予定frame/easing/演出タイプ・同時動作数を検証する。
+- 失敗時は該当する制作工程へ戻る。静止画の定性レビューや動画レンダリングで機械的に再発見しない。
+
+### ステップ7.5: 全アセット棚卸し(作り込みティア監査) — hard gate
+
+**背景**: 主体(hero)に作り込みが集中し、二次オブジェクト(草・小道・柵・木・背景小物)が
+プリミティブ直置きや仮マテリアルのまま静止画QAを通過する事故が実際に発生した。これを機械的に塞ぐ。
+- **粒度は「オブジェクトの種類(アセット)」単位**とする。1メッシュずつ手選択はしない
+  (インスタンス・複製・GNスキャッターのインスタンス元は1種類として扱う)。
+- `blender-isometric-rules`の`scripts/audit_assets.py`でシーンを機械列挙し、各種類について次を判定:
+  1. **ティア割り当て**が設計書「オブジェクト一覧表」と一致(hero / 中景 / 背景小物)
+  2. **マテリアルが本物**か(仮プレースホルダ検出: Base Colorのみでノード変化なし＝procedural変化なし
+     かつ画像テクスチャ未接続 → プレースホルダ疑い)。設計書でPolyHaven指定の要素は
+     実際に画像テクスチャが接続されているか
+  3. **形がティア相応**か(プリミティブ直置き検出: bevel/subsurf/displace/solidify/boolean等の
+     作り込みモディファイアが無く、素のprimitive並みの形状 → 作り込み不足疑い。
+     hero/中景は最低1つの作り込み手法が必須)
+  4. **接地**しているか(raycastで浮き・めり込み検出)
+- 未達の種類が1つでもあれば**ステップ8へ進めない**。7b/7cへ戻って作り込む。
+- 判定結果(種類×4項目)を`evidence/cool<N>_asset_audit.md`へ記録する。
+- 「全部を1個ずつ見る」を、種類単位・機械列挙で網羅的かつ効率的に行うのが本ゲートの趣旨。既存のステップ8B・`review-checklist.md`B節(サンプル抽出・目視判定)を置き換えるものではなく、その前段で見落としをゼロにする網羅性チェックとして機能する。
 
 ### ステップ8: 自己レビュー(未解決の必須項目ゼロまでのループ・hard gate)
 
@@ -118,7 +162,8 @@ description: アイソメトリックポモドーロアプリ用に新しいテ�
 11. ステップ9に進めるのは、**8Aで未解決の必須項目がなく、8Bで不自然な箇所なし**と判定された最終レンダリングのみ。
 
 ### ステップ9: 人間レビュー
-- 完成state(最終frame)の静止画を提示してレビューを受ける。承認なしで次に進まない。
+- 完成state(最終frame)の静止画と必要なクローズアップを`review/cool<N>_still_review.md`のレビュー・パケットへまとめ、クライアント別の提示規約に従ってレビューを依頼する。承認なしで次に進まない。
+- 提示前に`validate_review_evidence.py`へ`required_gates=["animatic", "still_human_review"]`を渡し、現在必要なanimatic・静止画のパケット、主要成果物、絶対パスを検証する。ファイル不足を人間レビューへ持ち込まない。
 
 ### ステップ9.5: プレビュー動画レンダリング
 - ステップ9で承認が得られたら、追加の指示を待たずにそのクールのプレビュー動画を書き出す(静止画OK→動画レンダーは標準フローの一部)。
@@ -135,9 +180,11 @@ description: アイソメトリックポモドーロアプリ用に新しいテ�
 - `python3 /Users/sawairikeisuke/.agents/skills/isometric-story-workflow/scripts/validate_story_package.py <cool<N>_manifest.json> --through motion`が合格することを確認する。
 
 ### ステップ12: ストーリー全体の最終レビュー
-- 全クール完了後、通しで動画書き出し・最終レビューを行う。
+- 全クール完了後、通し動画とApp Integration QA証跡を`review/story_final_review.md`のレビュー・パケットへまとめ、クライアント別の提示規約に従って最終レビューを依頼する。
 - `references/quality-gates.md`のApp Integration QAを実施する。25分進捗へのframe写像、pause/resume、完了frame、Focus・ThemeDetail・完了画面・正方形cropを実アプリの統合環境で確認する。
 - 通し動画の絶対パスとストーリー最終レビュー証跡を全クールmanifestへ記録する。
+- ストーリー最終レビュー前には`validate_review_evidence.py`へ3つの人間レビューgateすべてを渡し、レビュー・パケットと主要成果物の存在を検証する。
+- `python3 /Users/sawairikeisuke/.agents/skills/isometric-story-workflow/scripts/validate_theme_integration.py <theme_integration_input.json> --json-only`で`Content/themes.json`、バンドル動画、クール数、25分(1500秒)写像を検証してからApp Integration QAへ進む。
 - 全クールに`python3 /Users/sawairikeisuke/.agents/skills/isometric-story-workflow/scripts/validate_story_package.py <cool<N>_manifest.json> --through app`を実行し、全gateが`pass`または承認済み`waived`になった時点だけを完成とする。
 
 ## ワークシート: 記入ルール

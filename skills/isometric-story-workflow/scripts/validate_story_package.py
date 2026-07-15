@@ -41,6 +41,8 @@ GATE_PHASES = {
 }
 PHASE_ORDER = {"render": 0, "motion": 1, "app": 2}
 WAIVABLE_GATES = {"technical_spike", "visual_acceptance", "motion_qa"}
+HUMAN_REVIEW_GATES = {"animatic", "still_human_review", "story_final_review"}
+REVIEW_PRESENTATIONS = {"codex_inline_ui", "claude_artifact", "standalone_file"}
 FORBIDDEN_PLACEHOLDERS = {"tbd", "後で決める", "未定"}
 
 
@@ -75,6 +77,25 @@ def _validate_path(raw_path: Any, label: str, errors: list[str]) -> None:
         errors.append(f"{label} does not exist: {path}")
     elif not path.is_file():
         errors.append(f"{label} must be a regular file: {path}")
+
+
+def _validate_review_package(gate: dict[str, Any], label: str, errors: list[str]) -> None:
+    review_package = gate.get("review_package")
+    if not isinstance(review_package, dict):
+        errors.append(f"{label}.review_package is required")
+        return
+    for key in ("path", "primary_assets", "presentation"):
+        _require(review_package, key, f"{label}.review_package", errors)
+    if review_package.get("path") is not None:
+        _validate_path(review_package["path"], f"{label}.review_package.path", errors)
+    primary_assets = review_package.get("primary_assets")
+    if not isinstance(primary_assets, list) or not primary_assets:
+        errors.append(f"{label}.review_package.primary_assets must contain at least one path")
+    else:
+        for index, path in enumerate(primary_assets):
+            _validate_path(path, f"{label}.review_package.primary_assets[{index}]", errors)
+    if review_package.get("presentation") not in REVIEW_PRESENTATIONS:
+        errors.append(f"{label}.review_package.presentation must be a supported presentation")
 
 
 def _rate(value: Any) -> Fraction | None:
@@ -228,6 +249,8 @@ def validate_manifest(
                     errors.append(f"gates.{gate_name}.{key} is required for waived status")
         if gate.get("evidence") is not None:
             _validate_path(gate["evidence"], f"gates.{gate_name}.evidence", errors)
+        if gate_name in HUMAN_REVIEW_GATES and status == "pass":
+            _validate_review_package(gate, f"gates.{gate_name}", errors)
 
     for path, value in _walk(manifest):
         if isinstance(value, str):

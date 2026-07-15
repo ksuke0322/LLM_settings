@@ -91,6 +91,18 @@ description: Blender(blender-mcp/bpy)でアイソメトリック映像素材を�
 ### 7c: テクスチャリング
 - マテリアル適用・質感ムラ・Bump・PolyHavenアセット適用。実装ルールは3章「マテリアル・質感」に従う(質感レンジ・PolyHaven適用時の自己判断差し替え禁止等)。作り込み(7b)で作った形の上に質感を乗せる工程であり、7bの不足を質感で埋めようとしない。
 
+### 2.5.4 全アセット棚卸しの検出ヒューリスティクス(scripts/audit_assets.py)
+
+静止画QA(ワークフロー ステップ8)の前に、全オブジェクトを種類単位で監査する(`isometric-story-workflow`ステップ7.5)。手選択はしない。
+- **種類のグルーピング**: 共有メッシュデータ / 共有マテリアル / 命名接頭辞 / 所属コレクション で束ねる。
+- **プレースホルダ材質**: マテリアルのノードがPrincipled+OutputのみでNoise/ColorRamp/Image Texture等の
+  入力ノードを持たない → 仮マテリアル疑い(FAIL)。設計書PolyHaven指定要素はImage Texture未接続でFAIL。
+- **プリミティブ直置き**: BEVEL/SUBSURF/DISPLACE/SOLIDIFY/BOOLEAN/NODES いずれのモディファイアも無く、
+  頂点数が素のcube/cylinder/cone/ico_sphere並み → 作り込み不足疑い。hero/中景でこれはFAIL。
+- **非接地**: オブジェクト最下点から真下・カメラ方向へray_cast し、地面と一定閾値以上の隙間/貫通 → FAIL。
+- 出力は「種類 / 個数 / ティア / 材質判定 / 作り込み判定 / 接地判定 / 総合」の表。FAILが1件でも残る限り
+  ステップ8へ進めない。
+
 ## 3. マテリアル・質感
 
 ### マテリアルは Principled BSDF を必須にする
@@ -240,3 +252,4 @@ description: Blender(blender-mcp/bpy)でアイソメトリック映像素材を�
 ## 9. 関連スキル
 
 - テーマ・ストーリー設計の手順(ワークフローのステップ1〜12、ワークシートの記入ルール)は `isometric-story-workflow` スキルを参照する。本スキルは「いつ何を作るか」ではなく「Blenderでどう正しく作るか」を扱う。
+- 2.5.4「全アセット棚卸しの検出ヒューリスティクス」は `isometric-story-workflow` ステップ7.5の実装ルールに対応する。

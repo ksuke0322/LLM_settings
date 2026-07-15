@@ -38,6 +38,10 @@ class ValidateStoryPackageTests(unittest.TestCase):
         for value in self.manifest["artifacts"].values():
             paths.extend(value if isinstance(value, list) else [value])
         paths.extend(gate["evidence"] for gate in self.manifest["gates"].values())
+        for gate in self.manifest["gates"].values():
+            review_package = gate.get("review_package")
+            if isinstance(review_package, dict):
+                paths.append(review_package["path"])
         for raw_path in paths:
             path = Path(raw_path)
             path.parent.mkdir(parents=True, exist_ok=True)
@@ -70,6 +74,41 @@ class ValidateStoryPackageTests(unittest.TestCase):
         Path(self.manifest["artifacts"]["final_still"]).unlink()
         errors = self._validate()
         self.assertTrue(any("final_still" in error and "does not exist" in error for error in errors))
+
+    def test_human_review_package_is_required(self):
+        manifest = copy.deepcopy(self.manifest)
+        del manifest["gates"]["still_human_review"]["review_package"]
+        self.assertIn(
+            "gates.still_human_review.review_package is required",
+            self._validate(manifest),
+        )
+
+    def test_human_review_package_requires_absolute_existing_paths(self):
+        manifest = copy.deepcopy(self.manifest)
+        package = manifest["gates"]["still_human_review"]["review_package"]
+        package["path"] = "review/cool1_still.md"
+        package["primary_assets"] = [str(self.package_dir / "missing.png")]
+        errors = self._validate(manifest)
+        self.assertIn(
+            "gates.still_human_review.review_package.path must be an absolute path",
+            errors,
+        )
+        self.assertTrue(any("primary_assets[0] does not exist" in error for error in errors))
+
+    def test_human_review_package_requires_primary_assets_and_supported_presentation(self):
+        manifest = copy.deepcopy(self.manifest)
+        package = manifest["gates"]["still_human_review"]["review_package"]
+        package["primary_assets"] = []
+        package["presentation"] = "markdown_preview"
+        errors = self._validate(manifest)
+        self.assertIn(
+            "gates.still_human_review.review_package.primary_assets must contain at least one path",
+            errors,
+        )
+        self.assertIn(
+            "gates.still_human_review.review_package.presentation must be a supported presentation",
+            errors,
+        )
 
     def test_waiver_without_approval_fails(self):
         manifest = copy.deepcopy(self.manifest)

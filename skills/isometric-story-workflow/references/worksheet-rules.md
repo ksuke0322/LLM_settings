@@ -2,6 +2,8 @@
 
 ステップ2・3で実際に埋める5つの表(Story Beat Sheet/オブジェクト一覧表/寸法比例表/Collection構成表/World・ライティング表)と配色・画面方針メモについて、以下の定義に従う。空欄や「TBD」が残った状態でステップ4に進んではいけない。Story Beat Sheetと品質ゲートの判定規則は`quality-gates.md`も併読する。
 
+設計完了時には、検証に必要な列だけを`story_contract.json`へ転記する。Notionの物語本文・資料・判断理由は正本のままとし、契約ファイルへ二重管理しない。対応表は`story-contract-schema.md`を参照する。
+
 ### Story Beat Sheet
 
 列: クール / 開始状態 / 前クール・直前stateとの因果 / 主役変化 / 感情的報酬 / 視線誘導 / 開始frame / 終了frame / 秒数 / easing / 静止時間 / 同時動作上限 / 技術リスク / spike要否
