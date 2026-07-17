@@ -115,6 +115,9 @@ description: アイソメトリックポモドーロアプリ用に新しいテ�
 
 - Blenderからクール別scene snapshotとtimeline snapshotを抽出し、契約ファイルと合わせて`validate_scene_contract.py`、クール2以降は`validate_cool_continuity.py`、`validate_timeline.py`を実行する。
 - scene validatorはsafe area、Collection、アセット初出、ティア、材質、作り込み、接地、stage内、寸法比、背景密度を、continuity validatorは前クール完成物・World・共有材質の未承認差分を、timeline validatorは予定frame/easing/演出タイプ・同時動作数を検証する。
+- `blender-isometric-rules/references/quantitative-qa.md` を同時に参照し、scene / timeline の入力は Blender の評価済み実シーンと実 F-Curve から抽出する。契約値を手転記した snapshot、目視だけの `grounded` / `crafted` / `coverage` は無効とする。
+- 各クールで `audit_assets.py` → scene contract → continuity（クール2以降）→ timeline の順に PASS を得る。FAIL はステップ8へ持ち込まず修正する。WARN は数値と waiver を review package に含める。
+- 実行は`run_blender_quantitative_qa.py --blend <cool.blend> --contract <story_contract.json> --cool <N> --output-dir <evidence>`を正本とする。必要なら`--video <cool.mp4>`を渡し、`ffprobe`の出力仕様判定も同じhard gateに含める。成果物・Custom Property・waiver形式は`story-contract-schema.md`と`blender-isometric-rules/references/quantitative-qa.md`に従う。
 - 失敗時は該当する制作工程へ戻る。静止画の定性レビューや動画レンダリングで機械的に再発見しない。
 
 ### ステップ7.5: 全アセット棚卸し(作り込みティア監査) — hard gate

@@ -60,4 +60,14 @@
 - `validate_review_evidence.py`: `required_gates`で現在のgateだけを指定し、各レビュー・パケットと主要成果物の絶対パスを渡す。ステップ9は`["animatic", "still_human_review"]`、ステップ12は3 gateすべてを指定する。
 - `validate_theme_integration.py`: `{"contract": <契約>, "app_root": "/absolute/path/IsometricPomodoro", "session_seconds": 1500}`。`Content/themes.json`と`Content/Videos`を検証する。
 
+## Blender実測証跡
+
+`run_blender_quantitative_qa.py`の入力は`--blend`、`--contract`、`--cool`、必要に応じて`--video`である。runnerがheadless Blenderから生成する`raw/scene_snapshot.json`と`raw/timeline_snapshot.json`だけを上記validatorへ渡す。手入力JSONは禁止する。
+
+- `raw/measurement_report.json`: BBox/raycast/BVH、カメラ投影、材質ノード、GN/散布、state、FCurveを測定したcheck一覧。
+- `quantitative_qa_report.json`: 実測check、scene/timeline validator、`ffprobe`の集約結果。FAILまたはwaiver理由なしのWARNで終了コード1。
+- `quantitative_qa_report.md`: 人間レビューに添付する読みやすい同一内容の表。
+
+各render可視アセットは`story_id`、`story_tier`、`story_type` Custom Propertyで契約へ紐付ける。実行時の詳細と追加propertyは`blender-isometric-rules/references/quantitative-qa.md`を正本とする。
+
 すべてのvalidatorは`--json-only`で`valid`と`errors`だけを返す。エージェントは生データを再要約せず、失敗項目だけを修正判断へ使う。
