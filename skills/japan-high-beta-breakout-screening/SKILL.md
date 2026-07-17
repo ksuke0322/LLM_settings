@@ -23,6 +23,7 @@ description: "日本株の短期 high_beta 候補を抽出し、high_beta watchl
 
 - watchlist: `/Users/sawairikeisuke/Documents/stock-analysis/high_beta_watchlist.json`
 - 保有除外参照: `/Users/sawairikeisuke/Documents/stock-analysis/current_holdings.json`
+- `high_beta_theme_universe.json` の `pinned_themes` はユーザー明示指定の固定テーマ棚であり、週次 theme review automation(auto-1b-meta)による実績依存の昇格/降格/削除の対象外。auto-1b は `active_themes` と同待遇で毎回参照する。
 
 ## lane 固有 freshness / schema
 
@@ -127,8 +128,8 @@ description: "日本株の短期 high_beta 候補を抽出し、high_beta watchl
 - 前回 watchlist を先に `継続 / 除外 / 保留` へ分類する
 - `reserve_watchlist` があれば `昇格 / 継続reserve / 失効` も判定する
 - 継続理由が弱くなった枠だけ新規候補で補う
-- 新規候補の探索順は `previous watchlist / reserve_watchlist の再判定` → `active themes` → `exploratory themes` → `theme universe 外の補助探索` とする
-- `active themes` は各テーマ `4〜6銘柄`、`exploratory themes` は合計 `8〜12銘柄`、`theme universe 外の補助探索` は `2〜4銘柄` を目安に確認する
+- 新規候補の探索順は `previous watchlist / reserve_watchlist の再判定` → `pinned_themes`(固定、実績に関わらず毎回確認) → `active themes` → `exploratory themes` → `theme universe 外の補助探索` とする
+- `pinned_themes` と `active themes` は各テーマ `4〜6銘柄`、`exploratory themes` は合計 `8〜12銘柄`、`theme universe 外の補助探索` は `2〜4銘柄` を目安に確認する
 - 上の探索順を守ったうえで、原則 `screened_count >= 40` に届くまで追加探索を継続する
 - `theme universe 外の補助探索` まで完了しても `40件未満` の場合に限り、その日の run を `incomplete` として close してよい
 - `aging` でも出来高と price action が維持される候補は watch候補に残してよい
@@ -142,7 +143,7 @@ description: "日本株の短期 high_beta 候補を抽出し、high_beta watchl
 
 1. 実行モードと対象範囲を確定する。
 2. `current_holdings.json` を検証し、確定保有銘柄を ticker ベースで除外する。
-3. `previous watchlist / reserve_watchlist` を先に再判定し、不足分を `active themes` → `exploratory themes` → `theme universe 外の補助探索` の順で埋める。
+3. `previous watchlist / reserve_watchlist` を先に再判定し、不足分を `pinned_themes` → `active themes` → `exploratory themes` → `theme universe 外の補助探索` の順で埋める。
 4. 価格位置、出来高、相対強度、材料継続性、流動性を確認し、`screened_count` を集計する。
 5. `liquidity_tier` `slippage_risk` `crowding_risk` `entry_style_hint` を付ける。
 6. [references/criteria.md](references/criteria.md) の配点で候補を評価する。
