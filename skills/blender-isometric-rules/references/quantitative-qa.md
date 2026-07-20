@@ -48,7 +48,7 @@ python3 run_blender_quantitative_qa.py \
 | 寸法・stage | 評価済み BBox の最大辺 / `stage_extent`、および全頂点の `abs(x/y/z) <= stage_extent` | 契約 `size_ratio` との差 `<= 0.10`、範囲外は FAIL |
 | 接地 | ground の評価済み上面、または evaluated depsgraph の raycast により各アセットの最下点を測定 | 隙間・意図しない貫通が `0.01` 超で FAIL |
 | 材質 | 使用材質のノード型を集計 | `TEX_IMAGE` は `image`、Noise/Voronoi/Wave/ColorRamp/Bump は `procedural`、どちらもないものは FAIL |
-| 作り込み | hero / midground ごとに modifier、頂点数、実ジオメトリの署名部品を集計 | primitive 相当かつ作り込み modifier/部品なしは FAIL |
+| 作り込み(助言) | tier を問わず modifier・頂点数を集計し、素の primitive 相当かを機械的に拾う | **助言(WARN)のみでブロッキングしない**。作り込み品質の合否は独立レビュー(8B: 物理的妥当性 / 8C: 署名パーツの仕様実現)で判定する |
 | 背景 | `story_type` 単位で render 可視インスタンス数と種類数を集計 | 契約 `background.visible_count` / `types` と一致 |
 
 scene snapshot には少なくとも `cool_number`、`collections`、`camera.hero_safe_area_coverage`、`assets[]` (`id`, `tier`, `material_kind`, `crafted`, `grounded`, `bounds_within_stage`, `size_ratio`) と `background` を入れる。抽出不能な値を `true` と仮定してはならず、`FAIL` として停止する。

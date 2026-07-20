@@ -180,3 +180,10 @@ description: "日本株の短期 high_beta 候補を抽出し、high_beta watchl
 
 - high_beta は高リスク前提で扱う
 - 急落、ギャップダウン、材料剥落、流動性低下のリスクを必ず併記する
+
+## Official Web Evidence
+
+- `thesis_type` は `catalyst_breakout` `technical_continuation` `pullback` `theme_momentum` を使う
+- 一次材料はTDnet・企業IRを優先し、検索結果や第三者記事は公式URLを発見する補助に限定する
+- evidenceには `source_kind` `source_url` `title` `published_at` `fetched_at` `time_precision` `verification_status` を残す
+- `technical_continuation` は一次IR未確認だけで除外しない。ただし材料点は加算せず、価格・出来高・相対強度・流動性だけで評価する

@@ -50,6 +50,12 @@ description: "日本株短期運用の market regime を整理し、large_cap �
 - 金利上昇と円安が同時進行する場合、金融や外需 large-cap に追い風になりやすい
 - 判断が割れる場合は `neutral` に留める
 
+## Breadth Evidence
+
+- breadthは `definition` `universe` `advancers` `decliners` `unchanged` `source_url` `published_at` `fetched_at` `data_completeness` を残す
+- 公式市場統計、指数提供者の構造化ページ、対象universeの日足算出の順に使う。Web検索は公式source URLの発見だけに使う
+- breadth欠損時は推測せず `data_incomplete=true` として execution caution を強める。producerの候補棚を空にする根拠には使わない
+
 ## 出力形式
 
 - 既定は `compact`

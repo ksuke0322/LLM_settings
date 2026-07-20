@@ -37,6 +37,7 @@
     "technical_spike": {"status": "waived", "reviewer": "name", "evidence": "/absolute/path/evidence/spike.md", "reason": "known structure", "impact": "none", "approved_by": "owner"},
     "visual_acceptance": {"status": "pass", "reviewer": "independent-agent", "evidence": "/absolute/path/evidence/visual.md"},
     "common_sense_review": {"status": "pass", "reviewer": "independent-agent", "evidence": "/absolute/path/evidence/common_sense.md"},
+    "signature_realization": {"status": "pass", "reviewer": "independent-agent", "evidence": "/absolute/path/evidence/cool1_signature_realization.md"},
     "still_human_review": {"status": "pass", "reviewer": "name", "evidence": "/absolute/path/evidence/still.md", "review_package": {"path": "/absolute/path/review/cool1_still_review.md", "primary_assets": ["/absolute/path/output/cool1_final.png"], "presentation": "claude_artifact"}},
     "motion_qa": {"status": "pass", "reviewer": "name", "evidence": "/absolute/path/evidence/motion.md"},
     "story_final_review": {"status": "pass", "reviewer": "name", "evidence": "/absolute/path/evidence/story_final.md", "review_package": {"path": "/absolute/path/review/story_final_review.md", "primary_assets": ["/absolute/path/output/story_complete.mp4"], "presentation": "standalone_file"}},
@@ -68,7 +69,7 @@
 - パスはすべて絶対パスとし、対象ファイルが存在していなければならない。
 - 空欄、`TBD`、`後で決める`、`未定`は禁止する。
 - gateの`status`は`pending`、`pass`、`waived`のいずれか。未実施の将来gateだけ`pending`を使い、完了済みgateを`pending`へ戻さない。
-- `waived`を許可するのは`technical_spike`、`visual_acceptance`、`motion_qa`のみで、`reason`、`impact`、`approved_by`が必須。Story Beat、animatic、8B常識レビュー、静止画人間レビュー、ストーリー最終レビュー、App Integration QAは必ず`pass`にする。
+- `waived`を許可するのは`technical_spike`、`visual_acceptance`、`motion_qa`のみで、`reason`、`impact`、`approved_by`が必須。Story Beat、animatic、8B常識レビュー(`common_sense_review`)、8C仕様実現レビュー(`signature_realization`)、静止画人間レビュー、ストーリー最終レビュー、App Integration QAは必ず`pass`にする(waiver不可)。
 - クール間連続性の検査は`motion_qa`ゲートに統合済み(独立した`continuity_review`ゲートは廃止)。連続性証跡は`motion_qa`の`evidence`に含める。
 - `reference_pack`は最低1枚を指定する。
 - PolyHavenを使わない場合のみ`polyhaven_assets`を空配列にできる。

@@ -183,3 +183,11 @@ ENDPOINT=/stock/{ticker}/analysis?range=recent&schema=trade-v2
 - `entry_ready` を `watch` へ落とさずに残す場合でも、auto-4 自動約定が不適切なら `auto4_buy_allowed=false` と `auto4_block_reason` を必ず併記する
 - `needs_open_retest` を条件付き許可にした場合は、`auto4_buy_allowed=true` のまま `auto4_execution_caution=needs_open_retest` を残す
 - `execution_window=after_open_retest` の可否判定は「判定ラベルの正規化」の機械的基準(overbought件数 / distanceFrom20dHighPercent)を優先し、それ以外の定性判断で上書きしない
+
+## Paper Execution Evidence
+
+- high_beta decisionには `market_snapshot`、`order_intent`、`execution_ready`、`earnings_event_evidence` を持てる
+- `market_snapshot` は `latest_close` `source` `fetched_at`、`order_intent` は `order_type` `limit_price` `trigger_price` `stop_price` `target1` `target2` `valid_until` を持つ
+- `execution_ready` は価格snapshot、order intent、決算event evidenceが揃い、翌営業日のpaper注文を作成できることを表す
+- 決算日が未確認の候補は watch / entry_ready に残してよいが、`execution_ready=false` と `earnings_event_unverified` を残し、新規paper約定を許可しない
+- candidateごとのWeb取得失敗は当該candidateだけを `execution_ready=false` とする。全candidateの取得率がrun規定値を下回る場合だけ `hard_stop` とする

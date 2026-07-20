@@ -239,7 +239,9 @@ def export(contract_path: Path, cool_number: int, output_dir: Path, ground_name:
                 _check(checks, f"material.emission_ambient.{object_id}", 0.05 <= amplitude <= 0.10, round(amplitude, 4), "0.05..0.10", warn=True)
             _check(checks, f"geometry.grounded.{object_id}", grounded, ground_delta, f"abs(delta)<={EPSILON}")
             _check(checks, f"geometry.stage.{object_id}", within_stage, [minimum, maximum], f"abs(x/y/z)<={contract['stage_extent']}")
-            _check(checks, f"geometry.craft.{object_id}", crafted if spec["tier"] in {"hero", "midground"} else True, crafted, True)
+            # 作り込み(craft)は助言のみ: WARNにしてFAILさせない。作り込み品質の合否は
+            # 独立サブエージェントレビュー(8B: 物理的妥当性 / 8C: 署名パーツの仕様実現)で判定する。
+            _check(checks, f"geometry.craft.{object_id}", crafted, crafted, "advisory only (blocking judgment is 8B/8C)", warn=True)
             _check(checks, f"identity.tier.{object_id}", all(obj.get("story_tier") == spec["tier"] for obj in objects), [obj.get("story_tier") for obj in objects], spec["tier"])
             asset_rows.append({"id": object_id, "tier": spec["tier"], "material_kind": kind, "crafted": crafted, "grounded": grounded, "visible": True, "bounds_within_stage": within_stage, "size_ratio": size_ratio, "dimensions": dimensions, "material_id": "|".join(sorted({material.name for material in materials}))})
         hero_vertices = [point for obj in assets.get(cool["hero"], []) for point in _world_vertices(obj, depsgraph)]

@@ -159,8 +159,8 @@ def validate_scene_contract(payload: Any) -> list[str]:
             errors.append(f"scene.assets.{obj.get('id')}.tier must match contract")
         if asset.get("material_kind") not in {"image", "procedural"}:
             errors.append(f"scene.assets.{obj.get('id')}.material_kind must be image or procedural")
-        if obj.get("tier") in {"hero", "midground"} and asset.get("crafted") is not True:
-            errors.append(f"scene.assets.{obj.get('id')}.crafted must be true")
+        # 作り込み(crafted)はブロッキング判定から外した(助言のみ)。作り込み品質の合否は
+        # 独立サブエージェントレビュー(8B: 物理的妥当性 / 8C: 署名パーツの仕様実現)で判定する。
         if asset.get("grounded") is not True:
             errors.append(f"scene.assets.{obj.get('id')}.grounded must be true")
         if asset.get("bounds_within_stage") is not True:

@@ -34,6 +34,7 @@ GATE_PHASES = {
     "technical_spike": "render",
     "visual_acceptance": "render",
     "common_sense_review": "render",
+    "signature_realization": "render",
     "still_human_review": "render",
     "motion_qa": "motion",
     "story_final_review": "app",

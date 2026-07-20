@@ -26,6 +26,13 @@ stock 系 skill 共通の運用ルール。各 skill はこの文書を前提に
 
 ## Automation Prompt Boundary
 
+## Data Source Boundary
+
+- Yahoo Finance は日足・分足の価格/出来高sourceとして使い、一次IR・決算時刻・breadthの正本にはしない
+- breadthは公式市場統計、指数提供者の構造化ページ、対象universeの日足算出の順に使う。検索は公式sourceの発見に限定する
+- 決算予定と一次IRは企業IR、TDnet等の公式Webを優先し、`source_kind` `source_url` `published_at` `fetched_at` `time_precision` `verification_status` を残す
+- candidate単位で価格またはevent evidenceが欠ける場合は、そのcandidateの新規paper約定だけをfail-closeする
+
 - automation prompt は run-specific wrapper として扱う
 - prompt に残してよいのは、承認不要の指示、実行 mode、canonical input / output / sidecar path、補助 state / 補助 skill の参照、publish 実行、今回だけの override に限定する
 - prompt で重複定義しないもの:
