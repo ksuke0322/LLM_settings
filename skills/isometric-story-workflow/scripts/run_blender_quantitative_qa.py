@@ -101,14 +101,14 @@ def _probe_video(video_path: Path) -> list[dict[str, Any]]:
     return checks
 
 
-def _contract_errors(contract: dict[str, Any], scene: dict[str, Any], timeline: dict[str, Any], previous: dict[str, Any] | None) -> list[str]:
+def _contract_errors(contract: dict[str, Any], scene: dict[str, Any], timeline: dict[str, Any], previous: dict[str, Any] | None, approved_changes: list[str]) -> list[str]:
     sys.path.insert(0, str(SCRIPT_DIR))
     from quantitative_validation import validate_cool_continuity, validate_scene_contract, validate_timeline
 
     errors = validate_scene_contract({"contract": contract, "scene": scene})
     errors.extend(validate_timeline({"contract": contract, "timeline": timeline}))
     if previous is not None:
-        errors.extend(validate_cool_continuity({"contract": contract, "previous": previous, "current": scene, "approved_changes": []}))
+        errors.extend(validate_cool_continuity({"contract": contract, "previous": previous, "current": scene, "approved_changes": approved_changes}))
     return errors
 
 
@@ -132,6 +132,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--blender", default="blender")
     parser.add_argument("--ground-name", default="Ground_Grass")
     parser.add_argument("--waivers", type=Path)
+    parser.add_argument("--approved-changes", type=Path, help="JSON array of previous-cool継続性差分の承認済みキー(例: [\"hive_body.dimensions\"])")
     args = parser.parse_args(argv)
 
     if not args.blend.is_file() or not args.contract.is_file():
@@ -161,9 +162,10 @@ def main(argv: list[str] | None = None) -> int:
             if check.get("status") == "WARN" and check.get("id") in waivers:
                 check["waiver_reason"] = waivers[check["id"]]
     previous = _read_json(args.previous_scene) if args.previous_scene else None
+    approved_changes = _read_json(args.approved_changes) if args.approved_changes else []
     contract = _read_json(args.contract)
     errors = validate_measurement_report({"schema_version": 1, "checks": checks})
-    errors.extend(_contract_errors(contract, scene, timeline, previous))
+    errors.extend(_contract_errors(contract, scene, timeline, previous, approved_changes))
     report = {"schema_version": 1, "status": "PASS" if not errors else "FAIL", "checks": checks, "errors": errors, "scene": scene, "timeline": timeline}
     _write_json(args.output_dir / "quantitative_qa_report.json", report)
     (args.output_dir / "quantitative_qa_report.md").write_text(_render_markdown(report))

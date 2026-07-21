@@ -185,8 +185,11 @@ def validate_manifest(
         errors.append("manifest.cool_number must be a positive integer")
     for url_key in ("story_page_url", "prompt_page_url"):
         url = manifest.get(url_key)
-        if isinstance(url, str) and not url.startswith(("https://www.notion.so/", "https://app.notion.com/")):
-            errors.append(f"manifest.{url_key} must be a Notion URL")
+        if isinstance(url, str):
+            is_notion = url.startswith(("https://www.notion.so/", "https://app.notion.com/"))
+            is_local_file = Path(url).is_absolute() and Path(url).is_file()
+            if not (is_notion or is_local_file):
+                errors.append(f"manifest.{url_key} must be a Notion URL or an existing absolute local file path")
 
     artifacts = manifest.get("artifacts")
     if not isinstance(artifacts, dict):

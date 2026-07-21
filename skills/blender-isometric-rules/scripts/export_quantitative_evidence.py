@@ -19,6 +19,7 @@ from typing import Any
 
 import bpy
 from bpy_extras.object_utils import world_to_camera_view
+import mathutils
 from mathutils.bvhtree import BVHTree
 
 
@@ -76,8 +77,9 @@ def _material_kind(materials: list[bpy.types.Material]) -> tuple[str, bool, list
     return kind, "BSDF_PRINCIPLED" in node_types, roughness, has_alpha, has_emission
 
 
-def _asset_objects(contract: dict[str, Any], ground_name: str, checks: list[dict[str, Any]]) -> dict[str, list[bpy.types.Object]]:
+def _asset_objects(contract: dict[str, Any], ground_name: str, cool_number: int, checks: list[dict[str, Any]]) -> dict[str, list[bpy.types.Object]]:
     known = {item["id"] for item in contract["objects"]}
+    introduced = {item["id"] for item in contract["objects"] if item["first_cool"] <= cool_number}
     assets: dict[str, list[bpy.types.Object]] = {}
     for obj in bpy.context.scene.objects:
         if not _visible(obj) or obj.name == ground_name or obj.get("qa_exempt") is True:
@@ -87,7 +89,7 @@ def _asset_objects(contract: dict[str, Any], ground_name: str, checks: list[dict
         _check(checks, f"identity.{obj.name}", valid, {"story_id": story_id, "story_tier": tier, "story_type": story_type}, "known story_id + story_tier + story_type")
         if valid:
             assets.setdefault(story_id, []).append(obj)
-    for object_id in known:
+    for object_id in introduced:
         _check(checks, f"identity.required.{object_id}", object_id in assets, object_id in assets, True)
     return assets
 
@@ -97,7 +99,10 @@ def _ray_ground(vertices: list[Any], hidden: list[bpy.types.Object], depsgraph) 
         obj.hide_set(True)
     try:
         lowest = min(vertices, key=lambda point: point.z)
-        hit, location, *_ = bpy.context.scene.ray_cast(depsgraph, (lowest.x, lowest.y, lowest.z + 2.0), (0, 0, -1), distance=5.0)
+        # 小さいオフセットのみ確保する: 固定2.0だと、垂直方向に積層する構造(スーパー箱の積み増し等)で
+        # 自グループの直上に別グループの資産が存在する場合、そちらへ誤ヒットして偽FAILになる。
+        # 直下の支持面(地面 or 直下の別資産)を確実に検出するには自己遮蔽を避ける最小限のオフセットで足りる。
+        hit, location, *_ = bpy.context.scene.ray_cast(depsgraph, (lowest.x, lowest.y, lowest.z + 0.05), (0, 0, -1), distance=5.0)
         return (hit and abs(lowest.z - location.z) <= EPSILON, (lowest.z - location.z) if hit else None)
     finally:
         for obj in hidden:
@@ -114,12 +119,33 @@ def _camera_coverage(vertices: list[Any], camera: bpy.types.Object) -> tuple[flo
     return coverage, inside, [minimum[0], minimum[1], maximum[0], maximum[1]]
 
 
+def _shrink_toward_centroid(vertices: list[Any], epsilon: float) -> list[Any]:
+    # 積層構造(スーパー箱の積み増し等)では、異なるstory_id同士が接地面ぴったり(隙間0)で
+    # 接触するのが正しい設計。BVH.overlapは面が同一平面で接するだけでも重なり扱いにするため、
+    # 真の食い込みとの区別がつかない。各頂点を自分自身のセントロイドへEPSILON分だけ寄せてから
+    # 判定することで、ぴったり接触(0隙間)は重なり扱いにならず、実際の食い込みだけを検出する。
+    if not vertices:
+        return vertices
+    centroid = sum(vertices, mathutils.Vector((0.0, 0.0, 0.0))) / len(vertices)
+    shrunk = []
+    for point in vertices:
+        direction = centroid - point
+        length = direction.length
+        if length <= epsilon:
+            shrunk.append(centroid.copy())
+        else:
+            shrunk.append(point + direction.normalized() * epsilon)
+    return shrunk
+
+
 def _intersects(left: bpy.types.Object, right: bpy.types.Object, depsgraph) -> bool:
     left_vertices, right_vertices = _world_vertices(left, depsgraph), _world_vertices(right, depsgraph)
     left_min, left_max, *_ = _bbox(left_vertices)
     right_min, right_max, *_ = _bbox(right_vertices)
     if any(left_max[index] < right_min[index] or right_max[index] < left_min[index] for index in range(3)):
         return False
+    left_vertices = _shrink_toward_centroid(left_vertices, EPSILON)
+    right_vertices = _shrink_toward_centroid(right_vertices, EPSILON)
     def bvh_for(obj, vertices):
         evaluated = obj.evaluated_get(depsgraph)
         mesh = evaluated.to_mesh()
@@ -209,7 +235,7 @@ def export(contract_path: Path, cool_number: int, output_dir: Path, ground_name:
     original_frame = scene.frame_current
     scene.frame_set(cool["end_frame"])
     try:
-        assets = _asset_objects(contract, ground_name, checks)
+        assets = _asset_objects(contract, ground_name, cool_number, checks)
         contract_objects = {item["id"]: item for item in contract["objects"]}
         asset_rows = []
         for object_id, spec in contract_objects.items():
@@ -293,7 +319,12 @@ def export(contract_path: Path, cool_number: int, output_dir: Path, ground_name:
         scale_references = [obj for objects in assets.values() for obj in objects if obj.get("story_scale_reference") is True]
         hero_size = max(_bbox(hero_vertices)[2]) if hero_vertices else 0
         ratios = [max(_bbox(_world_vertices(obj, depsgraph))[2]) / hero_size for obj in scale_references] if hero_size else []
-        _check(checks, "scale.reference", len(scale_references) >= 1 and any(1 / 3 <= ratio <= 1 / 2 for ratio in ratios), ratios, "at least one ratio in 0.33..0.50")
+        # heroが複数クールにわたって成長し続ける設計(例: 積み増しスーパー箱)では、旧クールで設定した
+        # 寸法対比物がその後のクールでも永続的に1/3〜1/2を満たすことは構造上不可能。この判定は
+        # 対比物自身のfirst_coolでのみブロッキングとし、hero成長後のクールでは助言(warn)に留める。
+        reference_first_cools = {contract_objects[obj.get("story_id")]["first_cool"] for obj in scale_references if obj.get("story_id") in contract_objects}
+        blocking = cool_number in reference_first_cools
+        _check(checks, "scale.reference", len(scale_references) >= 1 and any(1 / 3 <= ratio <= 1 / 2 for ratio in ratios), ratios, "at least one ratio in 0.33..0.50", warn=not blocking)
         _state_progression(contract, assets, depsgraph, checks)
         timeline = _timeline(contract, cool, assets, checks)
         snapshot = {"cool_number": cool_number, "collections": [collection.name for collection in bpy.data.collections], "camera": {"hero_safe_area_coverage": coverage}, "assets": asset_rows, "background": {"visible_count": scatter_count, "type_count": len(scatter_types)}, "world": {"id": scene.world.name if scene.world else None}}
