@@ -205,6 +205,11 @@ description: アイソメトリックポモドーロアプリ用に新しいテ�
 - ストーリー最終レビュー前には`validate_review_evidence.py`へ3つの人間レビューgateすべてを渡し、レビュー・パケットと主要成果物の存在を検証する。
 - `python3 /Users/sawairikeisuke/.agents/skills/isometric-story-workflow/scripts/validate_theme_integration.py <theme_integration_input.json> --json-only`で`Content/themes.json`、バンドル動画、クール数、25分(1500秒)写像を検証してからApp Integration QAへ進む。
 - 全クールに`python3 /Users/sawairikeisuke/.agents/skills/isometric-story-workflow/scripts/validate_story_package.py <cool<N>_manifest.json> --through app`を実行し、全gateが`pass`または承認済み`waived`になった時点だけを完成とする。
+- **上記が完了したら、ストーリー案側のステータスも同じ操作の中で更新する(別タスク・後回しにしない)**:
+  1. 該当ストーリーファイル(`docs/story-ideas/themes/<theme>/story-NN-slug.md`)のfrontmatter`status`を`未着手`等から`完成`へ更新する。
+  2. `docs/story-ideas/README.md`の「テーマ一覧」表で該当テーマ行の「ステータス内訳」列を実際の内訳(例: `完成:1・未着手:4`)に更新し、表直下の合計行(`合計: <N>テーマ / <M>ストーリー(完成X・未着手Y)`)の完成数・未着手数も合わせて更新する。
+  3. 表の下の変更履歴に`> YYYY-MM-DD(ステータス更新): <テーマ>の「<ストーリー名>」は実際には制作済みのため、ステータスを未着手→完成に変更。`の形式(既存の`windmill-hill`更新履歴と同じ書式)で一行追記する。
+  4. このステータス更新はストーリー全体の完成条件の一部であり、manifestの全gate `pass`だけでなく、この3ファイル(ストーリーファイル・README表・README変更履歴)の更新が揃って初めてステップ12完了とする。
 
 ## ワークシート: 記入ルール
 
