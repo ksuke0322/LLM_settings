@@ -1,6 +1,6 @@
 # クール成果物manifest schema
 
-各新規クールの作業ディレクトリ直下に`cool<N>_manifest.json`を置く。Notionを設計の正本とし、manifestはローカル成果物・再現情報・品質ゲート証跡のsidecarとする。
+各新規クールの作業ディレクトリ直下に`cool<N>_manifest.json`を置く。`design/story_design.md`・`design/prompt_notes.md`を設計の正本とし、manifestはローカル成果物・再現情報・品質ゲート証跡のsidecarとする。
 
 ## 最終完成時の必須構造
 
@@ -9,8 +9,8 @@
 ```json
 {
   "schema_version": 1,
-  "story_page_url": "https://www.notion.so/...",
-  "prompt_page_url": "https://www.notion.so/...",
+  "design_doc_path": "/absolute/path/pomodoro_assets/<theme>_<story>/design/story_design.md",
+  "prompt_notes_path": "/absolute/path/pomodoro_assets/<theme>_<story>/design/prompt_notes.md",
   "cool_number": 1,
   "artifacts": {
     "blend": "/absolute/path/story_cool1.blend",
@@ -65,7 +65,7 @@
 
 ## 記入規則
 
-- `story_page_url`は設計書ページ(設計内容の正本)、`prompt_page_url`はプロンプトDBページ(本番制作差分)を指す。
+- `design_doc_path`は設計書ファイル`design/story_design.md`(設計内容の正本)、`prompt_notes_path`は本番制作差分メモ`design/prompt_notes.md`(本番制作差分)への絶対パスを指す。フィールド名は移行前(Notion運用時代)の`story_page_url`/`prompt_page_url`から改名したもので、バリデータは後方互換のため旧フィールド名も一時的に許容するが、新規作成時は必ず新フィールド名を使う。既存の完成済みストーリー(`windmill-hill`等)は遡及修正しない。
 - パスはすべて絶対パスとし、対象ファイルが存在していなければならない。
 - 空欄、`TBD`、`後で決める`、`未定`は禁止する。
 - gateの`status`は`pending`、`pass`、`waived`のいずれか。未実施の将来gateだけ`pending`を使い、完了済みgateを`pending`へ戻さない。

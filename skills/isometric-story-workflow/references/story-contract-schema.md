@@ -1,13 +1,14 @@
 # ストーリー契約ファイル
 
-`story_contract.json`は、Notionの設計書とBlender用プロンプトDBを一度読み込んだ後に作る**検証専用の最小スナップショット**である。人間向けの物語・意図・資料の正本はNotionのままとし、このファイルへ長文説明やルール本文を複製しない。
+`story_contract.json`は、設計書ファイル(`design/story_design.md`)と本番制作差分メモ(`design/prompt_notes.md`)を一度読み込んだ後に作る**検証専用の最小スナップショット**である。人間向けの物語・意図・資料の正本はこの2ファイルのままとし、`story_contract.json`へ長文説明やルール本文を複製しない。
 
 ## 運用
 
-- 保存先は`test_gen_ai/<story>/story_contract.json`とする。
-- `source.notion_url`と`source.revision`には設計書のNotion URLと更新識別子を記録する。ステップ5後は`source.prompt_page_url`と`source.prompt_revision`も記録する。
-- 各クールの開始時は最初にNotion両ページの更新識別子だけを軽量確認する。一致すれば契約ファイルを入力に進み、不一致なら該当ページをfetchして契約を更新し、`validate_story_contract.py`を再実行する。
+- 保存先は`pomodoro_assets/<theme>_<story>/story_contract.json`とする。
+- `source.design_doc_path`と`source.design_doc_revision`には設計書ファイルの絶対パスとファイルmtime(ISO 8601秒精度)を記録する。ステップ5後は`source.prompt_notes_path`と`source.prompt_notes_revision`も記録する。
+- 各クールの開始時は最初に設計書ファイル・プロンプトノートファイルのmtimeだけを軽量確認する。一致すれば契約ファイルを入力に進み、不一致なら該当ファイルをReadして契約を更新し、`validate_story_contract.py`を再実行する。
 - このファイルは新規ストーリー専用。既存ストーリーの遡及補正には使わない。
+- フィールド名は移行前(Notion運用時代)の`notion_url`/`revision`/`prompt_page_url`/`prompt_revision`から改名したものである。バリデータ(`quantitative_validation.py`)は後方互換のため旧フィールド名も一時的に許容するが、新規作成時は必ず新フィールド名を使う。
 
 ## 必須構造
 
@@ -16,7 +17,7 @@
   "schema_version": 1,
   "theme_id": "lighthouse",
   "story_id": "lighthouse-story-01",
-  "source": {"notion_url": "https://www.notion.so/...", "revision": "2026-07-15T10:30:00Z", "prompt_page_url": "https://www.notion.so/...", "prompt_revision": "2026-07-15T10:35:00Z"},
+  "source": {"design_doc_path": "/Users/.../pomodoro_assets/lighthouse_story-01/design/story_design.md", "design_doc_revision": "2026-07-15T10:30:00", "prompt_notes_path": "/Users/.../pomodoro_assets/lighthouse_story-01/design/prompt_notes.md", "prompt_notes_revision": "2026-07-15T10:35:00"},
   "frames_per_second": 30,
   "stage_extent": 10,
   "common_environment": "common_environment",

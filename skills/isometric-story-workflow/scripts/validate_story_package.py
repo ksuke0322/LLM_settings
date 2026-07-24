@@ -176,14 +176,18 @@ def validate_manifest(
         return ["validation phase must be render, motion, or app"]
     if not isinstance(manifest, dict):
         return ["manifest root must be an object"]
-    for key in ("schema_version", "story_page_url", "prompt_page_url", "cool_number"):
-        _require(manifest, key, "manifest", errors)
+    _require(manifest, "schema_version", "manifest", errors)
+    _require(manifest, "cool_number", "manifest", errors)
+    for new_key, old_key in (("design_doc_path", "story_page_url"), ("prompt_notes_path", "prompt_page_url")):
+        if new_key not in manifest and old_key not in manifest:
+            errors.append(f"manifest.{new_key} is required")
     if manifest.get("schema_version") != 1:
         errors.append("manifest.schema_version must be 1")
     cool_number = manifest.get("cool_number")
     if isinstance(cool_number, bool) or not isinstance(cool_number, int) or cool_number < 1:
         errors.append("manifest.cool_number must be a positive integer")
-    for url_key in ("story_page_url", "prompt_page_url"):
+    for new_key, old_key in (("design_doc_path", "story_page_url"), ("prompt_notes_path", "prompt_page_url")):
+        url_key = new_key if new_key in manifest else old_key
         url = manifest.get(url_key)
         if isinstance(url, str):
             is_notion = url.startswith(("https://www.notion.so/", "https://app.notion.com/"))

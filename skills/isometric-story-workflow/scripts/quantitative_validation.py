@@ -43,8 +43,9 @@ def validate_story_contract(contract: Any) -> list[str]:
     if not isinstance(source, dict):
         errors.append("contract.source must be an object")
     else:
-        for key in ("notion_url", "revision"):
-            _require(source, key, "contract.source", errors)
+        for new_key, old_key in (("design_doc_path", "notion_url"), ("design_doc_revision", "revision")):
+            if new_key not in source and old_key not in source:
+                errors.append(f"contract.source.{new_key} is required")
     fps = contract.get("frames_per_second")
     if fps != 30:
         errors.append("contract.frames_per_second must be 30")

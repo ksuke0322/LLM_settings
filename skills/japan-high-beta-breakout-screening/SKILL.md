@@ -156,7 +156,7 @@ description: "日本株の短期 high_beta 候補を抽出し、high_beta watchl
 
 - required sidecar path は automation prompt が指定する
 - state を更新する run、stale day、休場日、upstream 未更新日のすべてで same-day sidecar を残す
-- `publish_mode` は `normal` `stale_day_noop` `hard_stop` の3値に正規化する
+- `publish_mode` は `normal` `incomplete` `stale_day_noop` `hard_stop` の4値に正規化する
 - 固定 field は `review_date` `snapshot_as_of` `publish_mode` `screened_count` `minimum_required_count` `watchlist_count` `reserve_count` `carried_count` `promoted_count` `demoted_count` `expired_count` `removed_count` `new_count` `shelf_turnover_rate` `median_candidate_age_trading_days` `horizon_extensions` `shortfall_reason` `contract_breach`
 - `shelf_turnover_rate = 1 - 前回棚との共通 ticker 数 / previous_shelf_count` とし、previous shelf が空なら `null` とする
 - state 更新後に same-day sidecar が無い run は incomplete とする
@@ -187,3 +187,7 @@ description: "日本株の短期 high_beta 候補を抽出し、high_beta watchl
 - 一次材料はTDnet・企業IRを優先し、検索結果や第三者記事は公式URLを発見する補助に限定する
 - evidenceには `source_kind` `source_url` `title` `published_at` `fetched_at` `time_precision` `verification_status` を残す
 - `technical_continuation` は一次IR未確認だけで除外しない。ただし材料点は加算せず、価格・出来高・相対強度・流動性だけで評価する
+- **公式照合必須候補** は、未保有の新規銘柄で、価格位置・出来高・相対強度・流動性の予備確認を通過し、watch または reserve の採否を検討する段階へ進んだものとする。40銘柄全件ではない。
+- 公式照合必須候補ごとに、公式一次IR・TDnet・決算日を探索してから採否を確定する。探索済みで証跡を特定できない場合は `verification_status=unverified` と `failure_reason` を残し、新規採用・昇格はしない。
+- `evidence_review` には `status`、必須候補・照合済・未照合の ticker 配列、各件数、`official_verified_count`、`unverified_count` を残す。`status=complete` のときだけ `publish_mode=normal` を許可する。
+- 公式照合工程が未実施または取得障害で完了できない場合は `status=evidence_review_incomplete` と `failure_reason` を記録し、`publish_mode=incomplete` にする。既存棚の継続レビューは残せるが、新規採用・reserveからの昇格は禁止する。同日sidecarにも件数、未照合ticker、理由を残す。
