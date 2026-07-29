@@ -190,4 +190,5 @@ description: "日本株の短期 high_beta 候補を抽出し、high_beta watchl
 - **公式照合必須候補** は、未保有の新規銘柄で、価格位置・出来高・相対強度・流動性の予備確認を通過し、watch または reserve の採否を検討する段階へ進んだものとする。40銘柄全件ではない。
 - 公式照合必須候補ごとに、公式一次IR・TDnet・決算日を探索してから採否を確定する。探索済みで証跡を特定できない場合は `verification_status=unverified` と `failure_reason` を残し、新規採用・昇格はしない。
 - `evidence_review` には `status`、必須候補・照合済・未照合の ticker 配列、各件数、`official_verified_count`、`unverified_count` を残す。`status=complete` のときだけ `publish_mode=normal` を許可する。
+- 公式照合必須候補は共通運用の `Candidate Discovery And Attribution` に従い、Yahoo!ファイナンス→株探→みんかぶの探索記録と `catalyst_attribution` を残す。`reported` 単独ではwatch / reserveへ採用・昇格しない。
 - 公式照合工程が未実施または取得障害で完了できない場合は `status=evidence_review_incomplete` と `failure_reason` を記録し、`publish_mode=incomplete` にする。既存棚の継続レビューは残せるが、新規採用・reserveからの昇格は禁止する。同日sidecarにも件数、未照合ticker、理由を残す。

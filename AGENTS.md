@@ -33,6 +33,18 @@ AI はユーザからの指示を受けて作業する際、以下の7つの原�
 - subagents は、独立性が高く、親が最後に統合判断できる場合に使う。依存順序が強い処理や競合しやすい書き込み処理では乱用しない。
 - subagents を使わず親エージェント単独で進めた場合は、進捗共有または最終報告で理由を一言明記する。
 
+## Herdr / agent delegation policy
+
+- Claude/Codex だけが親エージェントになれる。許可する委任先は `Claude → Codex / OpenCode`、`Codex → Claude / OpenCode` だけである。OpenCode を親にすること、自身・同種 agent への送信は禁止する。
+- タスクの性質で委任先を選ぶ。Claude/Codex 間は独立レビュー、複数段の限定実装、ツールを伴う検証に使い、OpenCode は validator・manifest・テスト結果の整理など定型かつ低リスクな作業に使う。自動の優先順位は設けない。
+- 大きな依頼は「調査」「変更」「検証」など、単独で完結・判定できる小タスクに分割する。一度に送るのは一件だけであり、前の結果を親がレビューするまで次を送らない。
+- 委任前に `/Users/sawairikeisuke/.agents/hooks/herdr-agent-delegate.sh preflight --parent <claude|codex> --target <pane>` を実行する。親種別と対象 pane は毎回明示する。ラッパーは Herdr の server、対象種別、対応表、idle 状態を検証する。失敗時は pane の作成・再起動・環境変更を行わず、委任せずに親が引き取るか、必要な承認を求める。
+- 実行する委任には、専用 worktree 内のタスク票を必ず作成する。タスク票には `Objective`、`Allowed paths`、`Prohibited operations`、`Expected result`、`Verification`、`Completion criteria` を含める。結果ファイルも同じ worktree 内に指定する。
+- 指示送信・待機・回収は同ラッパーの `dispatch` を使う。Herdr の機械可読な応答を壊さないため、ラッパー内部の `herdr` 呼出しだけは `rtk` を経由しない例外とする。親がラッパーを直接呼ぶ場合も、この例外に限る。
+- 委任先に任せてはならない: ユーザー意図の補完、設計判断、認証情報、外部サービスやネットワーク操作、依存関係追加、削除、DB 操作、git commit/push/branch/merge/PR。
+- OpenCode は `herdr-delegate` エージェント（`Qwen3 4B OpenCode 8K`、bash のみ）で常駐起動する。ネットワーク・ブラウザ系 MCP と `--auto` は有効化しない。
+- 親は結果 Markdown、terminal snapshot、差分、検証結果を確認し、指定範囲外の変更、blocked、timeout、ツール呼出し不整合、結果ファイル欠落を失敗として扱う。親だけが統合、最終検証、commit、push、ユーザー報告を行う。
+
 ## Command Execution Policy
 
 - シェルコマンドは、原則としてすべて `rtk` 経由で実行すること

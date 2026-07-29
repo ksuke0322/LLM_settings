@@ -127,6 +127,15 @@
       "skillFolderHash": "09b8fff9743cfc94eea3ada3727e3ec369ff10fb",
       "installedAt": "2026-07-02T14:43:30.375Z",
       "updatedAt": "2026-07-02T14:43:30.375Z"
+    },
+    "i-have-adhd": {
+      "source": "ayghri/i-have-adhd",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/ayghri/i-have-adhd.git",
+      "skillPath": "skills/i-have-adhd/SKILL.md",
+      "skillFolderHash": "5f9aed51e473d34f38962ac270ada0b1e3ff2a4a",
+      "installedAt": "2026-07-28T13:28:20.658Z",
+      "updatedAt": "2026-07-28T13:28:20.658Z"
     }
   },
   "dismissed": {

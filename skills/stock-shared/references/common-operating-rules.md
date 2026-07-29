@@ -33,6 +33,15 @@ stock 系 skill 共通の運用ルール。各 skill はこの文書を前提に
 - 決算予定と一次IRは企業IR、TDnet等の公式Webを優先し、`source_kind` `source_url` `published_at` `fetched_at` `time_precision` `verification_status` を残す
 - candidate単位で価格またはevent evidenceが欠ける場合は、そのcandidateの新規paper約定だけをfail-closeする
 
+### Candidate Discovery And Attribution
+
+- watch / reserve / entry 採否を検討する候補は、Yahoo!ファイナンス、株探、みんかぶをこの順で必ず探索する
+- 各探索結果は `discovery_evidence` に `source_kind=yahoo_finance|kabutan|minkabu`、`source_url`、`title`、`fetched_at`、`discovery_status=official_document_found|reported_reason_only|no_relevant_lead|fetch_failed` を残す
+- Yahoo!ファイナンス等で閲覧したTDnet PDF・企業決算短信・公式適時開示本文は一次資料として `official_verified` に使える。記事、AI解説、ニュース要約は一次資料ではない
+- `catalyst_attribution.classification` は `officially_disclosed` `reported` `unexplained` のいずれかとし、資料事実の検証と値動き因果の推定を混同しない
+- `reported` 単独では新規watch / reserve採用・昇格を禁止する。一次資料を確認できても因果が不明なら `official_verified` と `unexplained` を併記してよい
+- legacy state は `discovery_policy_version` を持たない限り既存証跡を維持できるが、新規採用根拠には使わず、次回レビューで補完する
+
 - automation prompt は run-specific wrapper として扱う
 - prompt に残してよいのは、承認不要の指示、実行 mode、canonical input / output / sidecar path、補助 state / 補助 skill の参照、publish 実行、今回だけの override に限定する
 - prompt で重複定義しないもの:
