@@ -41,6 +41,7 @@ AI はユーザからの指示を受けて作業する際、以下の7つの原�
 - 使い分け: 独立した視点でのレビュー、範囲を限定した実装、ツールを伴う検証は Codex に委任する。単純な調査・探索・並列読み取りは subagents を優先し、委任は subagents で代替できない場合に使う。
 - 大きな依頼は「調査」「変更」「検証」など単独で完結・判定できる小タスクに分割する。一度に投げるのは一件だけで、前の結果を親がレビューするまで次を投げない。継続は同じ `threadId` で `codex-reply` を使う。
 - 呼び出しパラメータは毎回明示する。`mcp__codex__codex` / `mcp__codex__codex-reply`、その引数名、および利用可否は現行の MCP 定義に従う。`cwd` は委任対象のディレクトリに限定し、`sandbox` は読み取り作業なら `read-only`、書き込みを伴うなら `workspace-write`、`approval-policy` は `never` を既定とする。`danger-full-access` は使わない。cwd 外へ影響しうる委任は事前にユーザー承認を得る。
+- モデル選択: Codex委任は `5.6-luna` / `medium` を既定とし、複数成果物をまたぐ原因追跡だけ `5.6-terra` / `medium` を使う。`5.6-sol` はCodex委任に使用しない。設計・waiver・人間レビュー判断が必要ならモデルを上げず親へ返す。実際のモデル名と利用可否は現行MCP定義に従う。
 - 委任先の Codex もこの AGENTS.md を読むため、放置すると `y/n` を聞き返して停止する。呼び出し時は `developer-instructions` に次を必ず含める:
   - 本タスクは親エージェントが承認済みであり、`y/n` の確認を求めず実行して結果を返すこと（AI 運用原則1の適用を免除）
   - `Objective`、`Allowed paths`、`Prohibited operations`、`Expected result`、`Verification`、`Completion criteria`
