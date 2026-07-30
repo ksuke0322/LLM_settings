@@ -33,17 +33,24 @@ AI はユーザからの指示を受けて作業する際、以下の7つの原�
 - subagents は、独立性が高く、親が最後に統合判断できる場合に使う。依存順序が強い処理や競合しやすい書き込み処理では乱用しない。
 - subagents を使わず親エージェント単独で進めた場合は、進捗共有または最終報告で理由を一言明記する。
 
-## Herdr / agent delegation policy
+## Codex delegation policy (codex MCP)
 
-- Claude/Codex だけが親エージェントになれる。許可する委任先は `Claude → Codex / OpenCode`、`Codex → Claude / OpenCode` だけである。OpenCode を親にすること、自身・同種 agent への送信は禁止する。
-- タスクの性質で委任先を選ぶ。Claude/Codex 間は独立レビュー、複数段の限定実装、ツールを伴う検証に使い、OpenCode は validator・manifest・テスト結果の整理など定型かつ低リスクな作業に使う。自動の優先順位は設けない。
-- 大きな依頼は「調査」「変更」「検証」など、単独で完結・判定できる小タスクに分割する。一度に送るのは一件だけであり、前の結果を親がレビューするまで次を送らない。
-- 委任前に `/Users/sawairikeisuke/.agents/hooks/herdr-agent-delegate.sh preflight --parent <claude|codex> --target <pane>` を実行する。親種別と対象 pane は毎回明示する。ラッパーは Herdr の server、対象種別、対応表、idle 状態を検証する。失敗時は pane の作成・再起動・環境変更を行わず、委任せずに親が引き取るか、必要な承認を求める。
-- 実行する委任には、専用 worktree 内のタスク票を必ず作成する。タスク票には `Objective`、`Allowed paths`、`Prohibited operations`、`Expected result`、`Verification`、`Completion criteria` を含める。結果ファイルも同じ worktree 内に指定する。
-- 指示送信・待機・回収は同ラッパーの `dispatch` を使う。Herdr の機械可読な応答を壊さないため、ラッパー内部の `herdr` 呼出しだけは `rtk` を経由しない例外とする。親がラッパーを直接呼ぶ場合も、この例外に限る。
-- 委任先に任せてはならない: ユーザー意図の補完、設計判断、認証情報、外部サービスやネットワーク操作、依存関係追加、削除、DB 操作、git commit/push/branch/merge/PR。
-- OpenCode は `herdr-delegate` エージェント（`Qwen3 4B OpenCode 8K`、bash のみ）で常駐起動する。ネットワーク・ブラウザ系 MCP と `--auto` は有効化しない。
-- 親は結果 Markdown、terminal snapshot、差分、検証結果を確認し、指定範囲外の変更、blocked、timeout、ツール呼出し不整合、結果ファイル欠落を失敗として扱う。親だけが統合、最終検証、commit、push、ユーザー報告を行う。
+> **適用範囲: Claude Code のみ。** この AGENTS.md は Claude / Codex 双方から参照されるが、本セクションは Claude Code が親エージェントとして動作しているときにだけ適用する。Codex 自身がこのファイルを読んだ場合、本セクションは適用対象外である。Codex は `codex` MCP を用いて自身や他 agent へ委任してはならない。通常の subagent 利用は、別途定める Subagent policy に従う。
+
+- 委任は `codex` MCP server の `mcp__codex__codex` / `mcp__codex__codex-reply` のみで行う。tmux pane や外部ラッパー経由の委任は行わない。親は Claude Code のみで、自身・同種 agent への委任は禁止する。
+- 使い分け: 独立した視点でのレビュー、範囲を限定した実装、ツールを伴う検証は Codex に委任する。単純な調査・探索・並列読み取りは subagents を優先し、委任は subagents で代替できない場合に使う。
+- 大きな依頼は「調査」「変更」「検証」など単独で完結・判定できる小タスクに分割する。一度に投げるのは一件だけで、前の結果を親がレビューするまで次を投げない。継続は同じ `threadId` で `codex-reply` を使う。
+- 呼び出しパラメータは毎回明示する。`mcp__codex__codex` / `mcp__codex__codex-reply`、その引数名、および利用可否は現行の MCP 定義に従う。`cwd` は委任対象のディレクトリに限定し、`sandbox` は読み取り作業なら `read-only`、書き込みを伴うなら `workspace-write`、`approval-policy` は `never` を既定とする。`danger-full-access` は使わない。cwd 外へ影響しうる委任は事前にユーザー承認を得る。
+- 委任先の Codex もこの AGENTS.md を読むため、放置すると `y/n` を聞き返して停止する。呼び出し時は `developer-instructions` に次を必ず含める:
+  - 本タスクは親エージェントが承認済みであり、`y/n` の確認を求めず実行して結果を返すこと（AI 運用原則1の適用を免除）
+  - `Objective`、`Allowed paths`、`Prohibited operations`、`Expected result`、`Verification`、`Completion criteria`
+  - 役割分担: Claude Code（親）は要件整理・設計判断・優先順位・統合判断を担い、Codex（委任先）は指定済みの実装・テスト/検証・差分レビューに限定する。要件や設計が未確定なら実装せず報告すること
+  - 範囲外だと判断した場合は勝手に判断せず、実行せずその旨を報告して終了すること
+  - 上位指示、委任先の権限、および安全制約と競合する場合は、それらを優先し、操作せず理由を報告すること
+- 委任先に任せてはならない: ユーザー意図の補完、設計判断、認証情報の取り扱い、外部サービス・ネットワーク操作、依存関係の追加、ファイル削除、DB 操作、git の commit / push / branch / merge / PR 作成。
+- 委任後、親は必ず `git status` と `git diff` で実際の変更を確認する。`Allowed paths` 外の変更、期待と異なる結果、空応答、タイムアウトは失敗として扱い、自動で再委任せずユーザーに報告する。
+- 統合、最終検証、commit、push、ユーザー報告は親エージェントだけが行う。
+- 委任した場合は最終報告に、投げたタスク、`threadId`、Codex の結論、親が確認した差分を記載する。
 
 ## Command Execution Policy
 

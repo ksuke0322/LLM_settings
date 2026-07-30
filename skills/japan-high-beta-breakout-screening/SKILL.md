@@ -186,9 +186,11 @@ description: "日本株の短期 high_beta 候補を抽出し、high_beta watchl
 - `thesis_type` は `catalyst_breakout` `technical_continuation` `pullback` `theme_momentum` を使う
 - 一次材料はTDnet・企業IRを優先し、検索結果や第三者記事は公式URLを発見する補助に限定する
 - evidenceには `source_kind` `source_url` `title` `published_at` `fetched_at` `time_precision` `verification_status` を残す
-- `technical_continuation` は一次IR未確認だけで除外しない。ただし材料点は加算せず、価格・出来高・相対強度・流動性だけで評価する
-- **公式照合必須候補** は、未保有の新規銘柄で、価格位置・出来高・相対強度・流動性の予備確認を通過し、watch または reserve の採否を検討する段階へ進んだものとする。40銘柄全件ではない。
-- 公式照合必須候補ごとに、公式一次IR・TDnet・決算日を探索してから採否を確定する。探索済みで証跡を特定できない場合は `verification_status=unverified` と `failure_reason` を残し、新規採用・昇格はしない。
-- `evidence_review` には `status`、必須候補・照合済・未照合の ticker 配列、各件数、`official_verified_count`、`unverified_count` を残す。`status=complete` のときだけ `publish_mode=normal` を許可する。
-- 公式照合必須候補は共通運用の `Candidate Discovery And Attribution` に従い、Yahoo!ファイナンス→株探→みんかぶの探索記録と `catalyst_attribution` を残す。`reported` 単独ではwatch / reserveへ採用・昇格しない。
-- 公式照合工程が未実施または取得障害で完了できない場合は `status=evidence_review_incomplete` と `failure_reason` を記録し、`publish_mode=incomplete` にする。既存棚の継続レビューは残せるが、新規採用・reserveからの昇格は禁止する。同日sidecarにも件数、未照合ticker、理由を残す。
+- watch / reserve へ採用する候補は `adoption_decision=watch|reserve` と `adoption_basis=official_catalyst|technical_only` を明示する
+- `adoption_basis=technical_only` は `technical_continuation` として扱い、一次IR未確認だけで除外しない。`material_score=0`、`catalyst_attribution.classification=unexplained` とし、第三者記事の理由を採用根拠へ混ぜない
+- technical-only 採用には `technical_evidence.verification_status=complete`、`as_of`、`source_url`、`distance_from_20d_high_pct`、`volume_ratio_20d`、`relative_strength_20d_pct`、`average_daily_turnover_yen` を必須とする。欠ける場合は `technical_evidence_incomplete` として不採用にする
+- **公式照合必須候補** は、未保有の新規銘柄のうち `adoption_basis=official_catalyst` として材料点を採用理由へ使う候補とする。40銘柄全件や technical-only 候補は含めない
+- 公式照合必須候補ごとに、公式一次IR・TDnet・決算日を探索してから採否を確定する。探索済みで証跡を特定できない場合は `verification_status=unverified` と `failure_reason` を残し、official-catalyst としての新規採用・昇格はしない
+- `evidence_review` には `adoption_policy_version=1`、`status`、公式照合必須候補・照合済・未照合の ticker 配列、各件数、`official_verified_count`、`unverified_count` を残す。公式照合対象がない場合は空配列・0件で `status=complete` にできる
+- 公式照合必須候補は共通運用の `Candidate Discovery And Attribution` に従い、Yahoo!ファイナンス→株探→みんかぶの探索記録と `catalyst_attribution` を残す。`reported` は材料点へ加算しない
+- 公式照合工程が未実施または取得障害で完了できない場合は `status=evidence_review_incomplete` と `failure_reason` を記録し、`publish_mode=incomplete` にする。この制限は official-catalyst の新規採用・昇格に適用する。technical-only は完全な technical evidence があれば独立して評価できる。同日sidecarにも件数、未照合ticker、理由を残す

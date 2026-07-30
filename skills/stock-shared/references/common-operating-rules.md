@@ -39,7 +39,9 @@ stock 系 skill 共通の運用ルール。各 skill はこの文書を前提に
 - 各探索結果は `discovery_evidence` に `source_kind=yahoo_finance|kabutan|minkabu`、`source_url`、`title`、`fetched_at`、`discovery_status=official_document_found|reported_reason_only|no_relevant_lead|fetch_failed` を残す
 - Yahoo!ファイナンス等で閲覧したTDnet PDF・企業決算短信・公式適時開示本文は一次資料として `official_verified` に使える。記事、AI解説、ニュース要約は一次資料ではない
 - `catalyst_attribution.classification` は `officially_disclosed` `reported` `unexplained` のいずれかとし、資料事実の検証と値動き因果の推定を混同しない
-- `reported` 単独では新規watch / reserve採用・昇格を禁止する。一次資料を確認できても因果が不明なら `official_verified` と `unexplained` を併記してよい
+- `adoption_basis=official_catalyst` で新規watch / reserve採用・昇格する場合だけ、採用根拠となる一次資料を `official_verified` にする。一次資料を確認できても値動きとの因果が不明なら `official_verified` と `unexplained` を併記してよい
+- `reported` は材料点へ加算しない。`reported` しかない候補でも、`adoption_basis=technical_only`、`material_score=0`、`catalyst_attribution.classification=unexplained` とし、lane固有の完全な technical evidence があればテクニカル根拠だけで採否を評価できる
+- technical evidence が欠ける場合は一次IR不足へ読み替えず、`technical_evidence_incomplete` として候補単位でfail-closeする
 - legacy state は `discovery_policy_version` を持たない限り既存証跡を維持できるが、新規採用根拠には使わず、次回レビューで補完する
 
 - automation prompt は run-specific wrapper として扱う

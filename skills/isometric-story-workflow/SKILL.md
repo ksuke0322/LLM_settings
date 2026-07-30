@@ -26,6 +26,27 @@ description: アイソメトリックポモドーロアプリ用に新しいテ�
 - **フォールバック**: インライン表示またはArtifactが使えない場合も、絶対パスを含む独立Markdownレビュー・パケットをファイルとして渡す。UI機能の不在を理由にレビューを省略しない。
 - 人間レビューgateが`pass`になる場合、manifestの`review_package`にパケットの絶対パス、UI提示した主要成果物の絶対パス配列、提示方式を記録する。詳細は`references/manifest-schema.md`を正本とする。
 
+## Claude Code → Codex 委任（読み取り専用の検査）
+
+- Claude Code親は、要件・設計・Blender本制作・レンダー・人間レビュー・waiver・統合判断を担当する。Codexは、既存成果物を変更しない検査、証跡整合、validator結果の整理だけを担当する。
+- Codex委任は必須ではない。親が既存`AGENTS.md`のSubagent policyに照らしてCodex委任を選ぶ場合、`references/codex-delegation.md`を正本として、モデル、`reasoning effort`、依頼文、入力、検証、起動タイミングを固定する。
+- 8A・8B・8CはCodexへ委任しない。既存どおり`subagent_type: isometric-story-review`（Opus / medium）のClaude専用独立レビューとして実施する。
+- Codexへの依頼は読み取り専用にし、外部サービス操作、Blender操作、レンダー、人間レビュー、設計・waiver判断、正本ファイル/manifest/stateの更新を含めない。設計判断が必要ならモデルを上げず親へ返す。
+
+| 起動タイミング | Codexの検査目的 | 標準モデル |
+|---|---|---|
+| ステップ1の入力Read後 | 入力要件・空欄の抽出 | 5.6-luna / medium |
+| ステップ2〜3の設計書草案後 | ワークシートの完全性・数値整合 | 5.6-luna / medium |
+| ステップ3.25の契約生成後 | schema・mtime・validator結果 | 5.6-luna / medium |
+| ステップ3.5の素材生成後 | Reference Pack・絶対パス棚卸し | 5.6-luna / medium |
+| ステップ4・9・12の人間レビュー前 | review packageと必須gateのpreflight | 5.6-luna / medium |
+| ステップ5・6の準備後 | 差分メモ・契約・manifest骨格の整合 | 5.6-luna / medium |
+| ステップ7d/7.5・10のClaude検証後 | QA/Motion証跡、gate状態、動画仕様の整合 | 5.6-luna / medium |
+| ステップ8A〜8Cの開始前 | 独立レビュー入力とevidenceの不足検出 | 5.6-luna / medium |
+| ステップ9.5の動画検証後 | render段階のmanifestとvalidator結果の整合 | 5.6-luna / medium |
+
+複数成果物をまたぐ原因追跡だけは5.6-terra / mediumへ、Terraでも絞れない技術的根因だけは5.6-sol / mediumへ上げる。実際のCodex MCPパラメータ名と利用可否は、現行MCP定義に従う。
+
 ## ワークフロー全体
 
 1. **(ストーリー単位)** 参考イメージ収集
