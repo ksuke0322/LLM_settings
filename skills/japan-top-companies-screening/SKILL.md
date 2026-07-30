@@ -26,7 +26,9 @@ description: "東証33業種を基準に、日本株の large_cap 候補を洗�
 
 - この skill は `auto1a` 相当の watchlist producer として扱う
 - `large_cap_watchlist.json` は `as_of` `review_mode` `watchlist` が必須
+- `watchlist[]` は `next_earnings_date`（ISO date または null）と `earnings_date_as_of`（ISO date）を持ち、週次 refresh ごとに自動確認する
 - automation run では `as_of` が 7 calendar days を超えたら stale とみなして停止する
+- 決算日を取得できない場合も候補を削除せず `next_earnings_date=null` とし、consumer が実行だけを fail-closed にできるよう取得失敗理由を state に残す
 - `current_holdings.json` を保有除外に使う場合、`holdings[].ticker` を正本に除外する
 
 ## state 出力契約

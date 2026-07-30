@@ -33,7 +33,8 @@
 
 - `selection_reason` `thesis_type` `catalyst` などの長文は chat へ全文展開せず、state / sidecar へ残す
 - `compact` では 1 行要約へ圧縮する
-- `auto2a` sidecar では `decision_date` `watchlist_as_of` `age_days` `freshness_rule` `classification_summary` `fetch_failures` `earnings_blackout_check` `lane_discipline` `contract_breach` を固定 field として残す
+- `auto2a` は `large_cap_decisions.json` に `execution_ready` `execution_block_reason` `signal_date` `confirmation_status` を残す
+- `auto2a` sidecar では `decision_date` `watchlist_as_of` `age_days` `freshness_rule` `classification_summary` `confirmation_summary` `fetch_failures` `earnings_blackout_check` `lane_discipline` `contract_breach` を固定 field として残す
 - `auto2b` sidecar では `decision_date` `audit_date` `snapshot_as_of` `same_day_freshness_ok` `stale_day` `entry_ready_tickers` `watch_tickers` `entry_style_summary` `execution_window_summary` `monitoring_valid_until` `publish_mode` `contract_breach` を固定 field として残す
 - `auto2b` の `publish_mode` は `normal` `stale_day_noop` `hard_stop` の 3 値に正規化する
 - `auto2b` sidecar では `stale_day` `same_day_freshness_ok` と、`auto4_buy_allowed=false` 候補の block reason を残す
