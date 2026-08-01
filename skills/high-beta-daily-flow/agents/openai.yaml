@@ -1,0 +1,4 @@
+interface:
+  display_name: "High Beta Daily Flow"
+  short_description: "high-beta日次判断を一本化して安全に実行する"
+  default_prompt: "Use $high-beta-daily-flow to run the daily high-beta paper pipeline."

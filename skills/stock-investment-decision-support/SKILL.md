@@ -1,193 +1,42 @@
 ---
 name: stock-investment-decision-support
-description: "日本株の未保有候補について、trade-v2 recent analysis を使って短期の新規エントリー判断材料を作るときに使う。"
+description: 未保有の日本株候補について、trade-v2と公式証跡を用いて短期signalと注文計画を作る。auto2a/auto2bの判断laneに使う。
 ---
 
 # Stock Investment Decision Support
 
-企業名または watchlist state から ticker を確定し、trade-v2 recent analysis を使って短期の新規エントリー判断材料を返す。保有後の防衛判断は `stock-investment-position-review` に分離する。
+## 責務
 
-共通運用は [../stock-shared/references/common-operating-rules.md](../stock-shared/references/common-operating-rules.md) を前提にする。詳細な出力列は [references/output-contract.md](references/output-contract.md) を使う。
+watchlistのactive候補だけを評価し、`signal_status`と単一`eligibility`を出す。候補発見、portfolio配分、paper約定は行わない。
 
-## 固定設定
+## 判定
 
-```text
-API_BASE_URL=https://bfdkvlo2zi752fp5mhaq4koreq0ezvbd.lambda-url.ap-northeast-1.on.aws
-ENDPOINT=/stock/{ticker}/analysis?range=recent&schema=trade-v2
-投資スタイル=短期（1ヶ月以内程度）
+1. watchlistの期限とinvalidationを確認する。
+2. trade-v2の価格・出来高・trendと決算日証跡を候補単位で確認する。
+3. signalが具体化し、limit/stop/targetが揃う場合だけ`trade_state=eligible`にする。
+4. 取得失敗・欠落はその候補だけ`blocked`にし、`reason_codes`へ明記する。run全体を止めるのは、必要候補の大半を評価できず判断集合が信頼できない場合だけ。
+
+## 出力契約
+
+```json
+{
+  "ticker": "6525",
+  "signal_status": "actionable",
+  "eligibility": {
+    "trade_state": "eligible",
+    "reason_codes": [],
+    "valid_until": "YYYY-MM-DD",
+    "order_plan": {
+      "limit_price": 7000,
+      "stop_price": 6650,
+      "target_price": 7700
+    },
+    "trigger_condition": null
+  },
+  "evidence_refs": []
+}
 ```
 
-## 基本方針
+open確認が必要なら`trigger_condition=open_retest`とする。`entry_ready`、`auto4_buy_allowed`、`execution_ready`、`execution_window`を重ねて生成しない。説明不能なfree textだけでblockingせず、安定した`reason_codes`を使う。
 
-- この skill は未保有候補の新規エントリー判断専用
-- `large_cap` と `high_beta` を同じ比較表や同じ資金枠で混ぜない
-- 上流 thesis は補助説明に使うが、API の `setup` 判定を上書きしない
-- `watch` `entry_ready` は執行可否の入口であり、 sizing の最終決定ではない
-
-## 入力
-
-### 手入力モード
-
-- 企業名だけが渡される通常入力
-
-### state consumer モード
-
-- watchlist から次を受け取る
-  - `ticker`
-  - `company`
-  - `bucket`
-  - `decision_profile`
-  - `thesis_type`
-  - `selection_reason`
-  - `event_risk`
-- high_beta では必要に応じて
-  - `catalyst`
-  - `invalidation_hint`
-  - `monitoring_valid_until`
-- execution 補助情報があれば
-  - `regime_fit`
-  - `execution_caution`
-  - `liquidity_tier`
-  - `slippage_risk`
-  - `theme_cluster`
-  - `event_freshness`
-  - `crowding_risk`
-  - `entry_style_hint`
-
-## 正本 state
-
-- large_cap watchlist: `/Users/sawairikeisuke/Documents/stock-analysis/large_cap_watchlist.json`
-- high_beta watchlist: `/Users/sawairikeisuke/Documents/stock-analysis/high_beta_watchlist.json`
-- portfolio rules: `/Users/sawairikeisuke/Documents/stock-analysis/portfolio_rules.json`
-
-## lane 固有 freshness / schema
-
-- `auto2a` は `large_cap_watchlist.json` を読む large_cap 専用 consumer
-- `auto2b` は `high_beta_watchlist.json` を読む high_beta 専用 consumer
-- `auto2b` は active `watchlist` を最大10件まで全件評価する
-- `reserve_watchlist` は 1b が管理し、trade-v2 API、昇格、decision 生成の対象外とする
-- `large_cap_watchlist.json` は `as_of` が当日を含む過去 7 日以内で、`ticker` `company` `bucket` `decision_profile` `thesis_type` `selection_reason` `event_risk` `priority` `status` が必須
-- `high_beta_watchlist.json` は `as_of` が当日で、active `watchlist` は `catalyst` `invalidation_hint` `monitoring_valid_until`、reserve は producer の reserve schema と lifecycle field が必須
-- `as_of != today` は `stale_day_noop` とする。当日 state で active / reserve 間の ticker 重複、bucket 混入、必須 field 欠落、`monitoring_valid_until < today` が1件でもあれば `hard_stop` とし、canonical decision state は更新しない
-- `portfolio_rules.json` は `max_new_entries_per_day_high_beta` `max_theme_overlap` `earnings_blackout_days` `max_positions_large_cap` `max_positions_high_beta` `max_risk_per_trade_pct` `max_position_value_jpy_high_beta` が必須
-- `auto2b` では `current_holdings.json` を occupancy gate に使わない
-
-## automation / sidecar contract
-
-- `auto2a`
-  - required sidecar path は automation prompt が指定する
-  - sidecar の固定 field は `decision_date` `watchlist_as_of` `age_days` `freshness_rule` `classification_summary` `fetch_failures` `earnings_blackout_check` `lane_discipline` `contract_breach`
-  - `earnings_blackout_check` は `pass` `not_applicable` `observational_exception` の 3 値に正規化し、`daysToEarnings` 欠損時は `observational_exception` と理由を 1 行で残す
-  - `age_days > 7` のときは state 更新へ進まず、`contract_breach` を明示した no-op sidecar を残す
-- `auto2b`
-  - required sidecar path は automation prompt が指定する
-  - stale day / 休場日 / upstream 未更新日でも required sidecar は必須で、`publish_mode=stale_day_noop` の no-op publish を残す
-  - sidecar の固定 field は `decision_date` `audit_date` `snapshot_as_of` `same_day_freshness_ok` `stale_day` `entry_ready_tickers` `watch_tickers` `entry_style_summary` `execution_window_summary` `monitoring_valid_until` `publish_mode` `contract_breach`
-  - 追加固定 field は `input_watchlist_count` `reserve_count` `reserve_tickers` `reserve_handling` `source_lifecycle_summary` `fetch_failures`
-  - `same_day_freshness_ok` と `stale_day` は監査日基準で評価し、snapshot 自己評価を残す場合は `snapshot_same_day_freshness_ok` に分離する
-  - same-day freshness や `monitoring_valid_until` 不一致で state 更新を止める場合でも、`stale_day` `same_day_freshness_ok` `publish_mode` などの failure trace を sidecar に残す
-  - decision state を更新した run では same-day sidecar も必須とし、state だけ更新して sidecar が欠ける run は incomplete 扱いにする
-  - watchlist の `entry_style_hint` / `monitoring_comment` と decision の `entry_style` / `execution_window` の対応を 1 行 summary で残す
-  - `watchlist` が0件で `reserve_watchlist` だけがある場合は API を呼ばず、空 decision を `publish_mode=normal` で更新する
-  - active API の一部または全部が失敗した場合は部分 state を publish せず `hard_stop` とし、`fetch_failures` を sidecar に残す
-
-## execution decision contract
-
-- top-level 状態は `watch` または `entry_ready`
-- 併記項目:
-  - `entry_quality`
-  - `entry_style`
-  - `execution_window`
-  - `position_risk_note`
-  - `stale_reason`
-- high_beta decision consumer では automation 向け補助項目として次も持てる
-  - `auto4_buy_allowed`
-  - `auto4_block_reason`
-  - `auto4_execution_caution`
-- high_beta decision state の top-level には次を持つ
-  - `input_watchlist_count`
-  - `reserve_count`
-  - `reserve_tickers`
-  - `reserve_handling=producer_managed_not_evaluated`
-- high_beta decision item は source lifecycle trace として次を持つ
-  - `source_first_seen_date`
-  - `source_stage_entered_date`
-  - `source_shelf_age_trading_days`
-  - `source_transition_reason_code`
-- `entry_ready` は「条件付きで執行検討に進める」の意味とする
-- `auto4_buy_allowed` は「同日の auto-4 paper 約定を許可するか」を表す automation 向け gate とする
-- `auto4_block_reason` は `avoid_open` `needs_open_retest` `needs_freshness_recheck` `aging_event_freshness` `crowding_high` `needs_fresh_catalyst_check` などの短い正規化 code を使う
-- `auto4_execution_caution` は `needs_open_retest` など、block ではないが条件付き許可として残す注意 code に使ってよい
-- high_beta consumer では `entry_ready` と `auto4_buy_allowed` を分離し、human-facing の執行候補と機械約定可否を混同しない
-- auto2b sidecar の `publish_mode` は `normal` `stale_day_noop` `hard_stop` の 3 値に正規化する
-
-## 手順
-
-1. 入力モードを確定する。
-2. 各対象の ticker を確定する。
-   - auto2b では active `watchlist` だけを対象にし、`reserve_watchlist` は件数・ticker・`producer_managed_not_evaluated` の trace だけを残す。
-3. `ctx_execute` の `javascript` で API をまとめて取得し、retry と JSON parse を sandbox 内で完結させる。
-4. `ctx_execute` で失敗した場合だけ Playwright/browser fetch、さらに失敗した場合だけ診断用 `curl` へ落とす。
-5. `setup` `risk` `feature.metrics` を主根拠に短期判断を作る。
-6. 上流 execution 補助情報があれば、`entry_quality` や `watch / entry_ready` の説明へ反映する。
-7. high_beta automation では `entry_ready` と `auto4_buy_allowed` を分離し、human review 上は前向きでも機械約定に不向きな候補を `auto4_buy_allowed=false` にする。
-8. `portfolio_rules.json` があれば個別判断の前に portfolio gate 警告を出す。
-9. 既定は `compact` で返し、長い表は `full` 要求時だけ出す。
-
-## 分析観点
-
-- `setup.regime` `setup.setupType` `setup.setupScore` `setup.confidence`
-- `setup.reasons` `setup.invalidations`
-- `risk.entryZone` `risk.stopPrice` `risk.target1` `risk.target2` `risk.minimumRR` `risk.timeStopDays` `risk.riskWarnings`
-- `feature.chartSummary`
-- `feature.metrics`
-  - `atr14`
-  - `gapPercent`
-  - `distanceFrom20dHighPercent`
-  - `distanceFrom60dHighPercent`
-  - `volumeRatioVsMa20`
-  - `ema10Slope` `ema25Slope` `ema60Slope`
-  - `breakoutCandidate`
-- `feature.indicatorState`
-- `feature.eventRisk`
-
-## 判定ラベルの正規化
-
-- 出力状態は `watch` または `entry_ready`
-- `entry_ready` は `setupType` `minimumRR` `timeStopDays` `portfolio gate` `liquidity` `regime` を満たしたときだけ使う
-- `setupType=no_trade`、`minimumRR` 不足、強い `riskWarnings` では `watch` を優先する
-- `auto4_buy_allowed=true` は `entry_ready` のうち、当日終値ベースの機械約定でも意図が崩れない候補に限定する
-- `entry_style=avoid_open`、`execution_window=after_freshness_recheck`、`event_freshness=aging`、`crowding_risk=high`、fresh catalyst 再確認要件がある場合は `entry_ready` を維持しても `auto4_buy_allowed=false` を優先する
-- `execution_window=after_open_retest` は単独では `auto4_buy_allowed=false` にしない。`needs_open_retest` を条件付き許可として残すかどうかは、次を順番に機械的に評価する(自然言語判断で run ごとに揺らさない):
-  1. `feature.indicatorState` の `rsiState` `stochasticState` `bollingerState` のうち `overbought` が3件以上(全指標がoverbought) → `auto4_buy_allowed=false`、`auto4_block_reason=needs_open_retest`
-  2. 1に該当せず、`feature.metrics.distanceFrom20dHighPercent` が-10%以上の急伸(値飛びしやすい)→ 同様に `auto4_buy_allowed=false`、`auto4_block_reason=needs_open_retest`
-  3. 1・2のいずれにも該当しない → `auto4_buy_allowed=true` を既定とし、`auto4_execution_caution=needs_open_retest` を残す(条件付き許可)
-  - この判定は `setupScore` や `entry_quality` の高さで上書きしない
-
-## 出力形式
-
-- 既定は `compact`
-- `compact`:
-  - 単一企業は状態、短期判断、entry 条件、利確 / 損切り / 無効化条件、リスク警告を返す
-  - 複数企業は各企業 1 行サマリーと `分類サマリー` `取得失敗` `portfolio gate 警告` を返す
-- `full`:
-  - [references/output-contract.md](references/output-contract.md) の 2 表構成を使う
-
-## 判断ルール
-
-- `買い` `売り` と断定しない
-- API 判定と feature が矛盾する場合は `watch` を優先する
-- 上流 thesis を根拠に `no_trade` を無視しない
-- `entry_style_hint=avoid_open` は API setup が強くても上書きしない
-- `slippage_risk=high` や `liquidity_tier` 悪化時は `entry_quality` を落とす
-- `entry_ready` を `watch` へ落とさずに残す場合でも、auto-4 自動約定が不適切なら `auto4_buy_allowed=false` と `auto4_block_reason` を必ず併記する
-- `needs_open_retest` を条件付き許可にした場合は、`auto4_buy_allowed=true` のまま `auto4_execution_caution=needs_open_retest` を残す
-- `execution_window=after_open_retest` の可否判定は「判定ラベルの正規化」の機械的基準(overbought件数 / distanceFrom20dHighPercent)を優先し、それ以外の定性判断で上書きしない
-
-## Paper Execution Evidence
-
-- high_beta decisionには `market_snapshot`、`order_intent`、`execution_ready`、`earnings_event_evidence` を持てる
-- `market_snapshot` は `latest_close` `source` `fetched_at`、`order_intent` は `order_type` `limit_price` `trigger_price` `stop_price` `target1` `target2` `valid_until` を持つ
-- `execution_ready` は価格snapshot、order intent、決算event evidenceが揃い、翌営業日のpaper注文を作成できることを表す
-- 決算日が未確認の候補は watch / entry_ready に残してよいが、`execution_ready=false` と `earnings_event_unverified` を残し、新規paper約定を許可しない
-- candidateごとのWeb取得失敗は当該candidateだけを `execution_ready=false` とする。全candidateの取得率がrun規定値を下回る場合だけ `hard_stop` とする
+auto2a/auto2bのlane差は入力watchlistとprofileのみ。high-betaでは`high_beta_watchlist.json`から`high_beta_decisions.json`を更新する。
