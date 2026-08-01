@@ -26,26 +26,65 @@ description: アイソメトリックポモドーロアプリ用に新しいテ�
 - **フォールバック**: インライン表示またはArtifactが使えない場合も、絶対パスを含む独立Markdownレビュー・パケットをファイルとして渡す。UI機能の不在を理由にレビューを省略しない。
 - 人間レビューgateが`pass`になる場合、manifestの`review_package`にパケットの絶対パス、UI提示した主要成果物の絶対パス配列、提示方式を記録する。詳細は`references/manifest-schema.md`を正本とする。
 
-## Claude Code → Codex 委任（読み取り専用の検査）
+## Claude Code → Codex 委任（検査・Blender実装・レンダー実行）
 
-- Claude Code親は、要件・設計・Blender本制作・レンダー・人間レビュー・waiver・統合判断を担当する。Codexは、既存成果物を変更しない検査、証跡整合、validator結果の整理だけを担当する。
+- Claude Code親は、要件・設計・優先順位・人間レビュー・waiver・統合判断・正本採用を担当する。Codexは、検査、証跡整合、validator結果の整理に加え、親が固定した実装パケットに限って候補`.blend`の実装、animatic・spike・静止画・動画のレンダー実行、独立レビュー指摘の修正実装を行う。
 - Codex委任は必須ではない。親が既存`AGENTS.md`のSubagent policyに照らしてCodex委任を選ぶ場合、`references/codex-delegation.md`を正本として、モデル、`reasoning effort`、依頼文、入力、検証、起動タイミングを固定する。
-- 8A・8B・8CはCodexへ委任しない。既存どおり`subagent_type: isometric-story-review`（Opus / medium）のClaude専用独立レビューとして実施する。
-- Codexへの依頼は読み取り専用にし、外部サービス操作、Blender操作、レンダー、人間レビュー、設計・waiver判断、正本ファイル/manifest/stateの更新を含めない。設計判断が必要ならモデルを上げず親へ返す。
 
-| 起動タイミング | Codexの検査目的 | 標準モデル |
-|---|---|---|
-| ステップ1の入力Read後 | 入力要件・空欄の抽出 | 5.6-luna / medium |
-| ステップ2〜3の設計書草案後 | ワークシートの完全性・数値整合 | 5.6-luna / medium |
-| ステップ3.25の契約生成後 | schema・mtime・validator結果 | 5.6-luna / medium |
-| ステップ3.5の素材生成後 | Reference Pack・絶対パス棚卸し | 5.6-luna / medium |
-| ステップ4・9・12の人間レビュー前 | review packageと必須gateのpreflight | 5.6-luna / medium |
-| ステップ5・6の準備後 | 差分メモ・契約・manifest骨格の整合 | 5.6-luna / medium |
-| ステップ7d/7.5・10のClaude検証後 | QA/Motion証跡、gate状態、動画仕様の整合 | 5.6-luna / medium |
-| ステップ8A〜8Cの開始前 | 独立レビュー入力とevidenceの不足検出 | 5.6-luna / medium |
-| ステップ9.5の動画検証後 | render段階のmanifestとvalidator結果の整合 | 5.6-luna / medium |
+### 【禁止】親がBlender用スクリプト・実測スクリプトを自分で書く/直す(最重要)
 
-複数成果物をまたぐ原因追跡だけは5.6-terra / mediumへ、Terraでも絞れない技術的根因だけは5.6-sol / mediumへ上げる。実際のCodex MCPパラメータ名と利用可否は、現行MCP定義に従う。
+- **Blenderに関わるコードは、親(Claude Code)が一行も書かない・直さない。** 対象は、ビルドスクリプト、`bpy`を使うあらゆるPython、scene/timeline snapshotの抽出コード、寸法・接合・視認個数などの実測スクリプト、GNノードグラフ構築コード、レンダー実行コマンドを含む。**これらはすべてCodexへ委任する。**
+- デバッグループの途中で「自分で直した方が速い」「往復が無駄」と感じても手を出さない。**速さを理由にした越権を明示的に禁止する。**本ワークフローでCodex委任を使う目的の一つは「委任した状態で品質が担保できるか」の検証であり、親が実装に触れた時点でその検証が成立しなくなる(実際に、親がスクリプトを直接修正し続けて分担が崩壊した事故がある)。
+- 親がCodexへ渡すのは**コードではなく「満たすべき条件」**である。実装手法(ノードの選択、座標の導出方法、判定アルゴリズム)はCodexが決める。親が発見した不具合も、修正コードではなく「どの数値・どの性質を満たすべきか」として言語化して渡す。
+- 親が自分で行ってよいのは次だけ: 設計判断、`design/story_design.md`・`design/prompt_notes.md`・`story_contract.json`・`cool<N>_manifest.json`の編集、レビュー・パケットの作成、品質ゲートの合否判断、`isometric-story-review`の起動、ユーザーへの報告。
+- **Codexが実行できない事態が起きても、親が代わりに実行してはならない。** 作業を止めてユーザーに報告し、分担変更の承認を得る(`AGENTS.md` AI運用原則3)。事後報告は不可。
+
+### `danger-full-access` の限定的な例外(AGENTS.mdの読み替え)
+
+- `AGENTS.md`は`danger-full-access`を禁止しているが、**本ワークフローのBlender実行を伴う委任に限り、`sandbox: "danger-full-access"`を使ってよい**(基本原則の「skills優先」に従う)。
+- 根拠(実測済み): macOS + Blender 4.5系では、`workspace-write`のseatbeltサンドボックス内で`blender -b`が起動時のMetalデバイス照会で**必ずSIGSEGV(終了コード139)**する。`--version`のみ成功し、`HOME`/`TMPDIR`/`BLENDER_USER_RESOURCES`の変更、`--debug-gpu`、`--gpu-backend opengl|vulkan`、Cycles CPU指定のいずれでも回避できない(利用可能なGPU backendは`metal`のみ)。
+- 適用範囲は**Blenderを実行する委任だけ**。検査のみなら`read-only`、スクリプト編集のみなら`workspace-write`を使う。
+- 例外を使う場合も`Allowed paths`を`developer-instructions`で厳密に拘束し(`work/`・`output/`・`evidence/`のみ等)、権限があることを理由に対象範囲を広げない。委任後は下記の確認を必ず行う。
+
+### 委任後の確認(`pomodoro_assets`はgit管理外)
+
+`pomodoro_assets`配下はgitリポジトリではないため`git status`/`git diff`が使えない。委任のたびに次の3点を親が確認する(省略不可)。
+
+1. `design/`・`ref/`・`review/`・`story_contract.json`・`cool<N>_manifest.json`のmtimeが委任前から不変であること
+2. `story_contract.json`の`source.design_doc_revision`が`design/story_design.md`の実mtimeと一致すること(正本が書き換えられていない証明になる)
+3. 成果物が`Allowed paths`内にのみ出力されていること
+- Blender実装では、親が正本から`pomodoro_assets/<theme>_<story>/work/cool<N>_candidate.blend`を作成し、設計固定事項・対象・変更禁止箇所・素材パス・確認方法を実装パケットへ明記する。Codexは候補`.blend`と指定済み`evidence/`・`output/`だけを変更できる。正本`.blend`、manifest、state、設計書、レビュー判定は更新しない。
+- ステップ7aは承認済みブロックアウト・寸法・カメラ・変更禁止範囲に沿う精緻化だけ、ステップ7bは親が指定した1対象`kind`の署名パーツ・ティア・寸法制約だけ、ステップ7cは親が事前取得・指定したローカル素材と配色・マテリアル仕様の適用だけをCodexに委任する。**素材の検索・取得・選定・代替は委任しない**(親が事前に確定してローカル絶対パスで渡す)。
+- ステップ4は親が固定したstate順序・尺・frame・カメラに沿うグレーanimaticのレンダーと、親が指定した検証項目だけのspike作成をCodexに委任する。物語・時間設計・技術リスクの選定、レビュー・パケットの作成、人間レビューの依頼は親が行う。
+- ステップ8はレンダー実行(完成state静止画・密集エリアclose-up・kind単位close-up)と、**8A/8B/8Cの指摘を受けた修正実装**をCodexに委任する。渡すのは親が確定した修正指示だけとし、指摘の解釈・採否・設計側の見直しは親が判断する。
+- ステップ9.5は`blender -b <file.blend> -a`のバックグラウンド起動による動画レンダー実行をCodexに委任する。完了判定、manifest更新、`validate_story_package.py --through render`の結果解釈、ユーザーへの提示は親が行う。
+- Codexは7a・7c・4・8・9.5の各完了時に、指定された確認用静止画・動画・定量snapshotを出力してよい。親は各委任後に変更範囲、成果物、定量QAを確認し、7a→7b→7c→7d/7.5→8→9→9.5→10の順序を崩さない。
+- **8A・8B・8Cの判定そのものはCodexへ委任しない**。既存どおり`subagent_type: isometric-story-review`（Opus / medium）のClaude専用独立レビューとして実施し、作り込み品質のブロッキング権限はこの独立レビューに置く。Codexが担うのはその前後のレンダーと修正実装だけである。
+- Codexが設計の欠落、素材不適合、validator結果の解釈、範囲外の変更を検出した場合は候補をそれ以上変更せず`needs_parent_decision`で返す。設計判断が必要ならモデルを上げず親へ返す。
+
+| ステップ | Codexの担当 | 起動タイミング・目的 | Claude Code親に残す判断 | 標準モデル |
+|---|---|---|---|---|
+| 1 | 検査 | 入力Read後に要件・空欄を抽出 | 参考の採否、世界観、技術リスク | gpt-5.6-luna / max |
+| 2〜3 | 検査 | 設計書草案後に完全性・数値整合を検査 | Story Beat、構図、寸法、カメラ、演出設計 | gpt-5.6-luna / max |
+| 3.25 | 検査 | 契約生成後にschema・mtime・validator結果を照合 | 契約内容と失敗の設計上の解決 | gpt-5.6-luna / max |
+| 3.5 | 検査 | 素材生成後にReference Pack・絶対パスを棚卸し | 画像品質、世界観への適合、Pack要否 | gpt-5.6-luna / max |
+| 4 | レンダー実装 | 設計固定後にグレーanimaticをレンダーし、指定spikeを作成 | 物語・時間設計、技術リスクの選定、waiver、人間レビュー | gpt-5.6-luna / max |
+| 4 | 検査 | 人間レビュー前にreview packageをpreflight | パケット内容、提示方式、承認の解釈 | gpt-5.6-luna / max |
+| 5〜6 | 検査 | 差分メモ・契約・manifest骨格を照合 | 本番差分、クール構成、素材採否、正本更新 | gpt-5.6-luna / max |
+| 7a | 候補実装 | 設計固定後に承認済みブロックアウトを精緻化し、静止画・snapshotを出力 | 構図、主役の見せ方、カメラ、比率、変更許容範囲 | gpt-5.6-luna / max |
+| 7b | 候補実装 | 設計固定後に1対象`kind`の署名パーツとティアを実装 | パーツ、手法、存在理由、修正方針 | gpt-5.6-luna / max |
+| 7c | 候補実装 | 設計固定後に指定済みローカル素材・配色・マテリアルを適用し、静止画・snapshotを出力 | 質感方向、素材採否、代替手段 | gpt-5.6-luna / max |
+| 7d/7.5 | 検査 | 定量QA後にFAIL/WARN、gate、証跡を整理 | 修正方針、WARN/waiverの採否 | gpt-5.6-luna / max |
+| 8の前処理 | レンダー実装 | 完成state静止画・密集エリアclose-up・kind単位close-upをレンダー | 撮影対象kind、構図、レンダー要否 | gpt-5.6-luna / max |
+| 8の前処理 | 検査 | 8A〜8Cの入力・evidence不足を抽出 | 独立レビューの起動と判定 | gpt-5.6-luna / max |
+| 8の修正 | 候補実装 | 親が確定した8A/8B/8C指摘の修正を候補`.blend`へ実装し再レンダー | 指摘の解釈・採否、設計側の見直し、収束判断 | gpt-5.6-luna / max |
+| 9 | 検査 | 人間レビュー前にreview packageとgateをpreflight | 人間レビューと指摘の解釈 | gpt-5.6-luna / max |
+| 9.5 | レンダー実装 | 承認後に`blender -b -a`をバックグラウンド起動して動画を出力 | レンダー指示、出力品質の判断、ユーザー提示 | gpt-5.6-luna / max |
+| 9.5 | 検査 | 親の動画検証後にmanifestとvalidator結果を照合 | 完了判定、manifest更新、validator結果の解釈 | gpt-5.6-luna / max |
+| 10 | 検査 | Motion QA後に証跡・gate・動画仕様を照合 | 動き・演出・連続性、修正判断 | gpt-5.6-luna / max |
+| 12 | 検査 | 最終レビュー前にmanifest・App QA入力をpreflight | App Integration QA、完成・status更新、正本採用 | gpt-5.6-luna / max |
+
+複数validator・複数クール・複数成果物をまたぐ再現可能な技術原因追跡だけはgpt-5.6-terra / mediumへ上げる。設計・視覚品質・waiver・人間レビュー・修正方針が必要ならモデルを上げず親へ返す。gpt-5.6-solはCodex委任に使用しない。実際のCodex MCPパラメータ名と利用可否は、現行MCP定義に従う。
 
 ## ワークフロー全体
 
@@ -56,7 +95,7 @@ description: アイソメトリックポモドーロアプリ用に新しいテ�
 3.5. **(ストーリー単位)** 世界観リファレンス画像と必要なReference Packを生成し、設計書ファイルに添付
 4. **(ストーリー単位)** 低品質animaticと必要な技術spikeを作成し、人間レビュー — 必須の停止点
 5. **(ストーリー単位)** テーマ固有差分(寸法変数・オブジェクト一覧・state構成)を`references/prompt-db-template.md`に従って本番制作差分メモ(`design/prompt_notes.md`)へ保存(ルール本体は再掲しない)
-6. **(クール単位ループ)** 設計書ファイル+本番制作差分メモを明示Readし、クール用ファイル・クール別チェック画像・manifestを準備
+6. **(クール単位ループ)** 設計書ファイル+本番制作差分メモを明示Readし、クール用ファイル・クール別チェック画像・manifestを準備。**クール1の空`.blend`作成とblender-mcp接続は人間が行う — 必須の停止点**(クール2以降は`save_as_mainfile`での付け替えのみで停止不要)
 7. **(クール単位ループ)** fetchしたテーマ固有差分+クール別チェック画像+`blender-isometric-rules`スキルで該当クールを実際に制作。制作は**7a ブロックアウト精緻化 → 7b 個別作り込み → 7c テクスチャリング**の3工程を順に踏む(プリミティブ直置き+後付けだけで完成としない)
 7.5. **(クール単位ループ)** 全アセット棚卸し(作り込みティア監査)。全オブジェクトを種類単位で機械列挙し、ティア・本物マテリアル・作り込み・接地の未達をゼロにする — 必須hard gate
 8. **(クール単位ループ)** 構造的自己レビューに加え、独立サブエージェントによる(8A)Acceptance Matrixレビューと(8B)常識・実物資料レビューを未解決の必須項目ゼロまでループ
@@ -90,8 +129,12 @@ description: アイソメトリックポモドーロアプリ用に新しいテ�
 ### ステップ3.5: 世界観リファレンス画像生成
 - 目的: スタイル・配色・雰囲気が全クールを通じて一貫しているかを、テキストだけでなく画像でも確認できるようにする。クール単位の実装チェックには使わない(クール2以降の要素も含む「最終形」の画像のため)。
 - 入力: ストーリー全文(一言要約+各クールで完成するものの説明。`design/story_design.md`相当)と、ステップ2・3で確定した設計内容(オブジェクト一覧表・質感タイプ・World/ライティング設計表・配色・画面方針メモ)。クール1・クール2以降の区別なく、ストーリー全体の完成形を1枚に統合してよい。
-- 生成手段: `/Applications/ChatGPT.app`をcomputer-useで操作して生成する。モデルはGPT 5.4、応答速度は中程度に設定すること。
+- 生成手段: `/Applications/ChatGPT.app`をcomputer-useで操作して生成する。**ChatGPT.appの`Work`タブ側で、モデル`GPT-5.6 Terra`・応答性能「中程度」を選択して生成する。**
+  - **bundle idは`com.openai.codex`**(`com.openai.chat`ではない)。`request_access`にはこのアプリを指定する。表示名`ChatGPT`でも解決できる。
+  - モデル選択は、コンポーザー右側の応答性能インジケータをクリックして出るメニューから行う。`Escape`で閉じるとChatGPTがフォアグラウンドから外れて以降の操作がブロックされるため、閉じるときはウィンドウ内の別の場所をクリックする。
+  - 生成画像はコンテキストメニューに`Copy Image`しか出ないため、`Copy Image`を実行したうえで`osascript`でクリップボードのPNGをファイルへ書き出す(`the clipboard as «class PNGf»`を`open for access ... with write permission`で保存する)。
 - 生成後、`design/story_design.md`に画像への絶対パスを記載する(ステップ4の人間レビューの対象に含めるため)。ローカルにも`pomodoro_assets/<theme>_<story>/ref/world_reference.png`として保存する。
+- **生成画像を親の文脈へ読み込むのは判断に必要な最小限に留める。** 画像はレビュー・パケット経由で人間へ、および8A/8B/8Cの`isometric-story-review`サブエージェントへ渡すのが本線であり、親が全カットを閲覧する必要はない。
 - Reference Pack(正面・側面・接合部close-up、最低1枚)の要否と優先順位は`references/quality-gates.md`の「Reference Pack」節を正本とする。
 
 ### ステップ4: 人間レビュー
@@ -99,6 +142,7 @@ description: アイソメトリックポモドーロアプリ用に新しいテ�
 - Story Beat Sheetで技術リスクが1件でもある場合、グレーマテリアルまたは簡易形状のspikeを作り、リスクを先に検証する。省略する場合は理由・影響・承認者をwaiverとして残す。
 - 技術リスクには回転pivot・loop・重い散布だけでなく、**ステップ7bの高コストな作り込み手法**(曲面へのレリーフのUV破綻・継ぎ目、ディスプレイスメント適用時のメッシュ密度/レンダーコスト等)も含める。本制作前にspikeでUV破綻とコストを潰す(実装手法は`blender-isometric-rules`2.5章参照)。
 - Animaticと必要なspikeの承認なしで次に進まない。詳細は`references/quality-gates.md`を参照する。
+- **実行者の分担**: animaticのレンダーと、親が検証項目を指定したspikeの作成はCodex(`gpt-5.6-luna` / `max`)へ委任できる。委任する場合、親はstate順序・尺・frame・カメラ・検証したいリスク項目を実装パケットへ固定し、Codexは`work/`の候補ファイルと指定`output/`・`evidence/`だけを変更する。物語・時間設計・技術リスクの選定、レビュー・パケットの作成、人間への提示、waiver判断は親が行う。
 
 ### ステップ5: 本番制作差分の記録
 - ルール全文(`blender-isometric-rules`)はSkillが実装時に自動で効くため、設計書側に再掲しない(二重管理になる)。
@@ -108,9 +152,10 @@ description: アイソメトリックポモドーロアプリ用に新しいテ�
 
 ### ステップ6: クール用ファイルを準備
 - **必ず最初に**、対応する設計書ファイル(`design/story_design.md`)と本番制作差分メモ(`design/prompt_notes.md`)のファイルmtimeを確認する。`story_contract.json`の`source.design_doc_revision`および`source.prompt_notes_revision`と一致する場合は契約ファイルを入力に使う。不一致時は該当ファイルを明示Readし、契約を更新して`validate_story_contract.py`を通す。テーマ固有データを暗黙の前提だけで扱ってはならない。
-- 作業ディレクトリは`/Users/sawairikeisuke/Documents/Blender/isometric/pomodoro_assets/<theme>_<story>/`を新規作成し、その配下で作業する。`.blend`はディレクトリ直下に分かりやすい名前(例: `lighthouse.blend`)で保存し、レンダリング結果は`output/`サブディレクトリに、設計書・プロンプトノートは`design/`サブディレクトリに置く。
-- クール1: ストーリー用の新規`.blend`ファイルを作成する。
-- クール2以降: 前クール完成時の`.blend`を複製し、新しいクール用ファイルとして保存する(ゼロから作り直さない)。複製後は`blender-isometric-rules`7章のルールR(クール間引き継ぎ)を必ず適用する。
+- 作業ディレクトリは`/Users/sawairikeisuke/Documents/Blender/isometric/pomodoro_assets/<theme>_<story>/`を新規作成し、その配下で作業する。`.blend`はディレクトリ直下に`<story>_cool<N>.blend`(例: `lighthouse_cool1.blend`)で保存し、レンダリング結果は`output/`サブディレクトリに、設計書・プロンプトノートは`design/`サブディレクトリに置く。
+- **クール1: 空`.blend`の用意は人間が行う — 必須の停止点**。AIはここで作業を止め、次を人間に依頼する: (1) Blenderを起動する、(2) File > New で新規ファイルを作り、既定のCube・Camera・Lightを削除して空にする、(3) `pomodoro_assets/<theme>_<story>/<story>_cool1.blend`として保存する、(4) blender-mcpアドオンのサーバを起動して接続可能にする。人間から「保存・接続完了」の返答を得るまで次へ進まない。AIは`bpy.data.filepath`が期待した絶対パスであることを確認してから制作を開始する。
+- **MCP経由でのファイルロードを禁止する**: `bpy.ops.wm.read_homefile`・`bpy.ops.wm.open_mainfile`を`execute_blender_code`から実行してはならない。MCPコマンドは`bpy.app.timers`のコールバック内で走るため、ファイルロードは既存のPython参照を無効化して破損の原因になる。ファイルを切り替える必要が生じた場合は、AIが自分でロードせず人間にGUI操作を依頼する。
+- クール2以降: **前クール完成後、同じ生きているセッションのまま`bpy.ops.wm.save_as_mainfile(filepath=".../<story>_cool<N>.blend")`で次クール用ファイルへ付け替える**(ゼロから作り直さない・ファイルを開き直さない)。`save_as_mainfile`はデータを解放せず保存先を付け替えるだけなので、直前クールの`.blend`はディスク上に完成スナップショットとして凍結され、MCP接続も維持される。付け替え後は`blender-isometric-rules`7章のルールR(クール間引き継ぎ)を必ず適用する。
 - `references/manifest-schema.md`を基に作業ディレクトリ直下へ`cool<N>_manifest.json`の骨格を作る。未生成artifactはキーを省略し、未実施の将来gateは`pending`にする。成果物生成ごとに絶対パスを追加する。
 - **クール別チェック画像の生成**: オブジェクト一覧表の「初出クール」列が**当該クール以下**(前クールまでの完成要素+今回新規追加分)の要素だけに絞ってプロンプトを組み、1枚生成する。未来のクール(まだ存在しないはずの要素)は絶対に含めない。生成手段はステップ3.5と同じ。保存先: `pomodoro_assets/<theme>_<story>/ref/cool<N>_reference.png`。
 - **PolyHaven対象の適用確認**: ステップ2・3で確定したPolyHavenアセットを`blender-mcp`の`download_polyhaven_asset`/`set_texture`で実際にダウンロード・適用し、シーンの質感・色味と合うか確認する。問題なければそのまま採用する。合わない場合の扱い(AIが自己判断でプロシージャルへ差し替えず、一旦停止してユーザーにフォールバック可否を確認する)は`blender-isometric-rules`3章「外部アセット活用方針」を正本とする。
@@ -139,6 +184,8 @@ description: アイソメトリックポモドーロアプリ用に新しいテ�
 - `blender-isometric-rules/references/quantitative-qa.md` を同時に参照し、scene / timeline の入力は Blender の評価済み実シーンと実 F-Curve から抽出する。契約値を手転記した snapshot、目視だけの `grounded` / `crafted` / `coverage` は無効とする。
 - 各クールで `audit_assets.py` → scene contract → continuity（クール2以降）→ timeline の順に PASS を得る。FAIL はステップ8へ持ち込まず修正する。WARN は数値と waiver を review package に含める。
 - 実行は`run_blender_quantitative_qa.py --blend <cool.blend> --contract <story_contract.json> --cool <N> --output-dir <evidence>`を正本とする。必要なら`--video <cool.mp4>`を渡し、`ffprobe`の出力仕様判定も同じhard gateに含める。成果物・Custom Property・waiver形式は`story-contract-schema.md`と`blender-isometric-rules/references/quantitative-qa.md`に従う。
+- **背景ディテールの視認個数(15〜30)は、評価済みGeometry Nodes出力から実測する。** GNスキャッターの結果はホストオブジェクトのメッシュへ実体化されるため、評価済みdepsgraphで`to_mesh()`し、**辺の連結成分(loose parts)を1個=背景ディテール1個として数える**。各連結成分の重心を`world_to_camera_view`でNDC化してフレーム内判定し、`scene.ray_cast`で遮蔽されないものを視認可能とする。
+  - **Poisson分布をPython側で近似再現して数えるのは無効**とする(実際に、近似27個に対し実GN出力は23個という乖離が発生した)。`Distance Min`のチューニングも、近似ではなく実測個数をフィードバックして収束させる。
 - 失敗時は該当する制作工程へ戻る。静止画の定性レビューや動画レンダリングで機械的に再発見しない。
 
 ### ステップ7.5: 全アセット棚卸し(作り込みティア監査) — hard gate
@@ -173,8 +220,10 @@ description: アイソメトリックポモドーロアプリ用に新しいテ�
 
 **独立レビューのモデル固定(必須・漏れ厳禁)**: 8A・8B・8Cの独立サブエージェントは**必ず`subagent_type: isometric-story-review`で起動する**。このエージェント定義(`~/.claude/agents/isometric-story-review.md`)が`model: opus`・`effort: medium`を固定しているため、指名するだけでモデルと工数が一貫して適用される(Agentツールでmodel/effortを都度指定する必要はない/できない)。汎用エージェント(general-purpose等)で起動して製作スレッドのモデルを継承させることを禁止する。作業経緯・既知の課題は渡さない(独立性の維持)。
 
+**実行者の分担(必読)**: ステップ8で**Codex(`gpt-5.6-luna` / `max`)へ委任してよいのはレンダー実行と修正実装だけ**である。具体的には、(a) 完成state静止画・密集エリアclose-up・kind単位close-upのレンダー、(b) 親が確定した8A/8B/8C指摘の候補`.blend`への修正実装と再レンダーを委任する。**判定(8A・8B・8C)は必ず`subagent_type: isometric-story-review`で行い、Codexへ置き換えない**。指摘の解釈・採否、設計側(存在理由・パーツ定義)の見直し、収束判断、waiver判断、証跡とmanifestの更新は親が行う。Codexへ渡すのは親が確定した修正指示だけとし、レビュー結果の原文を丸ごと投げて解釈を任せてはならない。
+
 共通手順:
-1. 完成state(最終frame)の静止画レンダリングを行う。動画レンダリングはこの静止画チェックを通過した後にのみ行う(コストが高いため、判断のたびに動画を作らない)。
+1. 完成state(最終frame)の静止画レンダリングを行う(Codexへ委任可)。動画レンダリングはこの静止画チェックを通過した後にのみ行う(コストが高いため、判断のたびに動画を作らない)。
 2. `blender-isometric-rules`の`references/review-checklist.md`(A〜F節+構造別クローズアップ検証)に基づく構造的な自己レビュー(接合・接地・フレーミング等、コードで機械的に検証できる項目)を行う。
 
 #### ステップ8A: Acceptance Matrixレビュー(相対比較)
@@ -209,6 +258,7 @@ description: アイソメトリックポモドーロアプリ用に新しいテ�
 - ステップ9で承認が得られたら、追加の指示を待たずにそのクールのプレビュー動画を書き出す(静止画OK→動画レンダーは標準フローの一部)。
 - 書き出し設定(解像度・fps・コーデック等)は`blender-isometric-rules`4章「レンダー出力仕様を固定する」に従う(数値はそちらを参照し、ここでは再掲しない)。
 - 長尺(数百フレーム規模)のレンダリングは`blender-isometric-rules`7章のルールに従い、MCP経由の同期呼び出しではなくヘッドレスBlenderのコマンドラインプロセス(`blender -b <file.blend> -a`)をバックグラウンド起動で行う。
+- **実行者の分担**: このレンダー実行はCodex(`gpt-5.6-luna` / `max`)へ委任できる。親は対象`.blend`の絶対パス、出力先`output/`の絶対パス、frame範囲、`blender-isometric-rules`4章の出力仕様を実装パケットへ固定する。Codexは指定`output/`への動画出力とプロセス完了報告だけを行い、manifest・正本`.blend`・gate判定は更新しない。完了判定、manifest更新、validator実行と結果の解釈、ユーザーへの提示は親が行う。
 - 完了判定はプロセス終了だけでなく、manifestを更新して`python3 /Users/sawairikeisuke/.agents/skills/isometric-story-workflow/scripts/validate_story_package.py <cool<N>_manifest.json> --through render`を実行する。この時点より後のgateは`pending`でよい。解像度、fps、codec、pixel format、音声なし、固定frame rate、尺、容量、全frame decodeの全項目が合格するまで次へ進まない。
 - 長時間かかる場合は`ScheduleWakeup`等で定期的に進捗を確認し、都度ユーザーに待機状況を伝える。
 - 完成した動画ファイルは絶対パスでユーザーに提示する。
