@@ -19,11 +19,9 @@ description: 日本株high-beta paper運用の日次処理を、intraday解決�
 ## 実行順序
 
 1. 18:30 snapshotを優先し、既存pending orderとopen positionのfill/exitを先に解決する。
-2. `$japan-high-beta-breakout-screening`でwatchlistを更新する。
-3. `$stock-investment-decision-support`でactive候補だけを判断し、単一eligibilityを出す。
-4. `$portfolio-risk-allocator`で`approve | defer | reject`と実数量を同時に確定する。
-5. `update_paper_high_beta.js`でpaper stateを更新する。`approve`は必ず`pending_order`になる。
-6. 全stageの入力revision、出力revision、件数、reason_codesを単一manifestへ記録する。
+2. `node b_daily_high_beta_pipeline.js --as-of YYYY-MM-DD`を実行する。orchestratorはAuto1b収集器で当日の市場breadth・Yahooランキング40銘柄・Yahoo/Kabutan/Minkabu・TDnet・trade-v2を取得し、`market_evidence.json`を生成して`node validate_market_evidence.mjs`を通す。
+3. validator通過後にだけauto1b watchlist、auto2bのlive trade-v2判断、allocator、paper state更新を直列実行する。`approve`は必ず`pending_order`になる。
+4. orchestratorが全stageの入力revision、出力revision、reason_codesを単一manifestへ記録する。
 
 前段が`failed`または`incomplete`なら後段は実行せず、manifestに停止理由を書く。休日・休場日はstateを進めず`market_closed`を記録する。
 

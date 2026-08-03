@@ -27,3 +27,15 @@ thesisは`catalyst_breakout | technical_continuation | pullback | theme_momentum
 ## 出力
 
 各候補に`ticker`、`status`、`priority`、`adoption_basis`、`thesis_type`、`first_seen_date`、`monitoring_valid_until`、`invalidation`、evidenceのsource/as_ofを残す。期限切れ・否定された候補は`expired | rejected`へ遷移し、削除で履歴を隠さない。
+
+## 日次producer
+
+発見・一次資料確認の結果は、まず当日JSTの`market_evidence.json`へ記録する。`adoption_decision="adopted"`にする候補には、`watchlist_candidate`として`priority`、`status`、`thesis_type`、`selection_reason`、`invalidation_hint`、`monitoring_valid_until`を必ず添える。
+
+証跡を検証した後、次のproducerで`high_beta_watchlist.json`を生成する。
+
+```sh
+node auto1b_high_beta_producer.js --as-of YYYY-MM-DD
+```
+
+producerは当日`market_evidence.json`が`publish_mode="normal"`かつ`evidence_review.status="complete"`でない場合、exit code 2で停止し、既存watchlistを変更しない。この場合は後段へ進めない。
