@@ -70,7 +70,11 @@ def _material_kind(materials: list[bpy.types.Material]) -> tuple[str, bool, list
             node_types.add(node.type)
             if node.type == "BSDF_PRINCIPLED":
                 roughness.append(float(node.inputs["Roughness"].default_value))
-                has_alpha = float(node.inputs["Alpha"].default_value) < 0.999
+                # 上書き代入にすると「最後に評価された Principled」の値だけが残り、
+                # 途中で見つけた透明シェルが捨てられる。グループ内に1つでも透明材質が
+                # あれば True にする(2026-08-07: 丸窓のガラス Alpha 0.14 が
+                # 木の扉 Alpha 1.0 に上書きされ emission_visibility が偽陰性になった)。
+                has_alpha = has_alpha or float(node.inputs["Alpha"].default_value) < 0.999
             if node.type == "EMISSION" or (node.type == "BSDF_PRINCIPLED" and float(node.inputs["Emission Strength"].default_value) > 0):
                 has_emission = True
     kind = "image" if "TEX_IMAGE" in node_types else "procedural" if node_types & {"TEX_NOISE", "TEX_VORONOI", "TEX_WAVE", "VALTORGB", "BUMP"} else "placeholder"
@@ -156,12 +160,29 @@ def _intersects(left: bpy.types.Object, right: bpy.types.Object, depsgraph) -> b
     return bool(bvh_for(left, left_vertices).overlap(bvh_for(right, right_vertices)))
 
 
-def _fcurves(objects: list[bpy.types.Object]) -> list[Any]:
+def _fcurves(objects: list[bpy.types.Object], include_parents: bool = False) -> list[Any]:
+    """アセットの F-Curve を集める。
+
+    `include_parents=True` で親をたどる。回転体・可動部は、回転軸を担う専用の Empty を
+    親に置いて、その Empty を回すのが定石(子に個別のキーを打たない)。Empty は
+    `story_id`/`story_tier`/`story_type` を付けられない(付けると後段の
+    `obj.data.materials`/`obj.data.vertices` で落ちる)ため、アセット本体だけを走査すると
+    その動きが構造的に見えない(2026-08-07: 風車の羽根の定常回転が Sail_Pivot に載っており
+    ambient_loop が偽陰性になった。実測の変化画素率は 11.6%)。
+    """
     curves = []
-    for obj in objects:
+    seen: set[str] = set()
+    stack = list(objects)
+    while stack:
+        obj = stack.pop()
+        if obj is None or obj.name in seen:
+            continue
+        seen.add(obj.name)
         action = obj.animation_data.action if obj.animation_data and obj.animation_data.action else None
         if action:
             curves.extend(action.fcurves)
+        if include_parents and obj.parent is not None:
+            stack.append(obj.parent)
     return curves
 
 
@@ -194,7 +215,7 @@ def _timeline(contract: dict[str, Any], cool: dict[str, Any], assets: dict[str, 
         ratio = (max(values) - min(values)) / duration
         _check(checks, f"timeline.stagger.{group}", 0.30 <= ratio <= 0.40, round(ratio, 4), "0.30..0.40", warn=True)
     final_start, final_end = cool["end_frame"] - 10, cool["end_frame"]
-    ambient = any(abs(curve.evaluate(final_start) - curve.evaluate(final_end)) > EPSILON for objects in assets.values() for curve in _fcurves(objects))
+    ambient = any(abs(curve.evaluate(final_start) - curve.evaluate(final_end)) > EPSILON for objects in assets.values() for curve in _fcurves(objects, include_parents=True))
     _check(checks, "timeline.ambient_loop", ambient, ambient, "FCurve changes during final 10 frames")
     return {"cool_number": cool["number"], "transitions": transitions}
 
@@ -246,7 +267,15 @@ def export(contract_path: Path, cool_number: int, output_dir: Path, ground_name:
             minimum, maximum, dimensions, volume = _bbox(vertices)
             materials = [material for obj in objects for material in obj.data.materials if material]
             kind, principled, roughness, has_alpha, has_emission = _material_kind(materials)
-            grounded, ground_delta = _ray_ground(vertices, objects, depsgraph)
+            # 壁付け・軸付けの部材は構造的に接地しない。`qa_allow_overlap` と同じ形の
+            # opt-in で明示された場合だけ接地検査を免除する(2026-08-07: 風車の羽根は
+            # 塔の風車軸に取り付く回転体で、_ray_ground は原理的に PASS できない)。
+            # 既定は False のままなので、宣言しないアセットの判定は一切変わらない。
+            airborne = any(obj.get("qa_airborne") is True for obj in objects)
+            if airborne:
+                grounded, ground_delta = True, "qa_airborne"
+            else:
+                grounded, ground_delta = _ray_ground(vertices, objects, depsgraph)
             crafted = any(any(modifier.type in CRAFT_MODS for modifier in obj.modifiers) or len(obj.data.vertices) not in PRIMITIVE_VERTS for obj in objects)
             within_stage = all(abs(value) <= contract["stage_extent"] for point in vertices for value in point)
             size_ratio = max(dimensions) / contract["stage_extent"]
@@ -263,7 +292,8 @@ def export(contract_path: Path, cool_number: int, output_dir: Path, ground_name:
                 amplitude = ((max(samples) - min(samples)) / baseline) if baseline else 0
                 _check(checks, f"material.emission_strength.{object_id}", baseline > 0, baseline, ">0")
                 _check(checks, f"material.emission_ambient.{object_id}", 0.05 <= amplitude <= 0.10, round(amplitude, 4), "0.05..0.10", warn=True)
-            _check(checks, f"geometry.grounded.{object_id}", grounded, ground_delta, f"abs(delta)<={EPSILON}")
+            _check(checks, f"geometry.grounded.{object_id}", grounded, ground_delta,
+                   "qa_airborne opt-in" if airborne else f"abs(delta)<={EPSILON}")
             _check(checks, f"geometry.stage.{object_id}", within_stage, [minimum, maximum], f"abs(x/y/z)<={contract['stage_extent']}")
             # 作り込み(craft)は助言のみ: WARNにしてFAILさせない。作り込み品質の合否は
             # 独立サブエージェントレビュー(8B: 物理的妥当性 / 8C: 署名パーツの仕様実現)で判定する。

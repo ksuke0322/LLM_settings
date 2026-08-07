@@ -26,6 +26,8 @@
 - `story_scatter=true`: GN/散布物として実数・種類・除外ゾーンを測定する。`story_exclusion_zones`には`[[min_x,min_y,max_x,max_y], ...]`のJSONを設定する。
 - `story_stagger_group`: 同種要素の開始frame分散を測定するグループ名。
 - `story_scale_reference=true`: 主役高さの1/3〜1/2であることを確認する寸法対比物。
+- `qa_allow_overlap=true`: 意図した接合(部材の壁への埋め込み等)としてメッシュ重なりを許可する。
+- `qa_airborne=true`: **壁付け・軸付けの部材**として接地検査を免除する。`_ray_ground()`は全アセットに地面との接触を要求するため、風車の羽根のように主要構造物へ取り付く回転体・懸架物は構造的にPASSできない。宣言しないアセットの判定は一切変わらない。**画面に映るのに地面へ置くべき物をこのフラグで回避してはならない**(浮き・めり込みの検出こそがこのゲートの目的である)。使う場合は取り付け先の納まりを`qa_allow_overlap`側の接合検査で担保し、物理的妥当性は8Bの独立レビューで判定する。
 
 実行は`isometric-story-workflow/scripts/run_blender_quantitative_qa.py`を使う。これはheadless Blenderで`export_quantitative_evidence.py`を実行し、実測snapshot、既存contract validator、動画`ffprobe`を集約する。
 
