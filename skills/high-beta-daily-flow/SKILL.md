@@ -22,6 +22,7 @@ description: 日本株high-beta paper運用の日次処理を、intraday解決�
 2. `node b_daily_high_beta_pipeline.js --as-of YYYY-MM-DD`を実行する。orchestratorはAuto1b収集器で当日の市場breadth・Yahooランキング40銘柄・Yahoo/Kabutan/Minkabu・TDnet・trade-v2を取得し、`market_evidence.json`を生成して`node validate_market_evidence.mjs`を通す。
 3. validator通過後にだけauto1b watchlist、auto2bのlive trade-v2判断、allocator、paper state更新を直列実行する。`approve`は必ず`pending_order`になる。
 4. orchestratorが全stageの入力revision、出力revision、reason_codesを単一manifestへ記録する。
+5. Auto1bの `ranked → quote_available → evidence_current/evidence_stale → candidate_evidence → adopted → watchlist/reserve → eligible → orders` を当日 `as_of` の `period_funnel` としてmanifestへ保存し、候補別 `block_reason` を `block_reason_counts` へ集計する。過去履歴の約定・決済は `cumulative_funnel` に分離し、当日候補数と混ぜない。
 
 前段が`failed`または`incomplete`なら後段は実行せず、manifestに停止理由を書く。休日・休場日はstateを進めず`market_closed`を記録する。
 
@@ -56,4 +57,4 @@ description: 日本株high-beta paper運用の日次処理を、intraday解決�
 
 ## KPI
 
-`paper_high_beta_metrics.json`だけを正本とし、月次純実現損益、10万円達成率、直近3か月中央値、直近4か月達成比率、投下資本利益率、最大ドローダウン、期待値、profit factor、funnel、block reason件数を更新する。
+`paper_high_beta_metrics.json`だけを正本とし、月次純実現損益、10万円達成率、直近3か月中央値、直近4か月達成比率、投下資本利益率、最大ドローダウン、期待値、profit factor、funnel、block reason件数を更新する。月次サンプルが4か月未満なら `sample_status=insufficient_sample` とし、中央値・達成比率・安定達成判定を安定性根拠に使わない。`period_metrics` と `cumulative_metrics` を分離して記録する。

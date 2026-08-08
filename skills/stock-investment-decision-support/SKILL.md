@@ -33,10 +33,31 @@ watchlistのactive候補だけを評価し、`signal_status`と単一`eligibilit
     },
     "trigger_condition": null
   },
+  "outcome_trace": {
+    "decision_reference_price": {
+      "value": 7000,
+      "as_of": "YYYY-MM-DD",
+      "source": "trade-v2"
+    },
+    "next_1_3_business_days": [
+      {
+        "date": "YYYY-MM-DD",
+        "limit_status": "not_observed",
+        "stop_status": "not_observed",
+        "target_status": "not_observed",
+        "first_hit_date": null,
+        "first_hit_price": null,
+        "observation_status": "not_observed"
+      }
+    ],
+    "signal_expiry_reason": "YYYY-MM-DD valid_until reached without fill"
+  },
   "evidence_refs": []
 }
 ```
 
 open確認が必要なら`trigger_condition=open_retest`とする。`entry_ready`、`auto4_buy_allowed`、`execution_ready`、`execution_window`を重ねて生成しない。説明不能なfree textだけでblockingせず、安定した`reason_codes`を使う。
+
+`trade_state=eligible` の候補は、判定時点の `decision_reference_price` と、次の1〜3営業日の各日について limit / stop / target の到達状態、最初の到達日・価格、`observation_status`、`signal_expiry_reason` を必ず `outcome_trace` に残す。価格や到達結果を取得できない場合は `unknown` または `not_observed` とし、推測で埋めない。`blocked` / `no_trade` 候補は `outcome_trace=null` とし、`reason_codes` のみで説明する。
 
 auto2a/auto2bのlane差は入力watchlistとprofileのみ。high-betaでは`high_beta_watchlist.json`から`high_beta_decisions.json`を更新する。
