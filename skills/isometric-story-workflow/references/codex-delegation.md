@@ -10,6 +10,81 @@
 - CodexはBlender用スクリプト、実測スクリプト、レンダー設定を新規作成・修正しない。既存ファイルを指定どおり実行するだけに限定する。
 - 実際のCodex MCPパラメータ名と利用可否は現行MCP定義に従う。
 
+### Ministral画像一次トリアージ用
+
+画像解析の前処理だけが必要な場合は、既存の`ollama-local` profileを使うMinistralを候補にできる。これは通常のCodex delegateや8A/8B/8Cの独立レビューを置き換えない。Ministralは、親が固定した画像を読み取り、候補・根拠・不確実点・重複削減候補を返すだけである。
+
+Codex MCPで使う場合のv1設定は、MCP側でprofile名の解決を仮定せず、既に動作確認済みの明示設定を使う。
+
+```json
+{
+  "model": "ministral-3:8b-16k",
+  "config": {
+    "model_provider": "ollama-local",
+    "model_reasoning_effort": "none",
+    "oss_provider": "ollama"
+  },
+  "sandbox": "read-only",
+  "approval-policy": "never"
+}
+```
+
+CLIでの設定正本は`/Users/sawairikeisuke/.codex/ollama-local.config.toml`であり、モデル名やproviderを`AGENTS.md`へ複製しない。MCPへ`config.profile = "ollama-local"`だけを渡す方式は、現行bridgeでlegacy profile非対応エラーになるため、v1の実行経路には採用しない。
+
+#### 入力と実行
+
+- 親が8A/8B/8Cのケース、画像順、絶対パス、SHA-256を固定してから起動する。
+- 初回の一次解析では、重複削減前の必須画像を渡す。16kコンテキストに収まらない場合は画像を省略せず、固定したサブケースへ分割する。
+- 8A/8B/8Cは、Ministralでは一次解析として走らせる。本番レビューは、一次解析結果と親が確認した削減後の必要画像を使い、既存の`isometric-story-review`独立レビューで実施する。
+- Ministralの結果を根拠に、親の確認なしで画像・manifest・review package・stateを変更しない。
+
+#### 出力契約
+
+応答は次の情報を含む構造化JSONへ正規化する。Markdownコードフェンスや説明文付きの応答は成功扱いにせず、ラッパー側で除去・検証できない場合は失敗として記録する。
+
+```json
+{
+  "status": "ok",
+  "case_type": "reference_comparison",
+  "input_images": [
+    {
+      "path": "/absolute/path/image.png",
+      "sha256": "...",
+      "readable": true
+    }
+  ],
+  "findings": [
+    {
+      "id": "possible_missing_part",
+      "claim": "署名パーツが判読しにくい",
+      "severity": "low",
+      "confidence": 0.72,
+      "evidence_images": ["/absolute/path/image.png"],
+      "needs_parent_review": true
+    }
+  ],
+  "reduction_candidates": [
+    {
+      "path": "/absolute/path/redundant.png",
+      "reason": "別画像と情報が重複している",
+      "keep_required": false
+    }
+  ],
+  "unreadable_images": [],
+  "unknowns": []
+}
+```
+
+`reduction_candidates`は削除命令ではなく、親が確認する候補である。画像未読、JSON不正、タイムアウト、高重要度の構造指摘、低確信度、根拠画像の一意性不明、または8Bの構造確認に必要な視点が失われる場合は、画像を削減せず元の入力セットを本番レビューへ渡す。
+
+#### 8A/8B/8Cで保持する画像
+
+- 8A: 各Coolの代表ref、制作レンダー、重要差分の根拠画像を保持し、重複するrefやclose-upだけを削減する。
+- 8B: 制作レンダー、軸・ハブ・羽根・ステイ・接地を確認できるclose-up、構造確認に必要な実物写真を保持する。生成refは渡さない。
+- 8C: 対象Coolの全景と、スコア対象の各署名パーツclose-upを保持し、同じ情報を示す重複画像だけを削減する。
+
+Ministralは画像要約と候補抽出を担当するが、8A/8B/8Cの判定、指摘の採否、設計側の見直し、修正方針、waiver、収束判断は親または既存の独立レビューが担当する。
+
 ## 共通依頼文
 
 ### 読み取り検査用
