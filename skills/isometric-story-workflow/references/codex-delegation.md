@@ -1,12 +1,14 @@
 # Claude Code → Codex 委任規約
 
-この規約は、`isometric-story-workflow`でClaude Code親がCodex委任を選ぶ場合の正本である。Claude Code親は設計、Blender実装・修正、優先順位、waiver、人間レビュー、統合判断、正本採用を担当する。Codexは、Lunaによる検査・既存スクリプトでの読取証跡取得・レンダー実行、またはTerraによる技術的な原因追跡だけを行う。**8A・8B・8Cの判定**は既存どおり`subagent_type: isometric-story-review`（Opus / medium）のClaude専用独立レビューであり、Codexへ置き換えない。
+この規約は、`isometric-story-workflow`でClaude Code親がdelegate先を選ぶ場合の正本である。Claude Code親は設計、Blender実装・修正、優先順位、waiver、人間レビュー、統合判断、正本採用を担当する。Tier 1の画像一次解析はMinistral、並列読み取りはsubagent、Tier 2以上の限定された検査・既存スクリプトでの読取証跡取得・レンダー実行はLunaで行える。複数成果物をまたぐ原因追跡や設計判断は親が分解・統合する。**8A・8B・8Cの判定**は既存どおり`subagent_type: isometric-story-review`（Opus / medium）のClaude専用独立レビューであり、CodexやMinistralへ置き換えない。
 
 ## モデルとeffort
 
 - 既定: `gpt-5.6-luna` / `max`。検査、証跡整合、既存validator・既存定量QAスクリプトの実行、animatic・spike・静止画・動画のレンダー実行に使う。
-- `gpt-5.6-terra` / `medium`: 複数validator・複数クール・複数成果物をまたぐ、再現可能な技術原因追跡だけに使う。
-- `gpt-5.6-sol`はCodex委任に使用しない。設計変更、世界観・視覚品質・素材の採否、例外・waiver、人間レビュー、修正方針が必要なら、モデルを上げずClaude Code親へ`needs_parent_decision`として返す。
+- Tier 1の短い分類・抽出・固定形式変換、および画像一次解析は、条件を満たす場合にMinistralを候補にする。Ministralは画像・入力の読み取りと候補抽出に限定し、最終判定や設計判断を行わない。
+- 並列に独立実行できる読み取り調査・探索・ログ確認はsubagentを候補にする。
+- Tier 2以上、実装、コードレビュー、保存後の再検証を含むツール連鎖は`gpt-5.6-luna` / `max`または親を使う。複数validator・複数クール・複数成果物をまたぐ原因追跡は、親が分解して個別委任し、結果を統合する。
+- Luna以外の追加モデルへは昇格しない。設計変更、世界観・視覚品質・素材の採否、例外・waiver、人間レビュー、修正方針が必要なら、親へ`needs_parent_decision`として返す。
 - CodexはBlender用スクリプト、実測スクリプト、レンダー設定を新規作成・修正しない。既存ファイルを指定どおり実行するだけに限定する。
 - 実際のCodex MCPパラメータ名と利用可否は現行MCP定義に従う。
 
