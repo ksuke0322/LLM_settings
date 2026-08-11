@@ -16,6 +16,7 @@ description: アイソメトリックポモドーロアプリ用に新しいテ�
 - **画像・動画をユーザーに提示する際は必ず絶対パスで貼る**(相対パスは作業ディレクトリとの二重連結でリンク切れを起こす事故が実際に発生した)。チャット内にインライン表示できる場合は表示し、加えて絶対パスも明記する。
 - 物語・animatic・Acceptance Matrix・Motion QA・App Integration QAの詳細は`references/quality-gates.md`を必ず参照する。クール成果物manifestは`references/manifest-schema.md`に従い、`scripts/validate_story_package.py`で検証する。
 - 反復実行での再読コストを抑えるため、ステップ2〜5で検証専用の`story_contract.json`を作成し、ステップ6以降は定量validatorの結果を先に読む。構造と更新規則は`references/story-contract-schema.md`を正本とする。
+- Step 8の独立レビュー返却・親baseline・再実行台帳は`references/step8-review-control.md`と`scripts/validate_step8_review.py`を正本とする。8A/8B/8Cの品質判定モデルと独立性は変更しない。
 
 ## Ministral画像一次解析の共通ルール
 
@@ -50,6 +51,7 @@ Ministralは、Web検索画像の取得、Story Beatの設計、Blender実装、
 ## Claude Code → Codex 委任（検査・証跡取得・レンダー実行）
 
 - Claude Code親は、要件・設計・Blender実装・修正・優先順位・人間レビュー・waiver・統合判断・正本採用を担当する。Codexは、検査、証跡整合、既存validator・既存定量QAスクリプトの実行、animatic・完成済みspike・静止画・動画のレンダー実行だけを行う。Codexは候補`.blend`を実装・修正・保存しない。
+- 実行時の標準経路はCodex MCPの完全一致ツール`mcp__codex__codex`から`gpt-5.6-luna` / `max`へ委任する。対象はレンダー、既存validator、scene/timeline snapshot、定量QA、証跡整合だけであり、Ministralへ移管しない。MCP可用性が`false`または`unknown`ならMinistralへフォールバックしない。親または可用性を確認済みのCLI経路へ戻す。継続対話が必要な場合だけ`mcp__codex__codex_reply`の完全一致を確認する。
 - Codex委任は必須ではない。親が既存`AGENTS.md`のSubagent policyに照らしてCodex委任を選ぶ場合、`references/codex-delegation.md`を正本として、モデル、`reasoning effort`、依頼文、入力、検証、起動タイミングを固定する。
 
 ### 親のBlender実装とCodexの実行境界(最重要)
@@ -247,6 +249,19 @@ Ministralは、Web検索画像の取得、Story Beatの設計、Blender実装、
 
 **背景(なぜループ必須か)**: 構造チェックを通過しても、質感・装飾密度・World設定が目標に届かない事故と、生成参考画像自体の不自然さへ過適合する事故の両方が起こり得る。製作者の自己採点バイアスを避けるため、判定はこのセッションの文脈を持たない独立サブエージェントに行わせ、`references/quality-gates.md`のAcceptance Matrixで未解決の必須項目が0になるまでループする。
 
+#### `step8_parent_baseline`（8A起動前hard stop）と再実行制御
+
+8Aを起動する前に、親エージェントは当該クールの基準参照画像1枚と現行完成stateレンダー1枚を自分で確認する。守る視覚アンカー3〜5個、参照画像と設計・物理妥当性が衝突する箇所、Acceptance Matrixへ反映した許容差・waiver候補を整理し、`evidence/cool<N>_step8_baseline.json`へ保存する。baselineと親の既知課題は独立レビュアーへ渡さず、親が確定した判定基準・必要な画像・実測値だけを渡す。
+
+基準画像が読めない、参照と設計の優先関係が未確定、Acceptance Matrixの必須/許容分類が曖昧、または現行レンダーがbaselineの対象と一致しない場合は、8Aを起動せず`needs_parent_decision`で停止する。baselineは8Aの開始条件であり、8B/8Cの独立性を弱める既知課題メモではない。
+
+各試行は`references/step8-review-control.md`のReviewLedger v1へ、attempt番号、candidate `.blend`のSHA-256、render setのSHA-256、Acceptance Matrix revision、レポート絶対パス、指摘fingerprint、親の対応を記録する。`scripts/validate_step8_review.py`で次を確認し、`status=pass`以外を成功扱いにしない。
+
+- candidate `.blend`とrender setが両方不変で、`measurement_revision`も更新されていない場合は再レビューしない。再レビューには新しいレンダーまたは更新済み実測値を要求する。
+- 同一finding fingerprintが連続2回出た場合、3回目を自動起動せず`needs_parent_decision`で親へ戻す。
+- 8Aのwaiverは既存manifestの`reason`、`impact`、`approved_by`が揃う場合だけ成立する。8B/8Cのwaiverはgate完了に使わない。
+- JSON不正、画像未読、入力不足、タイムアウト、`needs_parent_decision`は成功扱いにしない。
+
 **Ministralによる画像一次解析(前処理)**: 8A/8B/8Cに入る前に、上記「Ministral画像一次解析の共通ルール」の`step8_review_preflight`を実行する。Ministralの結果は候補抽出・画像整理・違和感の事前把握にのみ使う。画像削減・保持の最終判断、8A/8B/8Cの最終判定、品質ゲートの合否、設計上の修正方針はMinistralへ委任しない。
 
 ステップ8では**3種類の独立したレビューループをすべて実施**する(8A・8B・8C)。役割を1つのレビューに混載させない(混載は見落としの原因になり、実際に「PASSなのに低品質」の事故を生んだ)。
@@ -272,14 +287,14 @@ Ministralは、Web検索画像の取得、Story Beatの設計、Blender実装、
 
 3. **`subagent_type: isometric-story-review`(opus・effort中固定)**に、完成state静止画、クール別チェック画像、Reference Pack、Acceptance Matrixだけを渡す。作業経緯・既知の課題は共有しない。起動プロンプトは`references/step8-review-prompts.md`の「8A 雛形」節を使う。
 4. サブエージェントに各差分を「必須一致」「許容差あり」「改善可」「waiver」のいずれかへ分類させる。必須一致の未解決項目は親が実際に修正し、Codexへ再レンダリングを依頼して手順3へ戻る。
-5. 「必須一致の未解決項目なし」になるまで繰り返す。waiverは理由・影響・承認者が揃うまで未解決扱いとする。判定証跡をmanifestの`visual_acceptance`へ記録する。
+5. 「必須一致の未解決項目なし」になるまで、入力差分を台帳とvalidatorで確認しながら繰り返す。waiverは理由・影響・承認者が揃うまで未解決扱いとする。同一指摘fingerprintの連続再発や入力不変は自動反復せず、親の判断へ戻す。判定証跡をmanifestの`visual_acceptance`へ記録する。
 
 #### ステップ8B: 常識チェックレビュー(絶対妥当性・参考画像なし)
 
 6. 完成state静止画に加えて、**オブジェクトが密集するエリア(棚上・デスク上等の装飾小物、本棚の本の並び等)のクローズアップレンダリング**を用意する(全体静止画だけでは小さな装飾小物の破綻が解像度的に見逃されるため)。
 7. **`subagent_type: isometric-story-review`(opus・effort中固定)**に、**生成参考画像は渡さず**、全体静止画、クローズアップ、対象物の実物資料だけを渡す。一般常識と実物資料に照らし、**物として自然か**(形状、比率、向き、接地、接合の不自然さ・破綻)を列挙させる。ここでは物理的妥当性に集中する(署名パーツが設計どおり実現されているか・存在理由が読めるかは8Cで判定するため、8Bに混載しない)。起動プロンプトは`references/step8-review-prompts.md`の「8B 雛形」節を使う。
 8. サブエージェントが不自然な箇所を1件でも報告した場合: 親が実際に修正(寸法比・向き・配置等)し、Codexへ再レンダリングを依頼して手順7に戻る。
-9. サブエージェントが「不自然な箇所なし」と判定するまで7〜8を繰り返す。
+9. サブエージェントが「不自然な箇所なし」と判定するまで、入力差分を台帳とvalidatorで確認しながら7〜8を繰り返す。waiverで8Bを完了扱いにしない。
 
 #### ステップ8C: 仕様実現レビュー(署名パーツの実現・チェックリスト駆動)
 
@@ -289,11 +304,11 @@ Ministralは、Web検索画像の取得、Story Beatの設計、Blender実装、
     2. 描画スケールで「そのモノ/そのクラス」に読めるか(背景小物・背景ディテールはクラス単位で判定。素のprimitive=円錐/球/円柱に見えるものはNG)。
     3. 存在理由が読めるか(「なぜこの物がここにあるか」が画面から伝わるか。"とりあえず置いた"に見えるものはNG)。
 12. サブエージェントが「未実現の署名パーツ」「クラスに読めないkind」「存在理由が読めないオブジェクト」を1件でも報告した場合: 親が実際に修正(7bへ戻って作り込み、必要なら設計側の存在理由・パーツ定義も見直す)し、Codexへ再レンダリングを依頼して手順11に戻る。存在理由そのものが立たない物は削る判断も含める。
-13. サブエージェントが全kindについて上記3点を満たすと判定するまで11〜12を繰り返す。判定表を`evidence/cool<N>_signature_realization.md`に残し、manifestの`signature_realization`(8C)へ記録する。
+13. サブエージェントが全kindについて上記3点を満たすと判定するまで、入力差分を台帳とvalidatorで確認しながら11〜12を繰り返す。waiverで8Cを完了扱いにしない。判定表を`evidence/cool<N>_signature_realization.md`に残し、manifestの`signature_realization`(8C)へ記録する。
 
 #### 収束条件
 
-14. 収束しない、または同じ指摘が何度も再発する場合はループを打ち切らず、ユーザーに状況(何が・何回・なぜ解決できないか)を報告して判断を仰ぐ。
+14. 収束しない、同じ指摘fingerprintが連続2回出る、または入力が変わらない場合は自動ループを継続せず、`needs_parent_decision`として親が状況(何が・何回・なぜ解決できないか)を確認して判断を仰ぐ。
 15. ステップ9に進めるのは、**8Aで未解決の必須項目がなく、8Bで不自然な箇所なし、8Cで未実現の署名パーツ・読めないkind・読めない存在理由がなし**と判定された最終レンダリングのみ。作り込み品質のブロッキング権限はこの3レビュー(特に8B/8C)にあり、機械ゲート(ステップ7.5・7dのcraft助言)のPASSでは代替できない。
 
 ### ステップ9: 人間レビュー

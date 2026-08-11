@@ -46,6 +46,28 @@
 }
 ```
 
+## Step 8 reviewの任意sidecar
+
+Step 8の親baselineと再実行台帳はmanifestの品質gateそのものとは分離し、必要な場合だけ次の任意フィールドへ記録する。
+新規作成時の標準名は`step8_review_ledger`で、`step8_review`は既存運用との互換aliasとして同じ形式を受け付ける。
+指定した値はすべて絶対パスで、対象ファイルが存在する通常ファイルでなければならない。旧manifestにこのフィールドが
+無くても後方互換で検証に通る。
+
+```json
+{
+  "step8_review_ledger": {
+    "baseline": "/absolute/path/evidence/cool1_step8_baseline.json",
+    "ledger": "/absolute/path/evidence/cool1_step8_review_ledger.json",
+    "report": "/absolute/path/evidence/cool1_step8_8a_latest.json"
+  }
+}
+```
+
+単一の絶対パス文字列も指定できる。`baseline`は親が8A開始前に確認した基準画像・現行レンダー・視覚アンカー・
+許容差を含むJSON、`ledger`はReviewLedger v1、`report`/`report_path`は直近のReviewReport v1を指す。
+このsidecarの存在は既存gateの`pass`/`waived`判定を変更しない。8A/8B/8CのJSON契約と再実行制御は
+`references/step8-review-control.md`、機械検証は`scripts/validate_step8_review.py`を参照する。
+
 ## 人間レビュー用`review_package`
 
 `animatic`、`still_human_review`、`story_final_review`が`pass`の場合、各gateは次の`review_package`を必須とする。
