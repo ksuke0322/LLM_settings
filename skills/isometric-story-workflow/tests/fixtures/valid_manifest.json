@@ -26,6 +26,7 @@
     "technical_spike": {"status": "waived", "reviewer": "human", "evidence": "__PACKAGE_DIR__/evidence/spike.md", "reason": "既知の構造のみ", "impact": "新規技術リスクなし", "approved_by": "owner"},
     "visual_acceptance": {"status": "pass", "reviewer": "independent-agent", "evidence": "__PACKAGE_DIR__/evidence/visual_review.md"},
     "common_sense_review": {"status": "pass", "reviewer": "independent-agent", "evidence": "__PACKAGE_DIR__/evidence/common_sense.md"},
+    "signature_realization": {"status": "pass", "reviewer": "independent-agent", "evidence": "__PACKAGE_DIR__/evidence/signature_realization.md"},
     "still_human_review": {"status": "pass", "reviewer": "human", "evidence": "__PACKAGE_DIR__/evidence/still_review.md", "review_package": {"path": "__PACKAGE_DIR__/review/cool1_still.md", "primary_assets": ["__PACKAGE_DIR__/output/cool1_final.png"], "presentation": "claude_artifact"}},
     "motion_qa": {"status": "pass", "reviewer": "human", "evidence": "__PACKAGE_DIR__/evidence/motion_qa.md"},
     "story_final_review": {"status": "pass", "reviewer": "human", "evidence": "__PACKAGE_DIR__/evidence/story_final.md", "review_package": {"path": "__PACKAGE_DIR__/review/story_final.md", "primary_assets": ["__PACKAGE_DIR__/output/windmill_story.mp4"], "presentation": "standalone_file"}},

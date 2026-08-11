@@ -45,6 +45,8 @@ WAIVABLE_GATES = {"technical_spike", "visual_acceptance", "motion_qa"}
 HUMAN_REVIEW_GATES = {"animatic", "still_human_review", "story_final_review"}
 REVIEW_PRESENTATIONS = {"codex_inline_ui", "claude_artifact", "standalone_file"}
 FORBIDDEN_PLACEHOLDERS = {"tbd", "後で決める", "未定"}
+STEP8_REVIEW_FIELDS = ("step8_review", "step8_review_ledger")
+STEP8_REVIEW_PATH_KEYS = ("path", "baseline", "ledger", "report", "report_path")
 
 
 def _is_blank(value: Any) -> bool:
@@ -97,6 +99,30 @@ def _validate_review_package(gate: dict[str, Any], label: str, errors: list[str]
             _validate_path(path, f"{label}.review_package.primary_assets[{index}]", errors)
     if review_package.get("presentation") not in REVIEW_PRESENTATIONS:
         errors.append(f"{label}.review_package.presentation must be a supported presentation")
+
+
+def _validate_step8_review_paths(manifest: dict[str, Any], errors: list[str]) -> None:
+    """Validate optional Step 8 baseline/ledger/report paths when supplied."""
+
+    for field in STEP8_REVIEW_FIELDS:
+        if field not in manifest:
+            continue
+        value = manifest[field]
+        if isinstance(value, str):
+            _validate_path(value, f"manifest.{field}", errors)
+            continue
+        if not isinstance(value, dict):
+            errors.append(f"manifest.{field} must be an absolute path or an object of paths")
+            continue
+        supplied = False
+        for key in STEP8_REVIEW_PATH_KEYS:
+            if key in value:
+                supplied = True
+                _validate_path(value[key], f"manifest.{field}.{key}", errors)
+        if not supplied:
+            errors.append(
+                f"manifest.{field} must contain at least one path field: {', '.join(STEP8_REVIEW_PATH_KEYS)}"
+            )
 
 
 def _rate(value: Any) -> Fraction | None:
@@ -212,6 +238,8 @@ def validate_manifest(
                     _validate_path(path, f"artifacts.reference_pack[{index}]", errors)
         elif value is not None:
             _validate_path(value, f"artifacts.{key}", errors)
+
+    _validate_step8_review_paths(manifest, errors)
 
     reproduction = manifest.get("reproduction")
     if not isinstance(reproduction, dict):

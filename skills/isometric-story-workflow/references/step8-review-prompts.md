@@ -5,6 +5,7 @@
 
 判定基準そのものはここに書かない。Acceptance Matrixは `quality-gates.md`、署名パーツと存在理由は
 `worksheet-rules.md` と設計書(`design/story_design.md`)を正本とする。本ファイルが持つのは**文面の型**だけである。
+返却契約は `step8-review-control.md` の ReviewReport v1 を正本とする。
 
 ## 使い方(親向け・雛形の外の手順)
 
@@ -15,7 +16,8 @@
 4. 該当しない差し込み節(クール1に「引き継ぎ資産」は無い等)は、節ごと削除する。節見出しだけ残して
    中身を空にしない。
 5. 修正ループの2回目以降も**同じ雛形で起動する**。前回の指摘内容・こちらの反論・修正履歴は渡さない
-   (独立性が壊れる)。渡してよいのは新しいレンダー画像と、更新された実測値だけである。
+   (独立性が壊れる)。渡してよいのは新しいレンダー画像と、更新された実測値だけである。candidate `.blend`と
+   render setが不変なら起動せず、ReviewLedgerを検証して親へ戻す。
 
 ## 共通の禁止事項(8A・8B・8Cすべてに効く)
 
@@ -72,10 +74,20 @@
 
 ## 出力形式
 
-1. 差分ごとに「番号 / 内容 / 分類 / 根拠にした画像」の表
-2. 分類別の件数集計
-3. **必須一致の未解決項目が0件かどうか**の明示的な結論。<クール2以降のみ: 必須一致に分類する場合は「今回追加した<新規アセット名>起因か / 引き継ぎ資産起因か」を必ず明記>
-4. 拡大しないと判別できない軽微な差は件数と内容を別途列挙(pass 扱い)
+JSONオブジェクトだけを返してください。Markdownコードフェンス、表、説明文、過去レビューへの言及は禁止です。
+`input_images`と`evidence_images`は実際にReadした絶対パス、`note`は1件1文240文字以内にしてください。
+8Aの`status`は、`required_match`の未解決が0件で、waiverには親の承認情報がある場合だけ`pass`です。
+waiverが無い場合は`waiver`フィールドを省略してください。
+
+{
+  "schema_version": 1,
+  "review_type": "8A",
+  "status": "pass|fail|needs_parent_decision",
+  "input_images": ["/absolute/path/overall.png"],
+  "findings": [{"classification": "required_match|allowed_difference|improvable|waiver", "kind": "...", "criterion": "...", "location": "...", "evidence_images": ["/absolute/path/evidence.png"], "note": "..."}],
+  "waiver": {"reason": "...", "impact": "...", "approved_by": "..."},
+  "conclusion": "必須一致の未解決項目が0件かどうかを明記する。"
+}
 ```
 
 ---
@@ -124,13 +136,18 @@
 
 ## 出力形式
 
-**A. <新規アセット名>(判定対象)**
+JSONオブジェクトだけを返してください。Markdownコードフェンス、表、説明文、過去レビューへの言及は禁止です。
+`input_images`と`evidence_images`は実際にReadした絶対パス、`note`は1件1文240文字以内にしてください。
+`high`または`medium`が1件でもあれば`fail`です。`waiver`は記録できますが、8B gateを完了扱いにしません。
 
-| 番号 | 箇所 | 何が不自然か | 深刻度(高/中/軽微/waiver) | 根拠にした画像 |
-
-**B. 引き継ぎ資産(参考情報・合否に算入しない)**
-
-最後に、**A について「深刻度 高・中 が0件かどうか」**を明示的に結論してください(waiver は算入しない)。
+{
+  "schema_version": 1,
+  "review_type": "8B",
+  "status": "pass|fail|needs_parent_decision",
+  "input_images": ["/absolute/path/overall.png"],
+  "findings": [{"severity": "high|medium|minor|waiver", "kind": "...", "criterion": "...", "location": "...", "evidence_images": ["/absolute/path/evidence.png"], "note": "..."}],
+  "conclusion": "深刻度 high・medium が0件かどうかを明記する。"
+}
 ```
 
 ---
@@ -189,11 +206,18 @@
 
 ## 出力形式
 
-| kind | 署名パーツの実現 | クラスに読めるか | 存在理由が読めるか | 判定 |
+JSONオブジェクトだけを返してください。Markdownコードフェンス、表、説明文、過去レビューへの言及は禁止です。
+`input_images`と各kindの`evidence_images`は実際にReadした絶対パスです。`kinds`配列はkind単位の判定表を保持し、
+3項目すべてが`pass`の場合だけkindをpassにしてください。waiverは8Cの完了に使えません。
 
-- 未実現の署名パーツ、クラス不読 kind、存在理由不読オブジェクトを**名指しで列挙**
-- 最後に「**未実現の署名パーツ・クラス不読・存在理由不読が0件かどうか**」を明示的に結論
-- 拡大しないと判別できない軽微な差は件数と内容を別途列挙(pass 扱い)
+{
+  "schema_version": 1,
+  "review_type": "8C",
+  "status": "pass|fail|needs_parent_decision",
+  "input_images": ["/absolute/path/overall.png"],
+  "kinds": [{"kind": "...", "signature_realization": "pass|fail", "class_readable": "pass|fail", "existence_reason_readable": "pass|fail", "evidence_images": ["/absolute/path/evidence.png"], "note": "..."}],
+  "conclusion": "未実現の署名パーツ・クラス不読・存在理由不読が0件かどうかを明記する。"
+}
 ```
 
 ---
@@ -214,3 +238,6 @@
       「毎回同じ指摘が再発する」原因になる)
 - [ ] 8Bの「特に見てほしい観点」が案件固有の内容で埋まっている(定型文のままにしない)
 - [ ] 出力形式の末尾に**明示的な0件結論**を求める一文がある
+- [ ] `step8_parent_baseline`を親が確認・保存し、基準画像、現行レンダー、視覚アンカー、許容差を独立レビュアーへ渡していない
+- [ ] candidate `.blend`とrender setのSHA-256、Acceptance Matrix revision、attempt番号をReviewLedgerへ記録した
+- [ ] ReviewReport v1をJSONだけで返し、`status`、絶対パス、evidence画像、指摘fingerprintをvalidatorで確認する

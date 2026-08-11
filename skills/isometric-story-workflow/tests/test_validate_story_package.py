@@ -59,6 +59,33 @@ class ValidateStoryPackageTests(unittest.TestCase):
     def test_valid_package_passes(self):
         self.assertEqual([], self._validate())
 
+    def test_optional_step8_review_paths_are_validated(self):
+        manifest = copy.deepcopy(self.manifest)
+        baseline = self.package_dir / "evidence" / "cool1_step8_baseline.json"
+        ledger = self.package_dir / "evidence" / "cool1_step8_review_ledger.json"
+        baseline.parent.mkdir(parents=True, exist_ok=True)
+        baseline.write_text("{}")
+        ledger.write_text("{}")
+        manifest["step8_review"] = {
+            "baseline": str(baseline),
+            "ledger": str(ledger),
+        }
+        self.assertEqual([], self._validate(manifest))
+
+        manifest["step8_review"]["baseline"] = "relative-baseline.json"
+        errors = self._validate(manifest)
+        self.assertIn("manifest.step8_review.baseline must be an absolute path", errors)
+
+        manifest["step8_review"]["baseline"] = str(self.package_dir / "missing.json")
+        errors = self._validate(manifest)
+        self.assertTrue(any("manifest.step8_review.baseline does not exist" in error for error in errors))
+
+    def test_legacy_manifest_without_step8_review_remains_backward_compatible(self):
+        manifest = copy.deepcopy(self.manifest)
+        manifest.pop("step8_review", None)
+        manifest.pop("step8_review_ledger", None)
+        self.assertEqual([], self._validate(manifest))
+
     def test_missing_required_field_fails(self):
         manifest = copy.deepcopy(self.manifest)
         del manifest["reproduction"]["seed"]
