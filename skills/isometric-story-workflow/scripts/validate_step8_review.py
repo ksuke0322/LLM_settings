@@ -9,6 +9,7 @@ input revisions recorded by the parent agent.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from pathlib import Path
 import re
@@ -32,6 +33,39 @@ GATE_FAILURE_MESSAGES = {
     "8A has unresolved required_match findings",
     "8B has unresolved high or medium findings",
     "8C has an unrealized signature, unreadable class, or unreadable existence reason",
+}
+COMMON_REPORT_KEYS = {"schema_version", "review_type", "status", "input_images", "conclusion"}
+REPORT_KEYS = {
+    "8A": COMMON_REPORT_KEYS | {"findings", "waiver"},
+    "8B": COMMON_REPORT_KEYS | {"findings"},
+    "8C": COMMON_REPORT_KEYS | {"kinds"},
+}
+FINDING_KEYS = {
+    "8A": {"classification", "kind", "criterion", "location", "evidence_images", "note"},
+    "8B": {"severity", "kind", "criterion", "location", "evidence_images", "note"},
+}
+KIND_KEYS = {
+    "kind",
+    "signature_realization",
+    "class_readable",
+    "existence_reason_readable",
+    "evidence_images",
+    "note",
+    "waiver",
+}
+WAIVER_KEYS = {"reason", "impact", "approved_by"}
+BASELINE_KEYS = {
+    "schema_version",
+    "cool",
+    "reference_image",
+    "current_render",
+    "current_render_sha256",
+    "candidate_sha256",
+    "render_set_sha256",
+    "visual_anchors",
+    "conflicts",
+    "accepted_tolerances",
+    "waiver_candidates",
 }
 
 
@@ -82,6 +116,58 @@ def _validate_images(raw_images: Any, label: str, errors: list[str]) -> None:
         _validate_path(raw_path, f"{label}[{index}]", errors)
 
 
+def _reject_unknown_fields(value: dict[str, Any], allowed: set[str], label: str, errors: list[str]) -> None:
+    for key in sorted(set(value) - allowed):
+        errors.append(f"{label}.{key} is an unknown field")
+
+
+def _file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _validate_baseline(baseline: Any, errors: list[str]) -> None:
+    """Validate the parent-only baseline required before an 8A review."""
+
+    if not isinstance(baseline, dict):
+        errors.append("baseline must be a JSON object")
+        return
+    _reject_unknown_fields(baseline, BASELINE_KEYS, "baseline", errors)
+    if baseline.get("schema_version") != SCHEMA_VERSION:
+        errors.append(f"baseline.schema_version must be {SCHEMA_VERSION}")
+    cool = baseline.get("cool")
+    if not isinstance(cool, int) or isinstance(cool, bool) or cool < 1:
+        errors.append("baseline.cool must be a positive integer")
+    for key in ("reference_image", "current_render"):
+        _validate_path(baseline.get(key), f"baseline.{key}", errors)
+    reference_image = baseline.get("reference_image")
+    current_render = baseline.get("current_render")
+    if (
+        isinstance(reference_image, str)
+        and isinstance(current_render, str)
+        and reference_image == current_render
+    ):
+        errors.append("baseline.reference_image and baseline.current_render must be different files")
+    for key in ("current_render_sha256", "candidate_sha256", "render_set_sha256"):
+        if not _valid_sha(baseline.get(key)):
+            errors.append(f"baseline.{key} must be a SHA-256 hex digest")
+    if isinstance(current_render, str) and Path(current_render).is_file() and _valid_sha(baseline.get("current_render_sha256")):
+        if _file_sha256(Path(current_render)) != baseline["current_render_sha256"]:
+            errors.append("baseline.current_render_sha256 does not match baseline.current_render")
+
+    visual_anchors = baseline.get("visual_anchors")
+    if not isinstance(visual_anchors, list) or not 3 <= len(visual_anchors) <= 5:
+        errors.append("baseline.visual_anchors must contain 3 to 5 items")
+    elif any(not _is_nonempty_string(anchor) for anchor in visual_anchors):
+        errors.append("baseline.visual_anchors must contain non-empty strings")
+    for key in ("conflicts", "accepted_tolerances", "waiver_candidates"):
+        if not isinstance(baseline.get(key), list):
+            errors.append(f"baseline.{key} must be an array")
+
+
 def _validate_note(raw_note: Any, label: str, errors: list[str], required: bool = True) -> None:
     if not _is_nonempty_string(raw_note):
         if required:
@@ -97,7 +183,9 @@ def _validate_waiver_metadata(raw_waiver: Any, label: str, errors: list[str]) ->
     if not isinstance(raw_waiver, dict):
         errors.append(f"{label} must contain reason, impact, and approved_by")
         return False
-    valid = True
+    unknown_fields = set(raw_waiver) - WAIVER_KEYS
+    _reject_unknown_fields(raw_waiver, WAIVER_KEYS, label, errors)
+    valid = not unknown_fields
     for key in ("reason", "impact", "approved_by"):
         if not _is_nonempty_string(raw_waiver.get(key)):
             errors.append(f"{label}.{key} is required")
@@ -115,6 +203,8 @@ def _validate_common(report: Any, errors: list[str]) -> str | None:
     if review_type not in REVIEW_TYPES:
         errors.append("review_type must be one of 8A, 8B, or 8C")
         review_type = None
+    elif review_type in REPORT_KEYS:
+        _reject_unknown_fields(report, REPORT_KEYS[review_type], "report", errors)
     if report.get("status") not in REPORT_STATUSES:
         errors.append("status must be pass, fail, or needs_parent_decision")
     _validate_images(report.get("input_images"), "input_images", errors)
@@ -141,6 +231,7 @@ def _validate_8a(report: dict[str, Any], errors: list[str], warnings: list[str])
         if not isinstance(finding, dict):
             errors.append(f"{label} must be an object")
             continue
+        _reject_unknown_fields(finding, FINDING_KEYS["8A"], label, errors)
         classification = finding.get("classification")
         if classification not in {"required_match", "allowed_difference", "improvable", "waiver"}:
             errors.append(
@@ -159,6 +250,9 @@ def _validate_8a(report: dict[str, Any], errors: list[str], warnings: list[str])
         if classification == "waiver":
             has_waiver = True
 
+    if "waiver" in report and not has_waiver:
+        errors.append("8A waiver metadata requires a waiver finding")
+        return "fail", fingerprints
     if blocking:
         errors.append("8A has unresolved required_match findings")
         return "fail", fingerprints
@@ -167,6 +261,9 @@ def _validate_8a(report: dict[str, Any], errors: list[str], warnings: list[str])
         if _validate_waiver_metadata(report.get("waiver"), "waiver", waiver_errors):
             warnings.append("8A waiver is accepted only with the matching parent manifest record")
             return "pass", fingerprints
+        if any("unknown field" in error for error in waiver_errors):
+            errors.extend(waiver_errors)
+            return "fail", fingerprints
         warnings.extend(waiver_errors)
         return "needs_parent_decision", fingerprints
     return "pass", fingerprints
@@ -186,6 +283,7 @@ def _validate_8b(report: dict[str, Any], errors: list[str]) -> tuple[str, list[s
         if not isinstance(finding, dict):
             errors.append(f"{label} must be an object")
             continue
+        _reject_unknown_fields(finding, FINDING_KEYS["8B"], label, errors)
         severity = finding.get("severity")
         if severity not in {"high", "medium", "minor", "waiver"}:
             errors.append(f"{label}.severity must be high, medium, minor, or waiver")
@@ -223,6 +321,7 @@ def _validate_8c(report: dict[str, Any], errors: list[str]) -> tuple[str, list[s
         if not isinstance(item, dict):
             errors.append(f"{label} must be an object")
             continue
+        _reject_unknown_fields(item, KIND_KEYS, label, errors)
         kind = item.get("kind")
         if not _is_nonempty_string(kind):
             errors.append(f"{label}.kind is required")
@@ -277,6 +376,28 @@ def _validate_report(report: Any) -> tuple[list[str], list[str], list[str], str 
     if report.get("status") != derived_status and derived_status != "needs_parent_decision":
         structural_valid = False
     return errors, warnings, fingerprints, derived_status, structural_valid
+
+
+def _validate_waiver_manifest(report: Any, manifest: Any, errors: list[str]) -> None:
+    if not isinstance(report, dict) or report.get("review_type") != "8A":
+        return
+    waiver = report.get("waiver")
+    if not isinstance(waiver, dict):
+        return
+    waiver_errors: list[str] = []
+    if not _validate_waiver_metadata(waiver, "waiver", waiver_errors):
+        return
+    if not isinstance(manifest, dict):
+        errors.append("8A waiver requires a manifest visual_acceptance record")
+        return
+    gates = manifest.get("gates")
+    gate = gates.get("visual_acceptance") if isinstance(gates, dict) else None
+    if not isinstance(gate, dict) or gate.get("status") != "waived":
+        errors.append("8A waiver requires gates.visual_acceptance.status=waived in the manifest")
+        return
+    for key in ("reason", "impact", "approved_by"):
+        if gate.get(key) != waiver.get(key):
+            errors.append(f"manifest gates.visual_acceptance.{key} must match report.waiver.{key}")
 
 
 def _valid_sha(value: Any) -> bool:
@@ -371,6 +492,12 @@ def _validate_ledger(
     latest_attempt = latest.get("attempt")
     if attempt != latest_attempt + 1:
         errors.append(f"attempt must be the next number after {latest_attempt}")
+    latest_fingerprints = latest.get("finding_fingerprints")
+    if not isinstance(latest_fingerprints, list) or any(
+        not _is_nonempty_string(value) for value in latest_fingerprints
+    ):
+        errors.append("latest ledger finding_fingerprints must be an array of strings")
+        return False, []
     if (
         candidate_sha256 == latest.get("candidate_sha256")
         and render_set_sha256 == latest.get("render_set_sha256")
@@ -384,7 +511,7 @@ def _validate_ledger(
     ):
         errors.append("candidate, render set, and measurement revisions are unchanged; rerun is not allowed")
 
-    previous_fingerprints = set(latest.get("finding_fingerprints", []))
+    previous_fingerprints = set(latest_fingerprints)
     repeated = sorted(previous_fingerprints.intersection(current_fingerprints))
     return bool(repeated), repeated
 
@@ -400,6 +527,8 @@ def validate_step8_review(
     acceptance_matrix_revision: str | None = None,
     measurement_revision: str | None = None,
     report_path: str | None = None,
+    baseline: Any | None = None,
+    manifest: Any | None = None,
 ) -> dict[str, Any]:
     """Return the fixed validator output contract."""
 
@@ -408,6 +537,22 @@ def validate_step8_review(
     if review_type is not None and actual_review_type != review_type:
         errors.append("review_type argument does not match report.review_type")
         structurally_valid = False
+    if actual_review_type == "8A":
+        if baseline is None:
+            errors.append("baseline is required before starting an 8A review")
+        else:
+            _validate_baseline(baseline, errors)
+            input_images = report.get("input_images") if isinstance(report, dict) else None
+            current_render = baseline.get("current_render") if isinstance(baseline, dict) else None
+            if isinstance(input_images, list) and current_render not in input_images:
+                errors.append("baseline.current_render must be included in report.input_images")
+            if isinstance(baseline, dict):
+                for key, supplied in (("candidate_sha256", candidate_sha256), ("render_set_sha256", render_set_sha256)):
+                    if not _valid_sha(supplied):
+                        errors.append(f"{key} is required to bind the 8A baseline")
+                    elif supplied != baseline.get(key):
+                        errors.append(f"{key} does not match baseline.{key}")
+    _validate_waiver_manifest(report, manifest, errors)
 
     repeated: list[str] = []
     parent_decision = False
@@ -478,6 +623,8 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--render-set-sha256")
     parser.add_argument("--acceptance-matrix-revision")
     parser.add_argument("--measurement-revision")
+    parser.add_argument("--baseline", type=Path, help="parent-only Step 8 baseline JSON required for 8A")
+    parser.add_argument("--manifest", type=Path, help="manifest used to verify an 8A waiver record")
     return parser.parse_args(argv)
 
 
@@ -486,6 +633,8 @@ def main(argv: list[str] | None = None) -> int:
     try:
         report = _load_json(args.report)
         ledger = _load_json(args.ledger) if args.ledger else None
+        baseline = _load_json(args.baseline) if args.baseline else None
+        manifest = _load_json(args.manifest) if args.manifest else None
         result = validate_step8_review(
             report,
             ledger,
@@ -496,6 +645,8 @@ def main(argv: list[str] | None = None) -> int:
             acceptance_matrix_revision=args.acceptance_matrix_revision,
             measurement_revision=args.measurement_revision,
             report_path=str(args.report),
+            baseline=baseline,
+            manifest=manifest,
         )
     except (OSError, TypeError, ValueError, json.JSONDecodeError) as error:
         result = {

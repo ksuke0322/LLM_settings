@@ -18,6 +18,12 @@ description: アイソメトリックポモドーロアプリ用に新しいテ�
 - 反復実行での再読コストを抑えるため、ステップ2〜5で検証専用の`story_contract.json`を作成し、ステップ6以降は定量validatorの結果を先に読む。構造と更新規則は`references/story-contract-schema.md`を正本とする。
 - Step 8の独立レビュー返却・親baseline・再実行台帳は`references/step8-review-control.md`と`scripts/validate_step8_review.py`を正本とする。8A/8B/8Cの品質判定モデルと独立性は変更しない。
 
+## 反復実行の制御
+
+- Step 7d/7.5、Step 8のMinistral事前解析、Step 9.5動画validator、Step 10 Motion QAは`references/repetition-control.md`と各ledgerを使う。同一入力・同一validator条件の`pass`だけを再利用し、入力revisionが変わったら再実行する。
+- 同一finding fingerprintが連続2回出た場合は3回目を自動起動せず`needs_parent_decision`で停止する。キャッシュ、timeout、JSON不正、画像・動画未読は品質gateのpassに変換しない。
+- Step 10の修正後はblendまたは動画のrevisionが更新されたことを確認してから再レンダー・再検査する。Step 9.5はmanifest構造を毎回確認し、動画のffprobe/full decodeだけを検証ledgerから再利用できる。
+
 ## Ministral画像一次解析の共通ルール
 
 ステップ1・3.5・6では画像の棚卸し・事前確認に、ステップ8では8A/8B/8Cの前処理にMinistralを使ってよい。いずれも読み取り専用の一次解析であり、設計・修正・品質ゲートの判断を代替しない。
@@ -221,7 +227,7 @@ Ministralは、Web検索画像の取得、Story Beatの設計、Blender実装、
 - scene validatorはsafe area、Collection、アセット初出、ティア、材質、作り込み、接地、stage内、寸法比、背景密度を、continuity validatorは前クール完成物・World・共有材質の未承認差分を、timeline validatorは予定frame/easing/演出タイプ・同時動作数を検証する。
 - `blender-isometric-rules/references/quantitative-qa.md` を同時に参照し、scene / timeline の入力は Blender の評価済み実シーンと実 F-Curve から抽出する。契約値を手転記した snapshot、目視だけの `grounded` / `crafted` / `coverage` は無効とする。
 - 各クールで `audit_assets.py` → scene contract → continuity（クール2以降）→ timeline の順に PASS を得る。FAIL はステップ8へ持ち込まず修正する。WARN は数値と waiver を review package に含める。
-- 実行は`run_blender_quantitative_qa.py --blend <cool.blend> --contract <story_contract.json> --cool <N> --output-dir <evidence>`を正本とする。必要なら`--video <cool.mp4>`を渡し、`ffprobe`の出力仕様判定も同じhard gateに含める。成果物・Custom Property・waiver形式は`story-contract-schema.md`と`blender-isometric-rules/references/quantitative-qa.md`に従う。
+- 実行は`run_blender_quantitative_qa.py --blend <cool.blend> --contract <story_contract.json> --cool <N> --output-dir <evidence> --ledger <absolute-quantitative-ledger>`を正本とする。必要なら`--video <cool.mp4>`を渡し、`ffprobe`の出力仕様判定も同じhard gateに含める。入力不変の`pass`だけを再利用し、同じFAIL fingerprintが2回連続した場合は親判断へ戻す。成果物・Custom Property・waiver形式は`story-contract-schema.md`と`blender-isometric-rules/references/quantitative-qa.md`に従う。
 - **背景ディテールの視認個数(15〜30)は、評価済みGeometry Nodes出力から実測する。** GNスキャッターの結果はホストオブジェクトのメッシュへ実体化されるため、評価済みdepsgraphで`to_mesh()`し、**辺の連結成分(loose parts)を1個=背景ディテール1個として数える**。各連結成分の重心を`world_to_camera_view`でNDC化してフレーム内判定し、`scene.ray_cast`で遮蔽されないものを視認可能とする。
   - **Poisson分布をPython側で近似再現して数えるのは無効**とする(実際に、近似27個に対し実GN出力は23個という乖離が発生した)。`Distance Min`のチューニングも、近似ではなく実測個数をフィードバックして収束させる。
 - 失敗時は該当する制作工程へ戻る。静止画の定性レビューや動画レンダリングで機械的に再発見しない。
@@ -251,11 +257,11 @@ Ministralは、Web検索画像の取得、Story Beatの設計、Blender実装、
 
 #### `step8_parent_baseline`（8A起動前hard stop）と再実行制御
 
-8Aを起動する前に、親エージェントは当該クールの基準参照画像1枚と現行完成stateレンダー1枚を自分で確認する。守る視覚アンカー3〜5個、参照画像と設計・物理妥当性が衝突する箇所、Acceptance Matrixへ反映した許容差・waiver候補を整理し、`evidence/cool<N>_step8_baseline.json`へ保存する。baselineと親の既知課題は独立レビュアーへ渡さず、親が確定した判定基準・必要な画像・実測値だけを渡す。
+8Aを起動する前に、親エージェントは当該クールの基準参照画像1枚と現行完成stateレンダー1枚を自分で確認する。守る視覚アンカー3〜5個、参照画像と設計・物理妥当性が衝突する箇所、Acceptance Matrixへ反映した許容差・waiver候補を整理し、candidate/render set/current renderのSHA-256を添えて`evidence/cool<N>_step8_baseline.json`へ保存する。baselineと親の既知課題は独立レビュアーへ渡さず、親が確定した判定基準・必要な画像・実測値だけを渡す。
 
 基準画像が読めない、参照と設計の優先関係が未確定、Acceptance Matrixの必須/許容分類が曖昧、または現行レンダーがbaselineの対象と一致しない場合は、8Aを起動せず`needs_parent_decision`で停止する。baselineは8Aの開始条件であり、8B/8Cの独立性を弱める既知課題メモではない。
 
-各試行は`references/step8-review-control.md`のReviewLedger v1へ、attempt番号、candidate `.blend`のSHA-256、render setのSHA-256、Acceptance Matrix revision、レポート絶対パス、指摘fingerprint、親の対応を記録する。`scripts/validate_step8_review.py`で次を確認し、`status=pass`以外を成功扱いにしない。
+各試行は`references/step8-review-control.md`のReviewLedger v1へ、attempt番号、candidate `.blend`のSHA-256、render setのSHA-256、Acceptance Matrix revision、レポート絶対パス、指摘fingerprint、親の対応を記録する。8Aのvalidator起動時は親baselineの絶対パスを`--baseline`、waiverを使う場合はmanifestの絶対パスを`--manifest`で必ず渡し、`scripts/validate_step8_review.py`で次を確認する。`status=pass`以外を成功扱いにしない。
 
 - candidate `.blend`とrender setが両方不変で、`measurement_revision`も更新されていない場合は再レビューしない。再レビューには新しいレンダーまたは更新済み実測値を要求する。
 - 同一finding fingerprintが連続2回出た場合、3回目を自動起動せず`needs_parent_decision`で親へ戻す。
@@ -263,6 +269,7 @@ Ministralは、Web検索画像の取得、Story Beatの設計、Blender実装、
 - JSON不正、画像未読、入力不足、タイムアウト、`needs_parent_decision`は成功扱いにしない。
 
 **Ministralによる画像一次解析(前処理)**: 8A/8B/8Cに入る前に、上記「Ministral画像一次解析の共通ルール」の`step8_review_preflight`を実行する。Ministralの結果は候補抽出・画像整理・違和感の事前把握にのみ使う。画像削減・保持の最終判断、8A/8B/8Cの最終判定、品質ゲートの合否、設計上の修正方針はMinistralへ委任しない。
+同じ固定画像・model/config・prompt/schemaの成功済み一次解析は`scripts/validate_preflight_cache.py`で再利用可否を確認する。cache missや入力変更は通常の再解析へ進み、画像未読・timeout・JSON不正・低確信度は停止する。成功した短いJSONは`--record-report`でledgerへ記録する。記録時は`observations[]`の`item`・`evidence_image`・`confidence`・`note`を必須とし、confidenceは数値なら0.6以上、ラベルなら`medium`/`high`だけを許可する。
 
 ステップ8では**3種類の独立したレビューループをすべて実施**する(8A・8B・8C)。役割を1つのレビューに混載させない(混載は見落としの原因になり、実際に「PASSなのに低品質」の事故を生んだ)。
 
@@ -322,7 +329,7 @@ Ministralは、Web検索画像の取得、Story Beatの設計、Blender実装、
 - 書き出し設定(解像度・fps・コーデック等)は`blender-isometric-rules`4章「レンダー出力仕様を固定する」に従う(数値はそちらを参照し、ここでは再掲しない)。
 - 長尺(数百フレーム規模)のレンダリングは`blender-isometric-rules`7章のルールに従い、MCP経由の同期呼び出しではなくヘッドレスBlenderのコマンドラインプロセス(`blender -b <file.blend> -a`)をバックグラウンド起動で行う。
 - **実行者の分担**: このレンダー実行はCodex(`gpt-5.6-luna` / `max`)へ委任できる。親は実装済み候補`.blend`の絶対パス、出力先`output/`の絶対パス、frame範囲、`blender-isometric-rules`4章の出力仕様をレンダー依頼へ固定する。Codexは候補`.blend`を読み取り専用で使い、指定`output/`への動画出力とプロセス完了報告だけを行う。候補・正本`.blend`、manifest、gate判定は更新しない。完了判定、manifest更新、validator実行と結果の解釈、ユーザーへの提示は親が行う。
-- 完了判定はプロセス終了だけでなく、manifestを更新して`python3 /Users/sawairikeisuke/.agents/skills/isometric-story-workflow/scripts/validate_story_package.py <cool<N>_manifest.json> --through render`を実行する。この時点より後のgateは`pending`でよい。解像度、fps、codec、pixel format、音声なし、固定frame rate、尺、容量、全frame decodeの全項目が合格するまで次へ進まない。
+- 完了判定はプロセス終了だけでなく、manifestを更新して`python3 /Users/sawairikeisuke/.agents/skills/isometric-story-workflow/scripts/validate_story_package.py <cool<N>_manifest.json> --through render --ledger <absolute-render-validation-ledger> --render-spec-revision <revision>`を実行する。この時点より後のgateは`pending`でよい。解像度、fps、codec、pixel format、音声なし、固定frame rate、尺、容量、全frame decodeの全項目が合格するまで次へ進まない。
 - 長時間かかる場合は`ScheduleWakeup`等で定期的に進捗を確認し、都度ユーザーに待機状況を伝える。
 - 完成した動画ファイルは絶対パスでユーザーに提示する。
 
@@ -330,7 +337,7 @@ Ministralは、Web検索画像の取得、Story Beatの設計、Blender実装、
 
 - `references/quality-gates.md`のMotion QAを実施し、開始・中間・終了・state境界、速度、easing、ポッピング、ちらつき、遮蔽、Ambient Loopを確認する。
 - 直前クールまでを必ず通しで確認し、カメラ、照明、色、共有object、回転位相の連続性を検査する。
-- 修正後は再レンダー・再検査し、passまたは承認済みwaiverと証跡をmanifestへ記録するまで次のクールへ進まない。
+- 修正後はblend/videoのrevisionを更新してから再レンダー・再検査し、現在のMotion QA keyをJSONで保存して`python3 /Users/sawairikeisuke/.agents/skills/isometric-story-workflow/scripts/validate_repetition_ledger.py <absolute-motion-qa-ledger> --key-file <absolute-current-motion-key>`で再実行可否を確認する。同じ入力の`pass`は再検査せず、同じfinding fingerprintが2回連続した場合は自動再実行せず親が判断する。passまたは承認済みwaiverと証跡をmanifestへ記録するまで次のクールへ進まない。
 - `python3 /Users/sawairikeisuke/.agents/skills/isometric-story-workflow/scripts/validate_story_package.py <cool<N>_manifest.json> --through motion`が合格することを確認する。
 
 ### ステップ12: ストーリー全体の最終レビュー
@@ -374,6 +381,7 @@ Ministralは、Web検索画像の取得、Story Beatの設計、Blender実装、
 - [ ] 背景ディテールの種類が最低5種類以上ある
 - [ ] 各背景ディテールの種類ごとに配置平面が設計段階で明記されている
 - [ ] 各背景ディテールの配置平面とraycastスナップ適用方針が設計済みである(実レンダー確認はステップ8で行う)
+
 - [ ] 背景ディテールの代表寸法が近接主要構造物基準変数の25%〜55%の範囲に収まっている
 - [ ] 寸法比例表の比率列がすべて「他の変数からの比率」で埋まっており、絶対値の直接入力がない
 - [ ] STAGE_EXTENTが定義されており、各クールの追加要素がその範囲内に収まることを確認した

@@ -16,6 +16,8 @@ Step 8の独立レビューを、短い返却・入力差分・親判断の3点�
 
 返却はJSONオブジェクトだけとし、Markdownコードフェンス、前置き、作業経緯、前回指摘、
 修正履歴、反論、実装手順を含めない。画像パスはすべて絶対パスで、存在する通常ファイルを指す。
+ReviewReport v1は閉じたJSON契約であり、定義されていないトップレベルキー・findingキー・kindキーは
+`validate_step8_review.py`が拒否する。`history`、前回レビュー、修正履歴、反論などを別名のキーで返してはならない。
 
 共通の必須項目は次のとおり。
 
@@ -104,12 +106,17 @@ baselineの最小形は次のとおり。
   "cool": 1,
   "reference_image": "/absolute/path/cool_reference.png",
   "current_render": "/absolute/path/cool1_final_still.png",
+  "current_render_sha256": "64桁のSHA-256 hex",
+  "candidate_sha256": "64桁のSHA-256 hex",
+  "render_set_sha256": "64桁のSHA-256 hex",
   "visual_anchors": ["主役の輪郭", "素材感", "装飾密度"],
   "conflicts": [],
   "accepted_tolerances": [],
   "waiver_candidates": []
 }
 ```
+
+`validate_step8_review.py`の8A検証では`--baseline`を省略できない。baselineはschema version、正のcool番号、異なる2枚の既存画像、現行レンダーのSHA-256、candidate/render setのSHA-256、3〜5個の視覚アンカー、`conflicts`・`accepted_tolerances`・`waiver_candidates`の配列を満たす必要がある。`current_render`はReviewReportの`input_images`に含め、実ファイルのSHA-256と一致させる。CLIへ渡したcandidate/render set revisionもbaselineと一致させる。欠落・相対パス・画像未読・入力不備・revision不一致は`status=fail`かつ`rerun_allowed=false`で停止する。8B/8Cにはこの親baselineを要求しない。
 
 ## 再実行制御
 
@@ -127,9 +134,11 @@ baselineの最小形は次のとおり。
 ```bash
 python3 /Users/sawairikeisuke/.agents/skills/isometric-story-workflow/scripts/validate_step8_review.py \
   --report /absolute/path/report.json \
+  --baseline /absolute/path/cool1_step8_baseline.json \
   --ledger /absolute/path/cool1_step8_review_ledger.json \
   --review-type 8A --attempt 2 \
   --candidate-sha256 <sha256> --render-set-sha256 <sha256> \
+  --manifest /absolute/path/cool1_manifest.json \
   --acceptance-matrix-revision quality-gates@rev-1 \
   --measurement-revision snapshot@rev-2
 ```

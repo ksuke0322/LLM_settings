@@ -5,6 +5,27 @@
 ## モデルとeffort
 
 - 実行時の標準経路はCodex MCPの完全一致ツール`mcp__codex__codex`で`gpt-5.6-luna` / `max`を起動する。検査、証跡整合、既存validator・既存定量QAスクリプトの実行、scene/timeline snapshot、animatic・spike・静止画・動画のレンダー実行に使う。
+
+## ExecutionReport v1
+
+Codex/Luna maxの実行結果は、親が機械的に検証できる次のJSONだけを返す。Markdownコードフェンス、過去経緯、前回指摘、長い実装説明は返さない。
+
+```json
+{
+  "schema_version": 1,
+  "status": "pass|fail|needs_parent_decision",
+  "operation": "render|validate|snapshot|quantitative_qa|evidence_check",
+  "step": "7d|7.5|8|9.5|10",
+  "inputs": [{"path": "/absolute/path", "sha256": "..."}],
+  "outputs": [{"path": "/absolute/path", "sha256": "..."}],
+  "command": ["..."],
+  "exit_code": 0,
+  "duration_ms": 0,
+  "warnings": []
+}
+```
+
+`scripts/validate_execution_report.py`で絶対パス、存在、SHA-256、status/exit codeの整合を確認する。`needs_parent_decision`、出力不足、JSON不正、入力不一致は成功扱いにしない。
 - Tier 1の短い分類・抽出・固定形式変換、および画像一次解析は、条件を満たす場合にMinistralを候補にする。Ministralは画像・入力の読み取りと候補抽出に限定し、最終判定や設計判断を行わない。
 - 並列に独立実行できる読み取り調査・探索・ログ確認はsubagentを候補にする。
 - Tier 2以上、実装、コードレビュー、保存後の再検証を含むツール連鎖は`gpt-5.6-luna` / `max`または親を使う。複数validator・複数クール・複数成果物をまたぐ原因追跡は、親が分解して個別委任し、結果を統合する。
@@ -16,7 +37,7 @@
 
 ### Ministral画像一次トリアージ用
 
-画像解析の前処理だけが必要な場合は、既存の`ollama-local` profileを使うMinistralを候補にできる。これは通常のCodex delegateや8A/8B/8Cの独立レビューを置き換えない。Ministralは、親が固定した画像を読み取り、候補・根拠・不確実点・重複削減候補を返すだけである。
+画像解析の前処理だけが必要な場合は、既存の`ollama-local` profileを使うMinistralを候補にできる。これは通常のCodex delegateや8A/8B/8Cの独立レビューを置き換えない。Ministralは、親が固定した画像を読み取り、短い`observations`・根拠・不確実点を返すだけである。
 
 Codex MCPで使う場合のv1設定は、MCP側でprofile名の解決を仮定せず、既に動作確認済みの明示設定を使う。
 
@@ -48,38 +69,22 @@ CLIでの設定正本は`/Users/sawairikeisuke/.codex/ollama-local.config.toml`�
 
 ```json
 {
-  "status": "ok",
-  "case_type": "reference_comparison",
-  "input_images": [
+  "purpose": "step8_review_preflight",
+  "input_images": ["/absolute/path/image.png"],
+  "observations": [
     {
-      "path": "/absolute/path/image.png",
-      "sha256": "...",
-      "readable": true
-    }
-  ],
-  "findings": [
-    {
-      "id": "possible_missing_part",
-      "claim": "署名パーツが判読しにくい",
-      "severity": "low",
+      "item": "possible_missing_part",
+      "evidence_image": "/absolute/path/image.png",
       "confidence": 0.72,
-      "evidence_images": ["/absolute/path/image.png"],
-      "needs_parent_review": true
+      "note": "署名パーツの判読に追加確認が必要である。"
     }
   ],
-  "reduction_candidates": [
-    {
-      "path": "/absolute/path/redundant.png",
-      "reason": "別画像と情報が重複している",
-      "keep_required": false
-    }
-  ],
-  "unreadable_images": [],
-  "unknowns": []
+  "uncertainties": [],
+  "failure": null
 }
 ```
 
-`reduction_candidates`は削除命令ではなく、親が確認する候補である。画像未読、JSON不正、タイムアウト、高重要度の構造指摘、低確信度、根拠画像の一意性不明、または8Bの構造確認に必要な視点が失われる場合は、画像を削減せず元の入力セットを本番レビューへ渡す。
+`observations`は一次解析の候補であり、親が確認する。画像未読、JSON不正、タイムアウト、低確信度、根拠画像の一意性不明、または8Bの構造確認に必要な視点が失われる場合は、画像を削減せず元の入力セットを本番レビューへ渡す。`failure`がある応答は成功扱いにしない。
 
 #### 8A/8B/8Cで保持する画像
 
