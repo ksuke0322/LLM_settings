@@ -7,10 +7,15 @@ import argparse
 from fractions import Fraction
 import json
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 from typing import Any
 
+SCRIPT_DIR = Path(__file__).resolve().parent
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
+from repetition_control import cache_decision, finding_fingerprint, output_entry, rerun_decision, sha256_path
 
 BASE_ARTIFACTS = (
     "blend",
@@ -47,6 +52,21 @@ REVIEW_PRESENTATIONS = {"codex_inline_ui", "claude_artifact", "standalone_file"}
 FORBIDDEN_PLACEHOLDERS = {"tbd", "後で決める", "未定"}
 STEP8_REVIEW_FIELDS = ("step8_review", "step8_review_ledger")
 STEP8_REVIEW_PATH_KEYS = ("path", "baseline", "ledger", "report", "report_path")
+REPETITION_LEDGER_FIELDS = (
+    "quantitative_qa_ledger",
+    "ministral_preflight_ledger",
+    "render_validation_ledger",
+    "motion_qa_ledger",
+)
+
+
+class RenderValidationOperationalError(RuntimeError):
+    """A probe/decode failure that should be represented in the render ledger."""
+
+    def __init__(self, code: str, detail: str):
+        super().__init__(detail)
+        self.code = code
+        self.detail = detail
 
 
 def _is_blank(value: Any) -> bool:
@@ -101,9 +121,57 @@ def _validate_review_package(gate: dict[str, Any], label: str, errors: list[str]
         errors.append(f"{label}.review_package.presentation must be a supported presentation")
 
 
+def _load_step8_object(raw_path: str, label: str, errors: list[str]) -> dict[str, Any] | None:
+    try:
+        value = json.loads(Path(raw_path).read_text(encoding="utf-8"))
+    except (OSError, TypeError, ValueError, json.JSONDecodeError) as error:
+        errors.append(f"{label} must contain valid JSON: {error}")
+        return None
+    if not isinstance(value, dict):
+        errors.append(f"{label} must contain a JSON object")
+        return None
+    return value
+
+
+def _validate_step8_baseline_manifest_linkage(
+    manifest: dict[str, Any],
+    baseline: dict[str, Any],
+    label: str,
+    errors: list[str],
+) -> None:
+    current_render = baseline.get("current_render")
+    artifacts = manifest.get("artifacts")
+    final_still = artifacts.get("final_still") if isinstance(artifacts, dict) else None
+    if isinstance(current_render, str) and isinstance(final_still, str):
+        if Path(current_render).resolve() != Path(final_still).resolve():
+            errors.append(f"{label}.current_render must match manifest.artifacts.final_still")
+
+
+def _validate_step8_report_manifest_linkage(
+    manifest: dict[str, Any],
+    report: dict[str, Any],
+    label: str,
+    errors: list[str],
+) -> None:
+    gates = manifest.get("gates")
+    gate = gates.get("visual_acceptance") if isinstance(gates, dict) else None
+    waiver = report.get("waiver") if report.get("review_type") == "8A" else None
+    if isinstance(waiver, dict):
+        if not isinstance(gate, dict) or gate.get("status") != "waived":
+            errors.append(f"{label} 8A waiver requires gates.visual_acceptance.status=waived")
+            return
+        for key in ("reason", "impact", "approved_by"):
+            if gate.get(key) != waiver.get(key):
+                errors.append(f"{label} waiver.{key} must match gates.visual_acceptance.{key}")
+    elif isinstance(gate, dict) and gate.get("status") == "waived":
+        errors.append(f"{label} must contain an 8A waiver matching gates.visual_acceptance")
+
+
 def _validate_step8_review_paths(manifest: dict[str, Any], errors: list[str]) -> None:
     """Validate optional Step 8 baseline/ledger/report paths when supplied."""
 
+    baseline_paths: list[str] = []
+    report_paths: list[str] = []
     for field in STEP8_REVIEW_FIELDS:
         if field not in manifest:
             continue
@@ -119,10 +187,26 @@ def _validate_step8_review_paths(manifest: dict[str, Any], errors: list[str]) ->
             if key in value:
                 supplied = True
                 _validate_path(value[key], f"manifest.{field}.{key}", errors)
+                if isinstance(value[key], str) and Path(value[key]).is_file():
+                    if key == "baseline":
+                        baseline_paths.append(value[key])
+                    elif key in {"report", "report_path"}:
+                        report_paths.append(value[key])
         if not supplied:
             errors.append(
                 f"manifest.{field} must contain at least one path field: {', '.join(STEP8_REVIEW_PATH_KEYS)}"
             )
+    for raw_path in sorted(set(baseline_paths)):
+        baseline = _load_step8_object(raw_path, f"manifest.step8_review baseline {raw_path}", errors)
+        if baseline is not None:
+            _validate_step8_baseline_manifest_linkage(manifest, baseline, f"manifest.step8_review.baseline", errors)
+    for raw_path in sorted(set(report_paths)):
+        report = _load_step8_object(raw_path, f"manifest.step8_review report {raw_path}", errors)
+        if report is not None:
+            _validate_step8_report_manifest_linkage(manifest, report, f"manifest.step8_review.report", errors)
+    for field in REPETITION_LEDGER_FIELDS:
+        if field in manifest:
+            _validate_path(manifest[field], f"manifest.{field}", errors)
 
 
 def _rate(value: Any) -> Fraction | None:
@@ -331,6 +415,92 @@ def run_decode_check(video_path: Path, ffmpeg_bin: str) -> None:
     subprocess.run(command, check=True, capture_output=True, text=True)
 
 
+def _tool_version(binary: str) -> str:
+    try:
+        result = subprocess.run([binary, "-version"], check=True, capture_output=True, text=True)
+    except (FileNotFoundError, subprocess.CalledProcessError) as error:
+        return f"unavailable:{error}"
+    return (result.stdout or result.stderr).splitlines()[0] if (result.stdout or result.stderr).splitlines() else "unknown"
+
+
+def _resolve_tool(binary: str) -> str:
+    resolved = shutil.which(binary)
+    if resolved:
+        return str(Path(resolved).resolve())
+    path = Path(binary)
+    return str(path.resolve()) if path.is_file() else binary
+
+
+def _render_validation_key(video_path: Path, through: str, ffprobe_bin: str, ffmpeg_bin: str, render_spec_revision: str) -> dict[str, Any]:
+    return {
+        "video_sha256": sha256_path(video_path),
+        "render_spec_revision": render_spec_revision,
+        "validator_sha256": sha256_path(Path(__file__).resolve()),
+        "through": through,
+        "ffprobe_path": str(Path(ffprobe_bin).resolve()),
+        "ffmpeg_path": str(Path(ffmpeg_bin).resolve()),
+        "ffprobe_version": _tool_version(ffprobe_bin),
+        "ffmpeg_version": _tool_version(ffmpeg_bin),
+    }
+
+
+def _record_render_operational_failure(
+    args: argparse.Namespace,
+    key: dict[str, Any],
+    cached: Any,
+    error_code: str,
+    detail: str,
+) -> None:
+    """Record probe/decode failures so an identical failure cannot loop forever."""
+
+    if not args.ledger or args.through != "render":
+        return
+    error_report_path = args.ledger.parent / "render_validation_error.json"
+    error_report_path.parent.mkdir(parents=True, exist_ok=True)
+    error_report_path.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "status": "FAIL",
+                "error_code": error_code,
+                "detail": detail,
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+        + "\n"
+    )
+    previous_attempts = cached.get("attempts", []) if isinstance(cached, dict) else []
+    if not isinstance(previous_attempts, list) or not all(isinstance(attempt, dict) for attempt in previous_attempts):
+        previous_attempts = []
+    fingerprints = [finding_fingerprint("render_validation", {"criterion": error_code})]
+    output = output_entry(error_report_path)
+    attempt = {
+        "attempt": len(previous_attempts) + 1,
+        "key": key,
+        "status": "fail",
+        "finding_fingerprints": fingerprints,
+        "outputs": [output],
+    }
+    args.ledger.parent.mkdir(parents=True, exist_ok=True)
+    args.ledger.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "ledger_type": "render_validation",
+                "status": "fail",
+                "key": key,
+                "outputs": [output],
+                "finding_fingerprints": fingerprints,
+                "attempts": [*previous_attempts, attempt],
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+        + "\n"
+    )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("manifest", type=Path)
@@ -338,7 +508,12 @@ def main() -> int:
     parser.add_argument("--ffmpeg-bin", default="ffmpeg")
     parser.add_argument("--through", choices=tuple(PHASE_ORDER), default="app")
     parser.add_argument("--json-only", action="store_true")
+    parser.add_argument("--ledger", type=Path, help="optional RenderValidationLedger v1 path")
+    parser.add_argument("--render-spec-revision", default="default")
     args = parser.parse_args()
+    result_status = "fail"
+    key: dict[str, Any] | None = None
+    cached: Any = None
 
     try:
         manifest = json.loads(args.manifest.read_text())
@@ -351,20 +526,82 @@ def main() -> int:
                 errors = validate_manifest(manifest, {}, args.through)
             else:
                 video_path = Path(video_value)
-                probe = run_ffprobe(video_path, args.ffprobe_bin)
-                run_decode_check(video_path, args.ffmpeg_bin)
+                ffprobe_bin = _resolve_tool(args.ffprobe_bin)
+                ffmpeg_bin = _resolve_tool(args.ffmpeg_bin)
+                render_spec_revision = manifest.get("render_spec_revision", args.render_spec_revision)
+                if not isinstance(render_spec_revision, str) or not render_spec_revision:
+                    render_spec_revision = args.render_spec_revision
+                key = _render_validation_key(video_path, args.through, args.ffprobe_bin, args.ffmpeg_bin, render_spec_revision)
+                cached = json.loads(args.ledger.read_text()) if args.ledger and args.ledger.is_file() else None
+                if cached and args.through == "render" and rerun_decision(cached) == "needs_parent_decision":
+                    result_status = "needs_parent_decision"
+                    errors = ["same render validation finding repeated twice; parent decision required"]
+                    raise RuntimeError(errors[0])
+                decision = cache_decision(cached, key, "render_validation") if cached and args.through == "render" else {"reuse": False}
+                if decision["reuse"] and isinstance(cached.get("probe"), dict):
+                    probe = cached["probe"]
+                else:
+                    try:
+                        probe = run_ffprobe(video_path, args.ffprobe_bin)
+                    except (OSError, subprocess.CalledProcessError, json.JSONDecodeError, TypeError, ValueError) as error:
+                        raise RenderValidationOperationalError("ffprobe_failed", str(error)) from error
+                    try:
+                        run_decode_check(video_path, args.ffmpeg_bin)
+                    except (OSError, subprocess.CalledProcessError) as error:
+                        raise RenderValidationOperationalError("ffmpeg_decode_failed", str(error)) from error
                 story_probe = None
                 if args.through == "app":
                     story_value = artifacts.get("story_video")
                     if isinstance(story_value, str) and story_value:
                         story_path = Path(story_value)
-                        story_probe = run_ffprobe(story_path, args.ffprobe_bin)
-                        run_decode_check(story_path, args.ffmpeg_bin)
+                        try:
+                            story_probe = run_ffprobe(story_path, args.ffprobe_bin)
+                        except (OSError, subprocess.CalledProcessError, json.JSONDecodeError, TypeError, ValueError) as error:
+                            raise RenderValidationOperationalError("story_ffprobe_failed", str(error)) from error
+                        try:
+                            run_decode_check(story_path, args.ffmpeg_bin)
+                        except (OSError, subprocess.CalledProcessError) as error:
+                            raise RenderValidationOperationalError("story_ffmpeg_decode_failed", str(error)) from error
                 errors = validate_manifest(manifest, probe, args.through, story_probe)
+                result_status = "pass" if not errors else "fail"
+                if args.ledger and args.through == "render":
+                    previous_attempts = cached.get("attempts", []) if isinstance(cached, dict) else []
+                    if not isinstance(previous_attempts, list):
+                        previous_attempts = []
+                    fingerprints = sorted({
+                        finding_fingerprint("render_validation", {"criterion": error})
+                        for error in errors
+                    })
+                    attempt = {
+                        "attempt": len(previous_attempts) + 1,
+                        "key": key,
+                        "status": "pass" if not errors else "fail",
+                        "finding_fingerprints": fingerprints,
+                        "outputs": [output_entry(video_path)],
+                    }
+                    args.ledger.parent.mkdir(parents=True, exist_ok=True)
+                    args.ledger.write_text(json.dumps({
+                        "schema_version": 1,
+                        "ledger_type": "render_validation",
+                        "status": "pass" if not errors else "fail",
+                        "key": key,
+                        "outputs": [output_entry(video_path)],
+                        "finding_fingerprints": fingerprints,
+                        "attempts": [*previous_attempts, attempt],
+                        "probe": probe,
+                    }, ensure_ascii=False, indent=2) + "\n")
+    except RenderValidationOperationalError as error:
+        if key is not None:
+            _record_render_operational_failure(args, key, cached, error.code, error.detail)
+        errors = [f"{error.code}: {error.detail}"]
+    except RuntimeError as error:
+        errors = [str(error)]
     except (OSError, TypeError, ValueError, json.JSONDecodeError, subprocess.CalledProcessError) as error:
+        if key is not None:
+            _record_render_operational_failure(args, key, cached, "render_validation_exception", str(error))
         errors = [f"validation could not run: {error}"]
 
-    result = {"valid": not errors, "manifest": str(args.manifest), "errors": errors}
+    result = {"valid": not errors, "status": result_status, "manifest": str(args.manifest), "errors": errors}
     if not args.json_only:
         print("PASS: story package is valid" if not errors else "FAIL: story package is invalid")
         for error in errors:

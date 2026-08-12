@@ -80,11 +80,57 @@ class ValidateStoryPackageTests(unittest.TestCase):
         errors = self._validate(manifest)
         self.assertTrue(any("manifest.step8_review.baseline does not exist" in error for error in errors))
 
+    def test_step8_waiver_report_must_match_visual_acceptance_manifest_gate(self):
+        manifest = copy.deepcopy(self.manifest)
+        report = self.package_dir / "evidence" / "cool1_step8_8a_latest.json"
+        report.write_text(json.dumps({
+            "schema_version": 1,
+            "review_type": "8A",
+            "status": "pass",
+            "waiver": {
+                "reason": "引き継ぎ資産の差分",
+                "impact": "質感差は残るが機能的破綻はない",
+                "approved_by": "parent",
+            },
+        }))
+        manifest["step8_review"] = {"report": str(report)}
+        errors = self._validate(manifest)
+        self.assertTrue(any("visual_acceptance" in error for error in errors))
+
+        manifest["gates"]["visual_acceptance"] = {
+            "status": "waived",
+            "reviewer": "parent",
+            "evidence": manifest["gates"]["visual_acceptance"]["evidence"],
+            "reason": "引き継ぎ資産の差分",
+            "impact": "質感差は残るが機能的破綻はない",
+            "approved_by": "parent",
+        }
+        self.assertFalse(any("visual_acceptance" in error for error in self._validate(manifest)))
+
+    def test_step8_baseline_current_render_must_match_manifest_final_still(self):
+        manifest = copy.deepcopy(self.manifest)
+        baseline = self.package_dir / "evidence" / "cool1_step8_baseline.json"
+        baseline.write_text(json.dumps({
+            "current_render": manifest["artifacts"]["animatic"],
+        }))
+        manifest["step8_review"] = {"baseline": str(baseline)}
+        errors = self._validate(manifest)
+        self.assertTrue(any("current_render" in error and "final_still" in error for error in errors))
+
     def test_legacy_manifest_without_step8_review_remains_backward_compatible(self):
         manifest = copy.deepcopy(self.manifest)
         manifest.pop("step8_review", None)
         manifest.pop("step8_review_ledger", None)
         self.assertEqual([], self._validate(manifest))
+
+    def test_optional_repetition_ledger_path_is_validated(self):
+        manifest = copy.deepcopy(self.manifest)
+        ledger = self.package_dir / "evidence" / "motion_qa_ledger.json"
+        ledger.write_text("{}")
+        manifest["motion_qa_ledger"] = str(ledger)
+        self.assertEqual([], self._validate(manifest))
+        manifest["motion_qa_ledger"] = "relative-ledger.json"
+        self.assertIn("manifest.motion_qa_ledger must be an absolute path", self._validate(manifest))
 
     def test_missing_required_field_fails(self):
         manifest = copy.deepcopy(self.manifest)
@@ -206,6 +252,93 @@ class ValidateStoryPackageTests(unittest.TestCase):
         story_probe["streams"][0]["codec_name"] = "hevc"
         errors = self._validate(story_ffprobe=story_probe)
         self.assertIn("story_video codec must be h264", errors)
+
+    def test_render_validation_ledger_skips_probe_and_decode_when_input_is_unchanged(self):
+        manifest_path = self.package_dir / "manifest.json"
+        manifest_path.write_text(json.dumps(self.manifest))
+        probe_path = self.package_dir / "ffprobe.json"
+        probe_path.write_text(json.dumps(self.ffprobe))
+        probe_counter = self.package_dir / "ffprobe.count"
+        decode_counter = self.package_dir / "ffmpeg.count"
+
+        def make_tool(path, body):
+            path.write_text("#!/usr/bin/env python3\n" + body)
+            path.chmod(0o755)
+
+        make_tool(
+            self.package_dir / "ffprobe",
+            "import sys\nfrom pathlib import Path\n"
+            "if '-version' in sys.argv:\n    print('ffprobe version test')\n"
+            "else:\n"
+            f"    counter=Path({str(probe_counter)!r}); counter.write_text(str((int(counter.read_text()) if counter.exists() else 0)+1))\n"
+            f"    print(Path({str(probe_path)!r}).read_text())\n",
+        )
+        make_tool(
+            self.package_dir / "ffmpeg",
+            "import sys\nfrom pathlib import Path\n"
+            "if '-version' in sys.argv:\n    print('ffmpeg version test')\n"
+            "else:\n"
+            f"    counter=Path({str(decode_counter)!r}); counter.write_text(str((int(counter.read_text()) if counter.exists() else 0)+1))\n",
+        )
+        ledger = self.package_dir / "evidence" / "render_validation_ledger.json"
+        command = [
+            sys.executable, str(VALIDATOR_PATH), str(manifest_path), "--through", "render", "--json-only",
+            "--ffprobe-bin", str(self.package_dir / "ffprobe"), "--ffmpeg-bin", str(self.package_dir / "ffmpeg"), "--ledger", str(ledger),
+        ]
+        first = subprocess.run(command, capture_output=True, text=True)
+        second = subprocess.run(command, capture_output=True, text=True)
+        self.assertEqual(0, first.returncode, first.stderr)
+        self.assertEqual(0, second.returncode, second.stderr)
+        self.assertEqual("1", probe_counter.read_text())
+        self.assertEqual("1", decode_counter.read_text())
+        self.assertEqual("render_validation", json.loads(ledger.read_text())["ledger_type"])
+        changed_manifest = copy.deepcopy(self.manifest)
+        changed_manifest["render_spec_revision"] = "v2"
+        manifest_path.write_text(json.dumps(changed_manifest))
+        third = subprocess.run(command, capture_output=True, text=True)
+        self.assertEqual(0, third.returncode, third.stderr)
+        self.assertEqual("2", probe_counter.read_text())
+        self.assertEqual("2", decode_counter.read_text())
+
+    def test_repeated_ffprobe_failures_are_recorded_and_stop_before_third_probe(self):
+        manifest_path = self.package_dir / "manifest.json"
+        manifest_path.write_text(json.dumps(self.manifest))
+
+        def make_tool(path, body):
+            path.write_text("#!/usr/bin/env python3\n" + body)
+            path.chmod(0o755)
+
+        make_tool(
+            self.package_dir / "ffprobe-failing",
+            "import sys\n"
+            "if '-version' in sys.argv:\n    print('ffprobe version test')\n"
+            "else:\n    print('probe failed', file=sys.stderr); sys.exit(3)\n",
+        )
+        make_tool(
+            self.package_dir / "ffmpeg-ok",
+            "import sys\n"
+            "if '-version' in sys.argv:\n    print('ffmpeg version test')\n"
+            "else:\n    sys.exit(0)\n",
+        )
+        ledger = self.package_dir / "evidence" / "render_validation_ledger.json"
+        command = [
+            sys.executable, str(VALIDATOR_PATH), str(manifest_path), "--through", "render", "--json-only",
+            "--ffprobe-bin", str(self.package_dir / "ffprobe-failing"),
+            "--ffmpeg-bin", str(self.package_dir / "ffmpeg-ok"),
+            "--ledger", str(ledger),
+        ]
+        first = subprocess.run(command, capture_output=True, text=True)
+        second = subprocess.run(command, capture_output=True, text=True)
+        third = subprocess.run(command, capture_output=True, text=True)
+
+        self.assertEqual(1, first.returncode)
+        self.assertEqual(1, second.returncode)
+        self.assertEqual(1, third.returncode)
+        self.assertEqual("needs_parent_decision", json.loads(third.stdout)["status"])
+        recorded = json.loads(ledger.read_text())
+        self.assertEqual("fail", recorded["status"])
+        self.assertEqual(2, len(recorded["attempts"]))
+        self.assertTrue((self.package_dir / "evidence" / "render_validation_error.json").is_file())
 
 
 if __name__ == "__main__":

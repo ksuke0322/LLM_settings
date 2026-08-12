@@ -48,7 +48,7 @@ waiverを許可するgateは技術spike、8A Visual Acceptance、Motion QA(ク�
 - クール間のカメラ、照明、色、共有object、回転位相の連続性
 - `ffprobe`で再生可能なコンテナであること
 
-問題があれば修正・再レンダー・再検査する。Motion QAがpassまたは承認済みwaiverになるまで完成扱いにしない。
+問題があれば修正・再レンダー・再検査する。再実行前に`references/repetition-control.md`のMotionQALedgerでblend、動画、基準、サンプル条件のrevisionを確認し、入力不変なら同じ検査を繰り返さない。同じfinding fingerprintが2回連続した場合は自動再実行せず`needs_parent_decision`とする。Motion QAがpassまたは承認済みwaiverになるまで完成扱いにしない。
 
 ## App Integration QA gate
 

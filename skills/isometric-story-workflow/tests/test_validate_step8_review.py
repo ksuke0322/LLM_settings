@@ -1,4 +1,5 @@
 import importlib.util
+import hashlib
 import json
 from pathlib import Path
 import subprocess
@@ -28,6 +29,21 @@ class ValidateStep8ReviewTests(unittest.TestCase):
             path = self.root / name
             path.write_bytes(b"image")
             self.images.append(str(path))
+        self.baseline = {
+            "schema_version": 1,
+            "cool": 1,
+            "reference_image": self.images[0],
+            "current_render": self.images[1],
+            "current_render_sha256": hashlib.sha256(Path(self.images[1]).read_bytes()).hexdigest(),
+            "candidate_sha256": "c" * 64,
+            "render_set_sha256": "d" * 64,
+            "visual_anchors": ["主役の輪郭", "素材感", "装飾密度"],
+            "conflicts": [],
+            "accepted_tolerances": [],
+            "waiver_candidates": [],
+        }
+        self.baseline_path = self.root / "cool1_step8_baseline.json"
+        self.baseline_path.write_text(json.dumps(self.baseline, ensure_ascii=False))
 
     def tearDown(self):
         self.temp_dir.cleanup()
@@ -47,9 +63,18 @@ class ValidateStep8ReviewTests(unittest.TestCase):
         return report
 
     def _assert_pass(self, report):
-        result = self.validator.validate_step8_review(report)
+        result = self._validate(report)
         self.assertEqual("pass", result["status"])
         self.assertEqual([], result["errors"])
+
+    def _validate(self, report, ledger=None, **kwargs):
+        if report.get("review_type") == "8A" and "baseline" not in kwargs:
+            kwargs["baseline"] = dict(self.baseline)
+        if report.get("review_type") == "8A":
+            baseline = kwargs["baseline"]
+            kwargs.setdefault("candidate_sha256", baseline["candidate_sha256"])
+            kwargs.setdefault("render_set_sha256", baseline["render_set_sha256"])
+        return self.validator.validate_step8_review(report, ledger, **kwargs)
 
     def test_valid_8a_8b_8c_reports_are_accepted(self):
         self._assert_pass(self._base("8A"))
@@ -69,9 +94,104 @@ class ValidateStep8ReviewTests(unittest.TestCase):
     def test_missing_required_fields_are_rejected(self):
         report = self._base("8A")
         del report["input_images"]
-        result = self.validator.validate_step8_review(report)
+        result = self._validate(report)
         self.assertEqual("fail", result["status"])
         self.assertTrue(any("input_images" in error for error in result["errors"]))
+
+    def test_unknown_report_fields_are_rejected(self):
+        report = self._base("8A")
+        report["history"] = "previous review"
+        result = self._validate(report)
+        self.assertEqual("fail", result["status"])
+        self.assertFalse(result["rerun_allowed"])
+        self.assertTrue(any("unknown field" in error for error in result["errors"]))
+
+    def test_unknown_finding_fields_are_rejected(self):
+        report = self._base("8B")
+        report["findings"] = [
+            {
+                "severity": "minor",
+                "kind": "shelf",
+                "location": "top joint",
+                "evidence_images": [self.images[2]],
+                "note": "軽微な改善余地がある。",
+                "previous_review": "ignored history",
+            }
+        ]
+        result = self._validate(report)
+        self.assertEqual("fail", result["status"])
+        self.assertTrue(any("unknown field" in error for error in result["errors"]))
+
+    def test_unknown_waiver_fields_are_rejected(self):
+        report = self._base("8A")
+        report["findings"] = [
+            {
+                "classification": "waiver",
+                "kind": "legacy",
+                "criterion": "reference texture",
+                "location": "background",
+                "evidence_images": [self.images[2]],
+                "note": "承認済みの許容差である。",
+            }
+        ]
+        report["waiver"] = {
+            "reason": "引き継ぎ資産の差分",
+            "impact": "質感差は残るが機能的破綻はない",
+            "approved_by": "parent",
+            "history": "previous review",
+        }
+        manifest = {"gates": {"visual_acceptance": {"status": "waived", **report["waiver"]}}}
+        result = self._validate(report, manifest=manifest)
+        self.assertEqual("fail", result["status"])
+        self.assertTrue(any("unknown field" in error for error in result["errors"]))
+
+    def test_8a_waiver_metadata_requires_a_waiver_finding(self):
+        report = self._base("8A")
+        report["waiver"] = {
+            "reason": "引き継ぎ資産の差分",
+            "impact": "質感差は残るが機能的破綻はない",
+            "approved_by": "parent",
+        }
+        manifest = {"gates": {"visual_acceptance": {"status": "waived", **report["waiver"]}}}
+        result = self._validate(report, manifest=manifest)
+        self.assertEqual("fail", result["status"])
+        self.assertTrue(any("waiver finding" in error for error in result["errors"]))
+
+    def test_8a_requires_parent_baseline_before_review(self):
+        report = self._base("8A")
+        result = self.validator.validate_step8_review(report)
+        self.assertEqual("fail", result["status"])
+        self.assertFalse(result["rerun_allowed"])
+        self.assertTrue(any("baseline" in error for error in result["errors"]))
+
+    def test_8a_baseline_requires_readable_images_and_three_to_five_anchors(self):
+        report = self._base("8A")
+        invalid_baseline = dict(self.baseline)
+        invalid_baseline["reference_image"] = str(self.root / "missing-reference.png")
+        invalid_baseline["visual_anchors"] = ["one", "two"]
+        result = self._validate(report, baseline=invalid_baseline)
+        self.assertEqual("fail", result["status"])
+        self.assertFalse(result["rerun_allowed"])
+        self.assertTrue(any("reference_image" in error and "does not exist" in error for error in result["errors"]))
+        self.assertTrue(any("visual_anchors" in error for error in result["errors"]))
+
+    def test_8a_baseline_binds_render_and_input_revisions(self):
+        report = self._base("8A")
+        baseline = dict(self.baseline)
+        baseline["current_render_sha256"] = "0" * 64
+        baseline["candidate_sha256"] = "a" * 64
+        baseline["render_set_sha256"] = "b" * 64
+        result = self.validator.validate_step8_review(
+            report,
+            baseline=baseline,
+            candidate_sha256="c" * 64,
+            render_set_sha256="d" * 64,
+        )
+        self.assertEqual("fail", result["status"])
+        self.assertFalse(result["rerun_allowed"])
+        self.assertTrue(any("current_render_sha256" in error for error in result["errors"]))
+        self.assertTrue(any("candidate_sha256" in error for error in result["errors"]))
+        self.assertTrue(any("render_set_sha256" in error for error in result["errors"]))
 
     def test_8a_required_match_is_blocking(self):
         report = self._base("8A")
@@ -86,7 +206,7 @@ class ValidateStep8ReviewTests(unittest.TestCase):
                 "note": "質感の必須一致が不足している。",
             }
         ]
-        result = self.validator.validate_step8_review(report)
+        result = self._validate(report)
         self.assertEqual("fail", result["status"])
         self.assertTrue(result["rerun_allowed"])
         self.assertEqual(
@@ -107,7 +227,7 @@ class ValidateStep8ReviewTests(unittest.TestCase):
                     "note": "接合が不自然である。",
                 }
             ]
-            result = self.validator.validate_step8_review(report)
+            result = self._validate(report)
             self.assertEqual("fail", result["status"])
             self.assertTrue(result["errors"])
 
@@ -124,7 +244,7 @@ class ValidateStep8ReviewTests(unittest.TestCase):
                 "note": "署名パーツと存在理由が読めない。",
             }
         ]
-        result = self.validator.validate_step8_review(report)
+        result = self._validate(report)
         self.assertEqual("fail", result["status"])
         self.assertTrue(result["errors"])
 
@@ -140,7 +260,7 @@ class ValidateStep8ReviewTests(unittest.TestCase):
                 "note": "軽微な改善余地がある。",
             }
         ]
-        result = self.validator.validate_step8_review(report)
+        result = self._validate(report)
         self.assertEqual("fail", result["status"])
         self.assertTrue(any("absolute path" in error for error in result["errors"]))
         self.assertTrue(any("does not exist" in error for error in result["errors"]))
@@ -176,7 +296,7 @@ class ValidateStep8ReviewTests(unittest.TestCase):
             ],
         }
         Path(ledger["attempts"][0]["report_path"]).write_text("{}")
-        result = self.validator.validate_step8_review(
+        result = self._validate(
             report,
             ledger,
             review_type="8A",
@@ -221,7 +341,7 @@ class ValidateStep8ReviewTests(unittest.TestCase):
                 }
             ],
         }
-        result = self.validator.validate_step8_review(
+        result = self._validate(
             report,
             ledger,
             review_type="8A",
@@ -268,7 +388,7 @@ class ValidateStep8ReviewTests(unittest.TestCase):
                 }
             ],
         }
-        result = self.validator.validate_step8_review(
+        result = self._validate(
             report,
             ledger,
             review_type="8A",
@@ -295,7 +415,7 @@ class ValidateStep8ReviewTests(unittest.TestCase):
             }
         ]
         report["status"] = "needs_parent_decision"
-        result = self.validator.validate_step8_review(report)
+        result = self._validate(report)
         self.assertEqual("needs_parent_decision", result["status"])
 
         report = self._base("8C")
@@ -310,7 +430,7 @@ class ValidateStep8ReviewTests(unittest.TestCase):
             }
         ]
         report["status"] = "needs_parent_decision"
-        result = self.validator.validate_step8_review(report)
+        result = self._validate(report)
         self.assertEqual("fail", result["status"])
 
     def test_approved_8a_waiver_is_valid_only_with_required_metadata(self):
@@ -330,12 +450,42 @@ class ValidateStep8ReviewTests(unittest.TestCase):
             "impact": "質感差は残るが機能的破綻はない",
             "approved_by": "parent",
         }
-        self._assert_pass(report)
+        manifest = {"gates": {"visual_acceptance": {"status": "waived", **report["waiver"]}}}
+        result = self._validate(report, manifest=manifest)
+        self.assertEqual("pass", result["status"])
+        self.assertEqual([], result["errors"])
 
         report["waiver"].pop("approved_by")
         report["status"] = "needs_parent_decision"
-        result = self.validator.validate_step8_review(report)
+        result = self._validate(report)
         self.assertEqual("needs_parent_decision", result["status"])
+
+    def test_8a_waiver_requires_matching_manifest_record(self):
+        report = self._base("8A")
+        report["findings"] = [
+            {
+                "classification": "waiver",
+                "kind": "legacy",
+                "criterion": "reference texture",
+                "location": "background",
+                "evidence_images": [self.images[2]],
+                "note": "承認済みの許容差である。",
+            }
+        ]
+        report["waiver"] = {
+            "reason": "引き継ぎ資産の差分",
+            "impact": "質感差は残るが機能的破綻はない",
+            "approved_by": "parent",
+        }
+        manifest = {"gates": {"visual_acceptance": {"status": "pass"}}}
+        result = self._validate(report, manifest=manifest)
+        self.assertEqual("fail", result["status"])
+        self.assertTrue(any("visual_acceptance" in error for error in result["errors"]))
+
+        matching = {"gates": {"visual_acceptance": {"status": "waived", **report["waiver"]}}}
+        result = self._validate(report, manifest=matching)
+        self.assertEqual("pass", result["status"])
+        self.assertEqual([], result["errors"])
 
     def test_ledger_waiver_requires_manifest_approval_metadata(self):
         report = self._base("8A")
@@ -358,7 +508,7 @@ class ValidateStep8ReviewTests(unittest.TestCase):
                 }
             ],
         }
-        result = self.validator.validate_step8_review(
+        result = self._validate(
             report,
             ledger,
             review_type="8A",
@@ -370,6 +520,50 @@ class ValidateStep8ReviewTests(unittest.TestCase):
         )
         self.assertEqual("fail", result["status"])
         self.assertTrue(any("ledger.attempts[0].waiver" in error for error in result["errors"]))
+
+    def test_malformed_ledger_fingerprints_fail_closed_without_exception(self):
+        report = self._base("8A")
+        report["status"] = "fail"
+        report["findings"] = [
+            {
+                "classification": "required_match",
+                "kind": "wall",
+                "criterion": "material richness",
+                "location": "left wall",
+                "evidence_images": [self.images[2]],
+                "note": "必須一致が不足している。",
+            }
+        ]
+        report_path = self.root / "malformed-ledger-report.json"
+        report_path.write_text(json.dumps(report))
+        ledger = {
+            "schema_version": 1,
+            "attempts": [
+                {
+                    "review_type": "8A",
+                    "attempt": 1,
+                    "candidate_sha256": "a" * 64,
+                    "render_set_sha256": "b" * 64,
+                    "acceptance_matrix_revision": "r1",
+                    "report_path": str(report_path),
+                    "finding_fingerprints": None,
+                    "parent_action": "fix",
+                }
+            ],
+        }
+        result = self._validate(
+            report,
+            ledger,
+            review_type="8A",
+            attempt=2,
+            candidate_sha256="c" * 64,
+            render_set_sha256="d" * 64,
+            acceptance_matrix_revision="r1",
+            report_path=str(report_path),
+        )
+        self.assertEqual("fail", result["status"])
+        self.assertFalse(result["rerun_allowed"])
+        self.assertTrue(any("finding_fingerprints" in error for error in result["errors"]))
 
     def test_note_is_one_sentence_and_at_most_240_characters(self):
         report = self._base("8A")
@@ -383,7 +577,7 @@ class ValidateStep8ReviewTests(unittest.TestCase):
                 "note": "a" * 241,
             }
         ]
-        result = self.validator.validate_step8_review(report)
+        result = self._validate(report)
         self.assertEqual("fail", result["status"])
         self.assertTrue(any("240" in error for error in result["errors"]))
 
@@ -391,7 +585,18 @@ class ValidateStep8ReviewTests(unittest.TestCase):
         report_path = self.root / "report.json"
         report_path.write_text(json.dumps(self._base("8A")))
         result = subprocess.run(
-            [sys.executable, str(VALIDATOR_PATH), "--report", str(report_path)],
+            [
+                sys.executable,
+                str(VALIDATOR_PATH),
+                "--report",
+                str(report_path),
+                "--baseline",
+                str(self.baseline_path),
+                "--candidate-sha256",
+                self.baseline["candidate_sha256"],
+                "--render-set-sha256",
+                self.baseline["render_set_sha256"],
+            ],
             check=False,
             capture_output=True,
             text=True,

@@ -1,6 +1,9 @@
 import importlib.util
+import json
 from pathlib import Path
+import tempfile
 import unittest
+from unittest import mock
 
 
 SCRIPTS_DIR = Path(__file__).resolve().parents[1] / "scripts"
@@ -63,6 +66,134 @@ class BlenderQuantitativeQaReportTests(unittest.TestCase):
             ],
             runner.validate_measurement_report(report),
         )
+
+    def test_repeated_failures_stop_before_third_blender_run(self):
+        runner = load_runner()
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            blend = root / "cool.blend"
+            contract = root / "contract.json"
+            output = root / "evidence"
+            ledger = root / "ledger.json"
+            blender = root / "blender"
+            blend.write_text("blend")
+            contract.write_text("{}")
+            blender.write_text("#!/bin/sh\nexit 0\n")
+            blender.chmod(0o755)
+            calls = []
+
+            def fake_run(command, capture_output=True, text=True):
+                calls.append(command)
+                raw = output / "raw"
+                raw.mkdir(parents=True, exist_ok=True)
+                (raw / "scene_snapshot.json").write_text("{}")
+                (raw / "timeline_snapshot.json").write_text("{}")
+                (raw / "measurement_report.json").write_text(json.dumps({
+                    "schema_version": 1,
+                    "checks": [{"id": "material.fail", "status": "FAIL", "actual": False, "threshold": True}],
+                }))
+                return mock.Mock(returncode=0, stderr="", stdout="")
+
+            with mock.patch.object(runner, "_contract_errors", return_value=[]), mock.patch.object(runner.subprocess, "run", side_effect=fake_run):
+                args = [
+                    "--blend", str(blend), "--contract", str(contract), "--cool", "1",
+                    "--output-dir", str(output), "--blender", str(blender), "--ledger", str(ledger),
+                ]
+                self.assertEqual(1, runner.main(args))
+                self.assertEqual(1, runner.main(args))
+                self.assertEqual(1, runner.main(args))
+            self.assertEqual(2, len(calls))
+            self.assertEqual(2, len(json.loads(ledger.read_text())["attempts"]))
+
+    def test_malformed_ledger_fails_closed_before_blender_run(self):
+        runner = load_runner()
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            blend = root / "cool.blend"
+            contract = root / "contract.json"
+            output = root / "evidence"
+            ledger = root / "ledger.json"
+            blender = root / "blender"
+            blend.write_text("blend")
+            contract.write_text("{}")
+            ledger.write_text("{")
+            blender.write_text("#!/bin/sh\nexit 0\n")
+            blender.chmod(0o755)
+            with mock.patch.object(runner.subprocess, "run") as run:
+                args = [
+                    "--blend", str(blend), "--contract", str(contract), "--cool", "1",
+                    "--output-dir", str(output), "--blender", str(blender), "--ledger", str(ledger),
+                ]
+                self.assertEqual(1, runner.main(args))
+                run.assert_not_called()
+
+    def test_repeated_contract_failures_are_fingerprinted(self):
+        runner = load_runner()
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            blend = root / "cool.blend"
+            contract = root / "contract.json"
+            output = root / "evidence"
+            ledger = root / "ledger.json"
+            blender = root / "blender"
+            blend.write_text("blend")
+            contract.write_text("{}")
+            blender.write_text("#!/bin/sh\nexit 0\n")
+            blender.chmod(0o755)
+            calls = []
+
+            def fake_run(command, capture_output=True, text=True):
+                calls.append(command)
+                raw = output / "raw"
+                raw.mkdir(parents=True, exist_ok=True)
+                (raw / "scene_snapshot.json").write_text("{}")
+                (raw / "timeline_snapshot.json").write_text("{}")
+                (raw / "measurement_report.json").write_text(json.dumps({"schema_version": 1, "checks": []}))
+                return mock.Mock(returncode=0, stderr="", stdout="")
+
+            with mock.patch.object(runner, "_contract_errors", return_value=["contract.fail"]), mock.patch.object(runner.subprocess, "run", side_effect=fake_run):
+                args = [
+                    "--blend", str(blend), "--contract", str(contract), "--cool", "1",
+                    "--output-dir", str(output), "--blender", str(blender), "--ledger", str(ledger),
+                ]
+                self.assertEqual(1, runner.main(args))
+                self.assertEqual(1, runner.main(args))
+                self.assertEqual(1, runner.main(args))
+            self.assertEqual(2, len(calls))
+
+    def test_repeated_exporter_failures_are_recorded_and_stop_before_third_run(self):
+        runner = load_runner()
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            blend = root / "cool.blend"
+            contract = root / "contract.json"
+            output = root / "evidence"
+            ledger = root / "ledger.json"
+            blender = root / "blender"
+            blend.write_text("blend")
+            contract.write_text("{}")
+            blender.write_text("#!/bin/sh\nexit 0\n")
+            blender.chmod(0o755)
+            calls = []
+
+            def fake_run(command, capture_output=True, text=True):
+                calls.append(command)
+                return mock.Mock(returncode=3, stderr="exporter crashed", stdout="")
+
+            with mock.patch.object(runner.subprocess, "run", side_effect=fake_run):
+                args = [
+                    "--blend", str(blend), "--contract", str(contract), "--cool", "1",
+                    "--output-dir", str(output), "--blender", str(blender), "--ledger", str(ledger),
+                ]
+                self.assertEqual(3, runner.main(args))
+                self.assertEqual(3, runner.main(args))
+                self.assertEqual(1, runner.main(args))
+
+            self.assertEqual(2, len(calls))
+            recorded = json.loads(ledger.read_text())
+            self.assertEqual("fail", recorded["status"])
+            self.assertEqual(2, len(recorded["attempts"]))
+            self.assertTrue((output / "quantitative_qa_error.json").is_file())
 
 
 if __name__ == "__main__":
