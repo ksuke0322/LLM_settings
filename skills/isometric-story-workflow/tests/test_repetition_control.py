@@ -131,7 +131,7 @@ class RepetitionControlTests(unittest.TestCase):
     def test_preflight_key_preserves_image_order_and_invalidates_changed_image(self):
         second = self.root / "second.png"
         second.write_text("second")
-        key = self.preflight.preflight_key([self.input, second], "step8_review_preflight", "ministral-v1", "prompt-v1")
+        key = self.preflight.preflight_key([self.input, second], "step8_review_preflight", "luna-max-v1", "prompt-v1")
         ledger = {
             "schema_version": 1,
             "status": "pass",
@@ -147,12 +147,12 @@ class RepetitionControlTests(unittest.TestCase):
         }
         self.assertTrue(self.control.cache_decision(ledger, key)["reuse"])
         second.write_text("changed")
-        changed = self.preflight.preflight_key([self.input, second], "step8_review_preflight", "ministral-v1", "prompt-v1")
+        changed = self.preflight.preflight_key([self.input, second], "step8_review_preflight", "luna-max-v1", "prompt-v1")
         self.assertFalse(self.control.cache_decision(ledger, changed)["reuse"])
 
     def test_preflight_cache_miss_allows_rerun_and_success_can_be_recorded(self):
         ledger = self.root / "preflight-ledger.json"
-        key = self.preflight.preflight_key([self.input], "step8_review_preflight", "ministral-v1", "prompt-v1")
+        key = self.preflight.preflight_key([self.input], "step8_review_preflight", "luna-max-v1", "prompt-v1")
         report = self.root / "preflight-report.json"
         report.write_text(json.dumps({
             "purpose": "step8_review_preflight",
@@ -163,12 +163,12 @@ class RepetitionControlTests(unittest.TestCase):
         }))
         self.preflight.record_success(ledger, report, key)
         recorded = json.loads(ledger.read_text())
-        self.assertEqual("ministral_preflight", recorded["ledger_type"])
-        self.assertTrue(self.control.cache_decision(recorded, key, "ministral_preflight")["reuse"])
+        self.assertEqual("codex_image_preflight", recorded["ledger_type"])
+        self.assertTrue(self.control.cache_decision(recorded, key, "codex_image_preflight")["reuse"])
 
     def test_preflight_low_confidence_cannot_be_cached(self):
         ledger = self.root / "preflight-ledger.json"
-        key = self.preflight.preflight_key([self.input], "step8_review_preflight", "ministral-v1", "prompt-v1")
+        key = self.preflight.preflight_key([self.input], "step8_review_preflight", "luna-max-v1", "prompt-v1")
         report = self.root / "preflight-report.json"
         report.write_text(json.dumps({
             "purpose": "step8_review_preflight",
@@ -185,7 +185,7 @@ class RepetitionControlTests(unittest.TestCase):
         script = ROOT / "scripts" / "validate_preflight_cache.py"
         result = subprocess.run([
             sys.executable, str(script), str(ledger), "--purpose", "step8_review_preflight",
-            "--model-revision", "ministral-v1", "--prompt-revision", "prompt-v1", str(self.input),
+            "--model-revision", "luna-max-v1", "--prompt-revision", "prompt-v1", str(self.input),
         ], capture_output=True, text=True)
         self.assertEqual(0, result.returncode)
         self.assertEqual("rerun_allowed", json.loads(result.stdout)["status"])

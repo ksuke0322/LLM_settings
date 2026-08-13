@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Return a fail-closed reuse decision for Ministral image preflight results."""
+"""Return a fail-closed reuse decision for Codex MCP image preflight results."""
 
 from __future__ import annotations
 
@@ -75,7 +75,7 @@ def record_success(ledger_path: Path, report_path: Path, key: dict) -> None:
     })
     ledger_path.write_text(json.dumps({
         "schema_version": 1,
-        "ledger_type": "ministral_preflight",
+        "ledger_type": "codex_image_preflight",
         "status": "pass",
         "key": key,
         "outputs": [output_entry(report_path)],
@@ -96,7 +96,7 @@ def main() -> int:
     try:
         key = preflight_key(args.images, args.purpose, args.model_revision, args.prompt_revision)
         ledger = json.loads(args.ledger.read_text()) if args.ledger.is_file() else None
-        result = cache_decision(ledger, key, "ministral_preflight") if ledger else {"reuse": False, "reason": "no_ledger"}
+        result = cache_decision(ledger, key, "codex_image_preflight") if ledger else {"reuse": False, "reason": "no_ledger"}
         if args.record_report:
             record_success(args.ledger, args.record_report, key)
             payload = {"status": "pass", "reuse": False, "recorded": True, "reason": "preflight_report_recorded"}

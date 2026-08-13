@@ -20,21 +20,22 @@ description: アイソメトリックポモドーロアプリ用に新しいテ�
 
 ## 反復実行の制御
 
-- Step 7d/7.5、Step 8のMinistral事前解析、Step 9.5動画validator、Step 10 Motion QAは`references/repetition-control.md`と各ledgerを使う。同一入力・同一validator条件の`pass`だけを再利用し、入力revisionが変わったら再実行する。
+- Step 7d/7.5、Step 8のCodex MCP画像一次解析、Step 9.5動画validator、Step 10 Motion QAは`references/repetition-control.md`と各ledgerを使う。同一入力・同一validator条件の`pass`だけを再利用し、入力revisionが変わったら再実行する。
 - 同一finding fingerprintが連続2回出た場合は3回目を自動起動せず`needs_parent_decision`で停止する。キャッシュ、timeout、JSON不正、画像・動画未読は品質gateのpassに変換しない。
 - Step 10の修正後はblendまたは動画のrevisionが更新されたことを確認してから再レンダー・再検査する。Step 9.5はmanifest構造を毎回確認し、動画のffprobe/full decodeだけを検証ledgerから再利用できる。
 
-## Ministral画像一次解析の共通ルール
+## Codex MCP画像一次解析の共通ルール
 
-ステップ1・3.5・6では画像の棚卸し・事前確認に、ステップ8では8A/8B/8Cの前処理にMinistralを使ってよい。いずれも読み取り専用の一次解析であり、設計・修正・品質ゲートの判断を代替しない。
+ステップ1・3.5・6では画像の棚卸し・事前確認に、ステップ8では8A/8B/8Cの前処理に、Codex MCPの`gpt-5.6-luna` / `max`を標準経路として使用する。いずれも読み取り専用の一次解析であり、設計・修正・品質ゲートの判断を代替しない。
 
 ### 実行条件
 
-- 明示設定は`model: ministral-3:8b-16k`、`model_provider: ollama-local`、`model_reasoning_effort: none`、`oss_provider: ollama`を使う。通常のdelegate候補へ自動追加したり、hookから自動実行したりしない。
-- 親エージェントが入力画像の絶対パスと順序を固定する。Ministralに画像の検索・選定・追加・省略をさせない。1回の解析目的も1つに限定する。
+- 完全一致ツール`mcp__codex__codex`を使い、`model: gpt-5.6-luna`、`config.model_reasoning_effort: max`、`sandbox: read-only`、`approval-policy: never`を明示する。継続対話が必要な場合だけ、委任直前に完全一致の`mcp__codex__codex_reply`を確認する。
+- 親エージェントが入力画像の絶対パスと順序を固定する。Codexに画像の検索・選定・追加・省略をさせない。1回の解析目的も1つに限定する。
 - 出力は短いJSONとし、`purpose`、`input_images`、`observations`、`uncertainties`、`failure`を含める。`observations[]`には少なくとも`item`、`evidence_image`(絶対パス)、`confidence`、`note`を記録する。
 - 画像未読、JSON不正、タイムアウト、低確信度、根拠画像が一意でない場合は失敗扱いにする。推測で補完せず、画像の削減・省略も行わない。
-- 親エージェントはMinistralの結果、根拠画像、必須保持画像を確認してから次工程へ渡す。Ministralの結果を正解ラベル、最終判定、設計仕様、修正方針として扱わない。
+- 親エージェントはCodexの結果、根拠画像、必須保持画像を確認してから次工程へ渡す。Codexの結果を正解ラベル、最終判定、設計仕様、修正方針として扱わない。
+- `mcp__codex__codex`の可用性が`false`または`unknown`の場合はMinistralへフォールバックしない。親が担当するか、実行可否を確認済みのCodex CLI経路へ戻す。
 
 ### 工程別の固定用途
 
@@ -43,7 +44,7 @@ description: アイソメトリックポモドーロアプリ用に新しいテ�
 - **ステップ6 — `cool_reference_preflight`**: `cool<N>_reference.png`について、当該クールまでの要素が見えるか、未来クールの要素が混入していないか、画像未読や明白な破綻がないかを確認する。チェック画像の採用・再生成・設計適合の決定は親が行う。
 - **ステップ8 — `step8_review_preflight`**: 8A/8B/8Cの固定入力画像を一次確認し、画像の対応関係、重複・欠落候補、明白な違和感候補を整理する。画像を削減する場合も保持対象の最終判断は親が行い、最終判定・品質ゲートの合否は`isometric-story-review`と親が担う。
 
-Ministralは、Web検索画像の取得、Story Beatの設計、Blender実装、候補`.blend`の修正、8A/8B/8C以外の品質ゲート、Motion QA、App Integration QAを担当しない。
+Codex MCP画像一次解析は、Web検索画像の取得、Story Beatの設計、Blender実装、候補`.blend`の修正、8A/8B/8C以外の品質ゲート、Motion QA、App Integration QAを担当しない。Ministralは本ワークフローの画像一次解析に使用しない。
 
 ## レビュー成果物の提示
 
@@ -57,7 +58,7 @@ Ministralは、Web検索画像の取得、Story Beatの設計、Blender実装、
 ## Claude Code → Codex 委任（検査・証跡取得・レンダー実行）
 
 - Claude Code親は、要件・設計・Blender実装・修正・優先順位・人間レビュー・waiver・統合判断・正本採用を担当する。Codexは、検査、証跡整合、既存validator・既存定量QAスクリプトの実行、animatic・完成済みspike・静止画・動画のレンダー実行だけを行う。Codexは候補`.blend`を実装・修正・保存しない。
-- 実行時の標準経路はCodex MCPの完全一致ツール`mcp__codex__codex`から`gpt-5.6-luna` / `max`へ委任する。対象はレンダー、既存validator、scene/timeline snapshot、定量QA、証跡整合だけであり、Ministralへ移管しない。MCP可用性が`false`または`unknown`ならMinistralへフォールバックしない。親または可用性を確認済みのCLI経路へ戻す。継続対話が必要な場合だけ`mcp__codex__codex_reply`の完全一致を確認する。
+- 実行時の標準経路はCodex MCPの完全一致ツール`mcp__codex__codex`から`gpt-5.6-luna` / `max`へ委任する。対象は画像一次解析、レンダー、既存validator、scene/timeline snapshot、定量QA、証跡整合であり、Ministralへ移管しない。MCP可用性が`false`または`unknown`ならMinistralへフォールバックしない。親または可用性を確認済みのCLI経路へ戻す。継続対話が必要な場合だけ`mcp__codex__codex_reply`の完全一致を確認する。
 - Codex委任は必須ではない。親が既存`AGENTS.md`のSubagent policyに照らしてCodex委任を選ぶ場合、`references/codex-delegation.md`を正本として、モデル、`reasoning effort`、依頼文、入力、検証、起動タイミングを固定する。
 
 ### 親のBlender実装とCodexの実行境界(最重要)
@@ -84,7 +85,7 @@ Ministralは、Web検索画像の取得、Story Beatの設計、Blender実装、
 - 親は正本から`pomodoro_assets/<theme>_<story>/work/cool<N>_candidate.blend`を作成し、7a→7b→7cと8A/8B/8C指摘の修正を候補へ直接実装する。Codexは候補`.blend`を読み取り専用で使い、指定済み`evidence/`・`output/`だけを書き込める。正本`.blend`、候補`.blend`、manifest、state、設計書、レビュー判定はCodex委任中に更新しない。
 - ステップ7a〜7c後と8修正後、Codexは既存のscene/timeline snapshot抽出・定量QA・asset auditを実行して証跡を出力できる。FAIL/WARNの解釈、修正方針、素材の検索・取得・選定・代替は親が担当する。
 - ステップ4では親がspikeを実装し、Codexは親が固定したstate順序・尺・frame・カメラに沿うグレーanimaticと完成済みspikeをレンダーする。物語・時間設計・技術リスクの選定、レビュー・パケットの作成、人間レビューの依頼は親が行う。
-- ステップ8ではCodexに完成state静止画・密集エリアclose-up・kind単位close-upのレンダーだけを委任する。8A/8B/8Cの指摘の解釈・採否・設計側の見直し・候補`.blend`の修正は親が行い、Codexは修正後の再レンダーと既存定量QAだけを実行する。
+- ステップ8ではCodexに`step8_review_preflight`、完成state静止画・密集エリアclose-up・kind単位close-upのレンダー、既存定量QAを委任する。8A/8B/8Cの指摘の解釈・採否・設計側の見直し・候補`.blend`の修正は親が行い、Codexは修正後の再レンダーと既存定量QAだけを実行する。
 - ステップ9.5は`blender -b <file.blend> -a`のバックグラウンド起動による動画レンダー実行をCodexに委任する。完了判定、manifest更新、`validate_story_package.py --through render`の結果解釈、ユーザーへの提示は親が行う。
 - Codexは4・8・9.5のレンダー時と、7a〜7d/7.5・8修正後の既存定量QA時に、指定された静止画・動画・定量snapshotを出力してよい。親は各委任後に候補・正本の不変性、変更範囲、成果物、定量QAを確認し、7a→7b→7c→7d/7.5→8→9→9.5→10の順序を崩さない。
 - **8A・8B・8Cの判定そのものはCodexへ委任しない**。既存どおり`subagent_type: isometric-story-review`（Opus / medium）のClaude専用独立レビューとして実施し、作り込み品質のブロッキング権限はこの独立レビューに置く。Codexが担うのはレビュー前後のレンダーと既存証跡取得だけである。
@@ -138,7 +139,7 @@ Ministralは、Web検索画像の取得、Story Beatの設計、Blender実装、
 - テーマ名そのもの(例: 「lighthouse」)でWebSearchし、「isometric」等の修飾語は付けずに5〜8枚程度確認する(アイソメ表現自体ではなく、テーマに実在しそうなオブジェクト・雰囲気・配色を集めるため)。
 - 画像はスクラッチ領域に一時保存して確認するだけにし、永続化やBlenderへの直接取り込みはしない。
 - 確認した内容を「実在しそうなオブジェクト」「雰囲気・配色の傾向」「質感の傾向」の3点に簡潔にまとめ、ステップ2・3の初期値として使う。言語化メモは設計書ファイル(`design/story_design.md`)の一部として残す。
-- 参考画像を設計へ落とし込む前に、上記「Ministral画像一次解析の共通ルール」の`reference_inventory`を実行する。一次解析は候補整理に限り、参考の採否と設計判断は親が行う。
+- 参考画像を設計へ落とし込む前に、上記「Codex MCP画像一次解析の共通ルール」の`reference_inventory`を実行する。一次解析は候補整理に限り、参考の採否と設計判断は親が行う。
 - アイソメ表現そのもの(構図・ビジュアルスタイル)は参考画像の表現に関わらず本ワークフロー・`blender-isometric-rules`のルールに従う(ビジュアルスタイルはトイクレイ調/フラットトゥーンの2択から選ぶ。**いつ確定するか**: ステップ1で方向性を仮決めし、ステップ4の人間レビューで確定する。毎回都度確認が必須ではなく、ここで仮決め→レビュー時確定という流れに従う)。
 
 ### ステップ2・3: ワークシートを埋める
@@ -167,7 +168,7 @@ Ministralは、Web検索画像の取得、Story Beatの設計、Blender実装、
     - フルスクショを撮ってよい節目は、(a)アプリ起動直後の初期状態、(b)プロンプト投入後の生成完了確認、(c)`Copy Image`実行前のコンテキストメニュー確認、の3点を目安とする。
     - この規約は**GUI操作を見るためのスクショ**に対するものであり、生成画像そのもの・レンダー静止画・close-upの扱いには適用しない(それらは下記および8A/8B/8Cの規定に従う)。
 - 生成後、`design/story_design.md`に画像への絶対パスを記載する(ステップ4の人間レビューの対象に含めるため)。ローカルにも`pomodoro_assets/<theme>_<story>/ref/world_reference.png`として保存する。
-- `world_reference.png`保存後、上記「Ministral画像一次解析の共通ルール」の`world_reference_preflight`を実行し、画像の可読性と明白な破綻候補を記録する。採用可否と品質判断は親・人間レビューが行う。
+- `world_reference.png`保存後、上記「Codex MCP画像一次解析の共通ルール」の`world_reference_preflight`を実行し、画像の可読性と明白な破綻候補を記録する。採用可否と品質判断は親・人間レビューが行う。
 - **生成画像を親の文脈へ読み込むのは判断に必要な最小限に留める。** 画像はレビュー・パケット経由で人間へ、および8A/8B/8Cの`isometric-story-review`サブエージェントへ渡すのが本線であり、親が全カットを閲覧する必要はない。
 - Reference Pack(正面・側面・接合部close-up、最低1枚)の要否と優先順位は`references/quality-gates.md`の「Reference Pack」節を正本とする。
 
@@ -195,7 +196,7 @@ Ministralは、Web検索画像の取得、Story Beatの設計、Blender実装、
 - クール2以降: **前クール完成後、同じ生きているセッションのまま`bpy.ops.wm.save_as_mainfile(filepath=".../<story>_cool<N>.blend")`で次クール用ファイルへ付け替える**(ゼロから作り直さない・ファイルを開き直さない)。`save_as_mainfile`はデータを解放せず保存先を付け替えるだけなので、直前クールの`.blend`はディスク上に完成スナップショットとして凍結され、MCP接続も維持される。付け替え後は`blender-isometric-rules`7章のルールR(クール間引き継ぎ)を必ず適用する。
 - `references/manifest-schema.md`を基に作業ディレクトリ直下へ`cool<N>_manifest.json`の骨格を作る。未生成artifactはキーを省略し、未実施の将来gateは`pending`にする。成果物生成ごとに絶対パスを追加する。
 - **クール別チェック画像の生成**: オブジェクト一覧表の「初出クール」列が**当該クール以下**(前クールまでの完成要素+今回新規追加分)の要素だけに絞ってプロンプトを組み、1枚生成する。未来のクール(まだ存在しないはずの要素)は絶対に含めない。生成手段はステップ3.5と同じ(GUI操作の確認スクショに関するトークン規約も同じく適用する)。保存先: `pomodoro_assets/<theme>_<story>/ref/cool<N>_reference.png`。
-- `cool<N>_reference.png`保存後、上記「Ministral画像一次解析の共通ルール」の`cool_reference_preflight`を実行する。未来要素の混入や明白な画像破綻は候補として記録し、チェック画像の採用・再生成は親が決める。
+- `cool<N>_reference.png`保存後、上記「Codex MCP画像一次解析の共通ルール」の`cool_reference_preflight`を実行する。未来要素の混入や明白な画像破綻は候補として記録し、チェック画像の採用・再生成は親が決める。
 - **PolyHaven対象の適用確認**: ステップ2・3で確定したPolyHavenアセットを`blender-mcp`の`download_polyhaven_asset`/`set_texture`で実際にダウンロード・適用し、シーンの質感・色味と合うか確認する。問題なければそのまま採用する。合わない場合の扱い(AIが自己判断でプロシージャルへ差し替えず、一旦停止してユーザーにフォールバック可否を確認する)は`blender-isometric-rules`3章「外部アセット活用方針」を正本とする。
 
 ### ステップ7: 制作(7a → 7b → 7cの3工程)
@@ -268,8 +269,8 @@ Ministralは、Web検索画像の取得、Story Beatの設計、Blender実装、
 - 8Aのwaiverは既存manifestの`reason`、`impact`、`approved_by`が揃う場合だけ成立する。8B/8Cのwaiverはgate完了に使わない。
 - JSON不正、画像未読、入力不足、タイムアウト、`needs_parent_decision`は成功扱いにしない。
 
-**Ministralによる画像一次解析(前処理)**: 8A/8B/8Cに入る前に、上記「Ministral画像一次解析の共通ルール」の`step8_review_preflight`を実行する。Ministralの結果は候補抽出・画像整理・違和感の事前把握にのみ使う。画像削減・保持の最終判断、8A/8B/8Cの最終判定、品質ゲートの合否、設計上の修正方針はMinistralへ委任しない。
-同じ固定画像・model/config・prompt/schemaの成功済み一次解析は`scripts/validate_preflight_cache.py`で再利用可否を確認する。cache missや入力変更は通常の再解析へ進み、画像未読・timeout・JSON不正・低確信度は停止する。成功した短いJSONは`--record-report`でledgerへ記録する。記録時は`observations[]`の`item`・`evidence_image`・`confidence`・`note`を必須とし、confidenceは数値なら0.6以上、ラベルなら`medium`/`high`だけを許可する。
+**Codex MCPによる画像一次解析(前処理)**: 8A/8B/8Cに入る前に、上記「Codex MCP画像一次解析の共通ルール」の`step8_review_preflight`を実行する。Codexの結果は候補抽出・画像整理・違和感の事前把握にのみ使う。画像削減・保持の最終判断、8A/8B/8Cの最終判定、品質ゲートの合否、設計上の修正方針はCodexへ委任しない。
+- 同じ固定画像・model/config・prompt/schemaの成功済み一次解析は`scripts/validate_preflight_cache.py`で再利用可否を確認する。cache missや入力変更は通常の再解析へ進み、画像未読・timeout・JSON不正・低確信度は停止する。成功した短いJSONは`--record-report`でledgerへ記録する。記録時は`observations[]`の`item`・`evidence_image`・`confidence`・`note`を必須とし、confidenceは数値なら0.6以上、ラベルなら`medium`/`high`だけを許可する。
 
 ステップ8では**3種類の独立したレビューループをすべて実施**する(8A・8B・8C)。役割を1つのレビューに混載させない(混載は見落としの原因になり、実際に「PASSなのに低品質」の事故を生んだ)。
 
@@ -283,7 +284,7 @@ Ministralは、Web検索画像の取得、Story Beatの設計、Blender実装、
 
 **起動プロンプトの正本(必須・漏れ厳禁)**: 8A・8B・8Cの起動プロンプトは`references/step8-review-prompts.md`を正本とし、同ファイルの雛形の`<...>`を埋めて使う。**雛形を使わずに毎回書き起こさない**(書き起こしは判定基準そのもののドリフトを生む。実際に8Aの呼称が「Acceptance Matrixレビュー」「Visual Acceptance」で、8Bが「常識・物理的妥当性」「常識チェック」で揺れた)。起動前に同ファイル末尾の「起動前チェックリスト」を1項目ずつ確認する。修正ループの2回目以降も同じ雛形で起動し、前回の指摘・修正履歴は渡さない(渡してよいのは新しいレンダー画像と更新された実測値だけ)。
 
-**実行者の分担(必読)**: ステップ8で**Codex(`gpt-5.6-luna` / `max`)へ委任してよいのはレンダー実行と既存定量QAの実行だけ**である。具体的には、完成state静止画・密集エリアclose-up・kind単位close-up、および親が修正した候補`.blend`の再レンダーを委任する。**8A/8B/8Cの判定と、その指摘に基づく候補`.blend`の修正実装は親が行う。** 判定は必ず`subagent_type: isometric-story-review`で行い、Codexへ置き換えない。指摘の解釈・採否、設計側(存在理由・パーツ定義)の見直し、収束判断、waiver判断、証跡とmanifestの更新は親が行う。Codexは候補`.blend`を読み取り専用で使い、レビュー結果の解釈を任されない。
+**実行者の分担(必読)**: ステップ8で**Codex(`gpt-5.6-luna` / `max`)へ委任してよいのはCodex MCP画像一次解析、レンダー実行、既存定量QAの実行だけ**である。具体的には、固定入力画像の`step8_review_preflight`、完成state静止画・密集エリアclose-up・kind単位close-up、および親が修正した候補`.blend`の再レンダーを委任する。**8A/8B/8Cの判定と、その指摘に基づく候補`.blend`の修正実装は親が行う。** 判定は必ず`subagent_type: isometric-story-review`で行い、Codexへ置き換えない。指摘の解釈・採否、設計側(存在理由・パーツ定義)の見直し、収束判断、waiver判断、証跡とmanifestの更新は親が行う。Codexは候補`.blend`を読み取り専用で使い、レビュー結果の解釈を任されない。
 
 共通手順:
 

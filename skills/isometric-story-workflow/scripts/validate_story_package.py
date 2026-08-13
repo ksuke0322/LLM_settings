@@ -54,7 +54,7 @@ STEP8_REVIEW_FIELDS = ("step8_review", "step8_review_ledger")
 STEP8_REVIEW_PATH_KEYS = ("path", "baseline", "ledger", "report", "report_path")
 REPETITION_LEDGER_FIELDS = (
     "quantitative_qa_ledger",
-    "ministral_preflight_ledger",
+    "codex_image_preflight_ledger",
     "render_validation_ledger",
     "motion_qa_ledger",
 )

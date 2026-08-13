@@ -15,12 +15,12 @@ if str(SCRIPT_DIR) not in sys.path:
 from repetition_control import cache_decision, repeated_finding_decision, rerun_decision, sha256_path
 
 
-LEDGER_TYPES = {"quantitative_qa", "motion_qa", "render_validation", "ministral_preflight"}
+LEDGER_TYPES = {"quantitative_qa", "motion_qa", "render_validation", "codex_image_preflight"}
 REQUIRED_KEY_FIELDS = {
     "quantitative_qa": {"blend_sha256", "inputs", "cool", "qa_scope", "runner_revision", "exporter_revision", "validator_revision", "tool_revision", "ground_name", "report_path"},
     "motion_qa": {"blend_sha256", "video_sha256", "criteria_revision", "sample_set_revision"},
     "render_validation": {"video_sha256", "render_spec_revision", "validator_sha256", "through", "ffprobe_path", "ffmpeg_path", "ffprobe_version", "ffmpeg_version"},
-    "ministral_preflight": {"purpose", "ordered_images", "model_revision", "prompt_revision"},
+    "codex_image_preflight": {"purpose", "ordered_images", "model_revision", "prompt_revision"},
 }
 
 

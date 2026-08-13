@@ -70,7 +70,7 @@ Step 8の親baselineと再実行台帳はmanifestの品質gateそのものとは
 このsidecarの存在は既存gateの`pass`/`waived`判定を置き換えないが、指定されたリンク不整合はmanifest validatorが拒否する。8A/8B/8CのJSON契約と再実行制御は
 `references/step8-review-control.md`、機械検証は`scripts/validate_step8_review.py`を参照する。
 
-反復実行の補助台帳（`quantitative_qa`、`ministral_preflight`、`render_validation`、`motion_qa`）は、`evidence/`配下の任意の絶対パスサイドカーとして保存できる。台帳は品質gateのstatusやwaiverを置き換えず、指定された場合だけ親と専用validatorが入力revision・出力SHA-256・再利用可否を検証する。
+反復実行の補助台帳（`quantitative_qa`、`codex_image_preflight`、`render_validation`、`motion_qa`）は、`evidence/`配下の任意の絶対パスサイドカーとして保存できる。台帳は品質gateのstatusやwaiverを置き換えず、指定された場合だけ親と専用validatorが入力revision・出力SHA-256・再利用可否を検証する。
 
 ## 人間レビュー用`review_package`
 

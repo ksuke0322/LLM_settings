@@ -20,16 +20,19 @@ class Step8ReviewDocumentationTests(unittest.TestCase):
         self.assertIn("step8-review-control.md", prompts)
         self.assertGreaterEqual(prompts.count("JSONオブジェクトだけを返してください"), 3)
 
-    def test_codex_route_is_luna_mcp_and_ministral_is_not_fallback(self):
+    def test_codex_route_is_luna_mcp_and_ministral_is_not_used(self):
         skill = self._read("SKILL.md")
         delegation = self._read("references/codex-delegation.md")
         for content in (skill, delegation):
             self.assertIn("mcp__codex__codex", content)
             self.assertIn("gpt-5.6-luna", content)
             self.assertIn("Ministralへフォールバックしない", content)
+            self.assertIn("Codex MCP画像一次解析", content)
+            self.assertNotIn("ministral-3:8b-16k", content)
+            self.assertNotIn("ollama-local", content)
         self.assertIn("mcp__codex__codex_reply", delegation)
 
-    def test_ministral_preflight_contract_matches_skill_contract(self):
+    def test_codex_image_preflight_contract_matches_skill_contract(self):
         skill = self._read("SKILL.md")
         delegation = self._read("references/codex-delegation.md")
         for field in ("purpose", "input_images", "observations", "uncertainties", "failure"):
