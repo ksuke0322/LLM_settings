@@ -1,0 +1,1527 @@
+{
+  "schemaVersion": 1,
+  "kind": "common-hook-ledger",
+  "authority": "contract-only",
+  "scope": "read-only-static-audit",
+  "products": [
+    "Claude",
+    "Codex"
+  ],
+  "events": [
+    "PermissionRequest",
+    "UserPromptSubmit",
+    "PreToolUse",
+    "SessionStart",
+    "Stop",
+    "SubagentStop",
+    "PostToolUse",
+    "PreCompact"
+  ],
+  "unimplementedEvents": [
+    {
+      "event": "PostCompact",
+      "status": "absent",
+      "nextPhase": "closed",
+      "resolution": "unnecessary",
+      "decisionAuditIds": [
+        "claude.post-compact",
+        "codex.post-compact"
+      ]
+    },
+    {
+      "event": "SubagentStart",
+      "status": "absent",
+      "nextPhase": "closed",
+      "resolution": "unnecessary",
+      "decisionAuditIds": [
+        "claude.subagent-start",
+        "codex.subagent-start"
+      ]
+    },
+    {
+      "event": "SessionEnd",
+      "status": "absent",
+      "nextPhase": "closed",
+      "resolution": "unnecessary",
+      "decisionAuditIds": [
+        "claude.session-end",
+        "codex.session-end"
+      ]
+    }
+  ],
+  "decisionAudits": [
+    {
+      "id": "claude.post-compact",
+      "product": "Claude",
+      "event": "PostCompact",
+      "decision": "unnecessary",
+      "implementationStatus": "absent",
+      "hostSupport": "unresolved",
+      "contextModeSupport": "unsupported",
+      "activeRegistration": false,
+      "registrationCount": 0,
+      "coexistencePolicy": "absent-no-registration",
+      "orderIndependent": true,
+      "conflictPolicy": "fail-closed-until-new-contract",
+      "coveredBy": [
+        "PreCompact",
+        "SessionStart"
+      ],
+      "responsibilities": [],
+      "outputs": [],
+      "stateUpdates": [],
+      "sideEffects": [],
+      "risks": [],
+      "decisionReason": "PreCompactのsnapshotと、compact/resume時にも発火するSessionStartの初期化で、現在のコンテキスト責務を満たしている。独立したpost-compact処理は確認できない。",
+      "manualNextAction": "設定変更は行わない。hostがPostCompactを正式提供し、独立した後処理が必要になった時点で再監査する。",
+      "evidence": [
+        {
+          "kind": "active-registration",
+          "sourcePath": "/Users/sawairikeisuke/.claude/settings.json",
+          "claim": "Claude custom hooksにPostCompact登録がない"
+        },
+        {
+          "kind": "active-registration",
+          "sourcePath": "/Users/sawairikeisuke/.claude/plugins/cache/context-mode/context-mode/1.0.169/hooks/hooks.json",
+          "claim": "Claude context-mode manifestにPostCompact登録がない"
+        },
+        {
+          "kind": "context-mode-support",
+          "sourcePath": "/Users/sawairikeisuke/.codex/plugins/cache/context-mode/context-mode/1.0.169/docs/platform-support.md",
+          "claim": "Claude Code adapterのHook Names/CommandsにPostCompactがない"
+        },
+        {
+          "kind": "responsibility-coverage",
+          "sourcePath": "/Users/sawairikeisuke/.agents/hooks/hook-ledger.json",
+          "claim": "PreCompact snapshotとSessionStart initializationが有効な責務として登録されている"
+        }
+      ]
+    },
+    {
+      "id": "codex.post-compact",
+      "product": "Codex",
+      "event": "PostCompact",
+      "decision": "unnecessary",
+      "implementationStatus": "absent",
+      "hostSupport": "unresolved",
+      "contextModeSupport": "unsupported",
+      "activeRegistration": false,
+      "registrationCount": 0,
+      "coexistencePolicy": "absent-no-registration",
+      "orderIndependent": true,
+      "conflictPolicy": "fail-closed-until-new-contract",
+      "coveredBy": [
+        "PreCompact",
+        "SessionStart"
+      ],
+      "responsibilities": [],
+      "outputs": [],
+      "stateUpdates": [],
+      "sideEffects": [],
+      "risks": [],
+      "decisionReason": "PreCompactのresume snapshotと、compact/resume時にも発火するSessionStartの初期化で、現在のコンテキスト責務を満たしている。独立したpost-compact処理は確認できない。",
+      "manualNextAction": "設定変更は行わない。hostがPostCompactを正式提供し、独立した後処理が必要になった時点で再監査する。",
+      "evidence": [
+        {
+          "kind": "active-registration",
+          "sourcePath": "/Users/sawairikeisuke/.codex/hooks.json",
+          "claim": "Codex custom hooksにPostCompact登録がない"
+        },
+        {
+          "kind": "active-registration",
+          "sourcePath": "/Users/sawairikeisuke/.codex/plugins/cache/context-mode/context-mode/1.0.169/.codex-plugin/hooks.json",
+          "claim": "Codex context-mode manifestにPostCompact登録がない"
+        },
+        {
+          "kind": "context-mode-support",
+          "sourcePath": "/Users/sawairikeisuke/.codex/plugins/cache/context-mode/context-mode/1.0.169/docs/platform-support.md",
+          "claim": "Codex adapterのHook Names/CommandsにPostCompactがない"
+        },
+        {
+          "kind": "responsibility-coverage",
+          "sourcePath": "/Users/sawairikeisuke/.agents/hooks/hook-ledger.json",
+          "claim": "PreCompact snapshotとSessionStart initializationが有効な責務として登録されている"
+        }
+      ]
+    },
+    {
+      "id": "claude.subagent-start",
+      "product": "Claude",
+      "event": "SubagentStart",
+      "decision": "unnecessary",
+      "implementationStatus": "absent",
+      "hostSupport": "unresolved",
+      "contextModeSupport": "unsupported",
+      "activeRegistration": false,
+      "registrationCount": 0,
+      "coexistencePolicy": "absent-no-registration",
+      "orderIndependent": true,
+      "conflictPolicy": "fail-closed-until-new-contract",
+      "coveredBy": [
+        "UserPromptSubmit",
+        "SubagentStop"
+      ],
+      "responsibilities": [],
+      "outputs": [],
+      "stateUpdates": [],
+      "sideEffects": [],
+      "risks": [],
+      "decisionReason": "delegate方針はUserPromptSubmitで判定し、現在のsubagent固有通知はSubagentStopで完結している。開始時に必要な独立状態・通知・安全判定は確認できない。",
+      "manualNextAction": "SubagentStopとの対称性だけで追加しない。hostが正式対応し、開始時固有の責務が必要になった時だけ再監査する。",
+      "evidence": [
+        {
+          "kind": "active-registration",
+          "sourcePath": "/Users/sawairikeisuke/.claude/settings.json",
+          "claim": "Claude custom hooksにSubagentStart登録がない"
+        },
+        {
+          "kind": "active-registration",
+          "sourcePath": "/Users/sawairikeisuke/.claude/plugins/cache/context-mode/context-mode/1.0.169/hooks/hooks.json",
+          "claim": "Claude context-mode manifestにSubagentStart登録がない"
+        },
+        {
+          "kind": "context-mode-support",
+          "sourcePath": "/Users/sawairikeisuke/.codex/plugins/cache/context-mode/context-mode/1.0.169/docs/platform-support.md",
+          "claim": "Claude Code adapterのHook Names/CommandsにSubagentStartがない"
+        },
+        {
+          "kind": "responsibility-coverage",
+          "sourcePath": "/Users/sawairikeisuke/.agents/hooks/hook-ledger.json",
+          "claim": "UserPromptSubmitのdelegate policyとSubagentStopの通知が有効な責務として登録されている"
+        }
+      ]
+    },
+    {
+      "id": "codex.subagent-start",
+      "product": "Codex",
+      "event": "SubagentStart",
+      "decision": "unnecessary",
+      "implementationStatus": "absent",
+      "hostSupport": "unresolved",
+      "contextModeSupport": "unsupported",
+      "activeRegistration": false,
+      "registrationCount": 0,
+      "coexistencePolicy": "absent-no-registration",
+      "orderIndependent": true,
+      "conflictPolicy": "fail-closed-until-new-contract",
+      "coveredBy": [
+        "UserPromptSubmit",
+        "SubagentStop"
+      ],
+      "responsibilities": [],
+      "outputs": [],
+      "stateUpdates": [],
+      "sideEffects": [],
+      "risks": [],
+      "decisionReason": "delegate方針はUserPromptSubmitで判定し、現在のsubagent固有通知はSubagentStopで完結している。開始時に必要な独立状態・通知・安全判定は確認できない。",
+      "manualNextAction": "SubagentStopとの対称性だけで追加しない。hostが正式対応し、開始時固有の責務が必要になった時だけ再監査する。",
+      "evidence": [
+        {
+          "kind": "active-registration",
+          "sourcePath": "/Users/sawairikeisuke/.codex/hooks.json",
+          "claim": "Codex custom hooksにSubagentStart登録がない"
+        },
+        {
+          "kind": "active-registration",
+          "sourcePath": "/Users/sawairikeisuke/.codex/plugins/cache/context-mode/context-mode/1.0.169/.codex-plugin/hooks.json",
+          "claim": "Codex context-mode manifestにSubagentStart登録がない"
+        },
+        {
+          "kind": "context-mode-support",
+          "sourcePath": "/Users/sawairikeisuke/.codex/plugins/cache/context-mode/context-mode/1.0.169/docs/platform-support.md",
+          "claim": "Codex adapterのHook Names/CommandsにSubagentStartがない"
+        },
+        {
+          "kind": "responsibility-coverage",
+          "sourcePath": "/Users/sawairikeisuke/.agents/hooks/hook-ledger.json",
+          "claim": "UserPromptSubmitのdelegate policyとSubagentStopの通知が有効な責務として登録されている"
+        }
+      ]
+    },
+    {
+      "id": "claude.session-end",
+      "product": "Claude",
+      "event": "SessionEnd",
+      "decision": "unnecessary",
+      "implementationStatus": "absent",
+      "hostSupport": "unresolved",
+      "contextModeSupport": "unsupported",
+      "activeRegistration": false,
+      "registrationCount": 0,
+      "coexistencePolicy": "absent-no-registration",
+      "orderIndependent": true,
+      "conflictPolicy": "fail-closed-until-new-contract",
+      "coveredBy": [
+        "Stop"
+      ],
+      "responsibilities": [],
+      "outputs": [],
+      "stateUpdates": [],
+      "sideEffects": [],
+      "risks": [],
+      "decisionReason": "現在必要な終了通知とturn-end captureはStopで担当しており、セッション終了時だけに必要なcleanup・状態保存・通知は確認できない。",
+      "manualNextAction": "設定変更は行わない。session teardown固有の要件が発生し、hostが正式対応した時だけ新しい責務契約を作成する。",
+      "evidence": [
+        {
+          "kind": "active-registration",
+          "sourcePath": "/Users/sawairikeisuke/.claude/settings.json",
+          "claim": "Claude custom hooksにSessionEnd登録がない"
+        },
+        {
+          "kind": "active-registration",
+          "sourcePath": "/Users/sawairikeisuke/.claude/plugins/cache/context-mode/context-mode/1.0.169/hooks/hooks.json",
+          "claim": "Claude context-mode manifestにSessionEnd登録がない"
+        },
+        {
+          "kind": "context-mode-support",
+          "sourcePath": "/Users/sawairikeisuke/.codex/plugins/cache/context-mode/context-mode/1.0.169/docs/platform-support.md",
+          "claim": "Claude Code adapterのHook Names/CommandsにSessionEndがない"
+        },
+        {
+          "kind": "responsibility-coverage",
+          "sourcePath": "/Users/sawairikeisuke/.agents/hooks/hook-ledger.json",
+          "claim": "Stopの通知とcontext-mode turn-end captureが有効な責務として登録されている"
+        }
+      ]
+    },
+    {
+      "id": "codex.session-end",
+      "product": "Codex",
+      "event": "SessionEnd",
+      "decision": "unnecessary",
+      "implementationStatus": "absent",
+      "hostSupport": "unresolved",
+      "contextModeSupport": "unsupported",
+      "activeRegistration": false,
+      "registrationCount": 0,
+      "coexistencePolicy": "absent-no-registration",
+      "orderIndependent": true,
+      "conflictPolicy": "fail-closed-until-new-contract",
+      "coveredBy": [
+        "Stop"
+      ],
+      "responsibilities": [],
+      "outputs": [],
+      "stateUpdates": [],
+      "sideEffects": [],
+      "risks": [],
+      "decisionReason": "現在必要な終了通知とturn-end captureはStopで担当しており、セッション終了時だけに必要なcleanup・状態保存・通知は確認できない。",
+      "manualNextAction": "設定変更は行わない。session teardown固有の要件が発生し、hostが正式対応した時だけ新しい責務契約を作成する。",
+      "evidence": [
+        {
+          "kind": "active-registration",
+          "sourcePath": "/Users/sawairikeisuke/.codex/hooks.json",
+          "claim": "Codex custom hooksにSessionEnd登録がない"
+        },
+        {
+          "kind": "active-registration",
+          "sourcePath": "/Users/sawairikeisuke/.codex/plugins/cache/context-mode/context-mode/1.0.169/.codex-plugin/hooks.json",
+          "claim": "Codex context-mode manifestにSessionEnd登録がない"
+        },
+        {
+          "kind": "context-mode-support",
+          "sourcePath": "/Users/sawairikeisuke/.codex/plugins/cache/context-mode/context-mode/1.0.169/docs/platform-support.md",
+          "claim": "Codex adapterのHook Names/CommandsにSessionEndがない"
+        },
+        {
+          "kind": "responsibility-coverage",
+          "sourcePath": "/Users/sawairikeisuke/.agents/hooks/hook-ledger.json",
+          "claim": "Stopの通知とcontext-mode turn-end captureが有効な責務として登録されている"
+        }
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "id": "claude-settings",
+      "product": "Claude",
+      "kind": "runtime-config",
+      "path": "/Users/sawairikeisuke/.claude/settings.json",
+      "managed": false
+    },
+    {
+      "id": "codex-hooks",
+      "product": "Codex",
+      "kind": "runtime-config",
+      "path": "/Users/sawairikeisuke/.codex/hooks.json",
+      "managed": false
+    },
+    {
+      "id": "claude-context-mode-manifest",
+      "product": "Claude",
+      "kind": "plugin-manifest",
+      "path": "/Users/sawairikeisuke/.claude/plugins/cache/context-mode/context-mode/1.0.169/hooks/hooks.json",
+      "managed": true,
+      "plugin": "context-mode",
+      "pluginVersion": "1.0.169"
+    },
+    {
+      "id": "codex-context-mode-manifest",
+      "product": "Codex",
+      "kind": "plugin-manifest",
+      "path": "/Users/sawairikeisuke/.codex/plugins/cache/context-mode/context-mode/1.0.169/.codex-plugin/hooks.json",
+      "managed": true,
+      "plugin": "context-mode",
+      "pluginVersion": "1.0.169"
+    }
+  ],
+  "riskTaxonomy": [
+    "audio",
+    "keychain-read",
+    "external-network",
+    "herdr-unix-socket",
+    "file-write",
+    "state-save",
+    "symlink"
+  ],
+  "eventContracts": [
+    {
+      "event": "PermissionRequest",
+      "coexistencePolicy": "custom-only",
+      "orderIndependent": true,
+      "responsibilities": [
+        "custom.permission-notification"
+      ],
+      "conflictPolicy": "no-plugin-handler"
+    },
+    {
+      "event": "UserPromptSubmit",
+      "coexistencePolicy": "coexisting",
+      "orderIndependent": true,
+      "responsibilities": [
+        "custom.delegate-policy",
+        "context-mode.context-processing"
+      ],
+      "conflictPolicy": "separate-context-responsibilities"
+    },
+    {
+      "event": "PreToolUse",
+      "coexistencePolicy": "coexisting",
+      "orderIndependent": true,
+      "responsibilities": [
+        "custom.safety-guard",
+        "context-mode.tool-routing"
+      ],
+      "conflictPolicy": {
+        "denyPriority": "any-deny",
+        "bothDenyReason": "custom-safety-reason",
+        "rewriteConflict": "deny",
+        "malformedOutput": "deny",
+        "timeout": "deny",
+        "unsupportedDecision": "deny"
+      }
+    },
+    {
+      "event": "SessionStart",
+      "coexistencePolicy": "coexisting",
+      "orderIndependent": true,
+      "responsibilities": [
+        "custom.herdr-state",
+        "context-mode.initialization",
+        "exception.claude-cache-heal"
+      ],
+      "conflictPolicy": "separate-state-responsibilities"
+    },
+    {
+      "event": "Stop",
+      "coexistencePolicy": "coexisting",
+      "orderIndependent": true,
+      "responsibilities": [
+        "custom.notification",
+        "context-mode.turn-end-capture"
+      ],
+      "conflictPolicy": "no-duplicate-notification-purpose"
+    },
+    {
+      "event": "SubagentStop",
+      "coexistencePolicy": "custom-only",
+      "orderIndependent": true,
+      "responsibilities": [
+        "custom.subagent-notification"
+      ],
+      "conflictPolicy": "no-plugin-handler"
+    },
+    {
+      "event": "PostToolUse",
+      "coexistencePolicy": "plugin-only",
+      "orderIndependent": true,
+      "responsibilities": [
+        "context-mode.context-capture"
+      ],
+      "conflictPolicy": "no-custom-handler"
+    },
+    {
+      "event": "PreCompact",
+      "coexistencePolicy": "plugin-only",
+      "orderIndependent": true,
+      "responsibilities": [
+        "context-mode.compact-snapshot"
+      ],
+      "conflictPolicy": "no-custom-handler"
+    }
+  ],
+  "bridgeContracts": {
+    "Claude": {
+      "bridgePath": "/Users/sawairikeisuke/.claude/hooks/pretooluse-bridge.mjs",
+      "corePath": "/Users/sawairikeisuke/.agents/hooks/pretooluse-bridge-core.mjs",
+      "sameStdin": true,
+      "parallel": true,
+      "orderIndependent": true,
+      "handlers": [
+        {
+          "provider": "custom",
+          "matcher": "Bash",
+          "command": "rtk hook claude",
+          "sourcePath": null
+        },
+        {
+          "provider": "custom",
+          "matcher": "Bash|Write|Edit|NotebookEdit",
+          "command": "node /Users/sawairikeisuke/.claude/hooks/pretooluse-guardrails.mjs",
+          "sourcePath": "/Users/sawairikeisuke/.claude/hooks/pretooluse-guardrails.mjs",
+          "sourceSha256": "286d03dd3b726f4a31ebc3483731f0f2eaf412671ec03f2e1c2e02efa4c5d0d3"
+        },
+        {
+          "provider": "context-mode",
+          "matcher": "Bash|WebFetch|Read|Grep|Agent|mcp__plugin_context-mode_context-mode__ctx_execute|mcp__plugin_context-mode_context-mode__ctx_execute_file|mcp__plugin_context-mode_context-mode__ctx_batch_execute|mcp__",
+          "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/pretooluse.mjs\"",
+          "sourcePath": "/Users/sawairikeisuke/.claude/plugins/cache/context-mode/context-mode/1.0.169/hooks/pretooluse.mjs",
+          "sourceSha256": "ecac9efe98689e57f50642d1657e212f10445e12c033a4b356738c4ca1c9e3d5"
+        }
+      ],
+      "failurePolicy": "fail-closed"
+    },
+    "Codex": {
+      "bridgePath": "/Users/sawairikeisuke/.codex/hooks/pretooluse-bridge.mjs",
+      "corePath": "/Users/sawairikeisuke/.agents/hooks/pretooluse-bridge-core.mjs",
+      "sameStdin": true,
+      "parallel": true,
+      "orderIndependent": true,
+      "handlers": [
+        {
+          "provider": "custom",
+          "matcher": "Read|NotebookEdit",
+          "command": "rtk proxy node /Users/sawairikeisuke/.codex/hooks/pretooluse.mjs",
+          "sourcePath": "/Users/sawairikeisuke/.codex/hooks/pretooluse.mjs",
+          "sourceSha256": "9dfa7a998fb8c36c32d0fb511006fb360c4c8a9d14f013be486807d829602116"
+        },
+        {
+          "provider": "context-mode",
+          "matcher": "local_shell|shell|shell_command|exec_command|Bash|Shell|apply_patch|Edit|Write|grep_files|ctx_execute|ctx_execute_file|ctx_batch_execute|ctx_fetch_and_index|ctx_search|ctx_index|mcp__",
+          "command": "node \"${PLUGIN_ROOT}/hooks/codex/pretooluse.mjs\"",
+          "sourcePath": "/Users/sawairikeisuke/.codex/plugins/cache/context-mode/context-mode/1.0.169/hooks/codex/pretooluse.mjs",
+          "sourceSha256": "3d31580ad41412399ffd4824b2b6d80072e413e13ad027ef381caf0f52cdd2ed"
+        }
+      ],
+      "failurePolicy": "fail-closed"
+    }
+  },
+  "entries": [
+    {
+      "id": "claude.custom.permission-request.glass",
+      "product": "Claude",
+      "event": "PermissionRequest",
+      "provider": "custom",
+      "status": "implemented",
+      "responsibilities": [
+        "custom.permission-notification"
+      ],
+      "outputs": [
+        "notification"
+      ],
+      "stateUpdates": [],
+      "sideEffects": [
+        "Glass audio"
+      ],
+      "risks": [
+        "audio"
+      ],
+      "sideEffectOwners": {
+        "audio": "custom"
+      },
+      "registrations": [
+        {
+          "registrationProvider": "custom",
+          "registrationPath": "/Users/sawairikeisuke/.claude/settings.json",
+          "matcher": "*",
+          "command": "node /Users/sawairikeisuke/.agents/hooks/notify-glass.mjs",
+          "sourcePath": "/Users/sawairikeisuke/.agents/hooks/notify-glass.mjs",
+          "sourceSha256": "71e0c8e00816a1dcecbddcee14c657caf31bdeb166a589bb4f8dfbaa1ee11f4b",
+          "managed": false
+        }
+      ]
+    },
+    {
+      "id": "claude.custom.user-prompt.delegate",
+      "product": "Claude",
+      "event": "UserPromptSubmit",
+      "provider": "custom",
+      "status": "implemented",
+      "responsibilities": [
+        "custom.delegate-policy"
+      ],
+      "outputs": [
+        "additionalContext"
+      ],
+      "stateUpdates": [],
+      "sideEffects": [],
+      "risks": [],
+      "sideEffectOwners": {},
+      "registrations": [
+        {
+          "registrationProvider": "custom",
+          "registrationPath": "/Users/sawairikeisuke/.claude/settings.json",
+          "matcher": "*",
+          "command": "rtk proxy node /Users/sawairikeisuke/.codex/hooks/delegate_preflight.mjs",
+          "sourcePath": "/Users/sawairikeisuke/.codex/hooks/delegate_preflight.mjs",
+          "sourceSha256": "3a830f8edb04a5233e0e2ad642a385479385489c4757e9f825039340880c2f3e",
+          "managed": false
+        }
+      ]
+    },
+    {
+      "id": "claude.custom.pre-tool-use.bridge",
+      "product": "Claude",
+      "event": "PreToolUse",
+      "provider": "custom",
+      "status": "implemented",
+      "responsibilities": [
+        "custom.safety-guard"
+      ],
+      "outputs": [
+        "deny",
+        "modify",
+        "allow",
+        "stdout-json"
+      ],
+      "stateUpdates": [
+        "guard-state"
+      ],
+      "sideEffects": [
+        "file-write"
+      ],
+      "risks": [
+        "file-write"
+      ],
+      "sideEffectOwners": {
+        "file-write": "custom"
+      },
+      "registrations": [
+        {
+          "registrationProvider": "custom",
+          "registrationPath": "/Users/sawairikeisuke/.claude/settings.json",
+          "matcher": "Write|Edit|NotebookEdit",
+          "command": "node /Users/sawairikeisuke/.claude/hooks/pretooluse-bridge.mjs",
+          "sourcePath": "/Users/sawairikeisuke/.claude/hooks/pretooluse-bridge.mjs",
+          "sourceSha256": "8e5d328e1e79b51a02a14fb09243057077461f6f6e8d25eed15aaee50e6f21e5",
+          "managed": false
+        }
+      ]
+    },
+    {
+      "id": "claude.exception.session-start.cache-heal",
+      "product": "Claude",
+      "event": "SessionStart",
+      "provider": "exception",
+      "status": "implemented",
+      "responsibilities": [
+        "exception.claude-cache-heal"
+      ],
+      "outputs": [
+        "state-update"
+      ],
+      "stateUpdates": [
+        "cache-state"
+      ],
+      "sideEffects": [
+        "symlink"
+      ],
+      "risks": [
+        "symlink",
+        "file-write"
+      ],
+      "sideEffectOwners": {
+        "symlink": "exception",
+        "file-write": "exception"
+      },
+      "registrations": [
+        {
+          "registrationProvider": "custom",
+          "registrationPath": "/Users/sawairikeisuke/.claude/settings.json",
+          "matcher": "*",
+          "command": "\"/Users/sawairikeisuke/.claude/hooks/context-mode-cache-heal.mjs\"",
+          "sourcePath": "/Users/sawairikeisuke/.claude/hooks/context-mode-cache-heal.mjs",
+          "sourceSha256": "ec2b0232c9d68e31f33fd70fc37bc59cb8e8f75796940b48c84564096f7f0e53",
+          "managed": false
+        }
+      ]
+    },
+    {
+      "id": "claude.custom.session-start.herdr",
+      "product": "Claude",
+      "event": "SessionStart",
+      "provider": "custom",
+      "status": "implemented",
+      "responsibilities": [
+        "custom.herdr-state"
+      ],
+      "outputs": [
+        "state-update"
+      ],
+      "stateUpdates": [
+        "herdr-agent-state"
+      ],
+      "sideEffects": [
+        "Herdr Unix socket"
+      ],
+      "risks": [
+        "herdr-unix-socket"
+      ],
+      "sideEffectOwners": {
+        "herdr-unix-socket": "custom"
+      },
+      "registrations": [
+        {
+          "registrationProvider": "custom",
+          "registrationPath": "/Users/sawairikeisuke/.claude/settings.json",
+          "matcher": "*",
+          "command": "bash '/Users/sawairikeisuke/.claude/hooks/herdr-agent-state.sh' session",
+          "sourcePath": "/Users/sawairikeisuke/.claude/hooks/herdr-agent-state.sh",
+          "sourceSha256": "ffd5a76b7c62f5313040fc1e98fa010ff19a7aa85dd9fe6f325b9729d5f01b46",
+          "managed": false
+        }
+      ]
+    },
+    {
+      "id": "claude.custom.stop.glass",
+      "product": "Claude",
+      "event": "Stop",
+      "provider": "custom",
+      "status": "implemented",
+      "responsibilities": [
+        "custom.notification"
+      ],
+      "outputs": [
+        "notification"
+      ],
+      "stateUpdates": [],
+      "sideEffects": [
+        "Glass audio"
+      ],
+      "risks": [
+        "audio"
+      ],
+      "sideEffectOwners": {
+        "audio": "custom"
+      },
+      "registrations": [
+        {
+          "registrationProvider": "custom",
+          "registrationPath": "/Users/sawairikeisuke/.claude/settings.json",
+          "matcher": "*",
+          "command": "node /Users/sawairikeisuke/.agents/hooks/notify-glass.mjs",
+          "sourcePath": "/Users/sawairikeisuke/.agents/hooks/notify-glass.mjs",
+          "sourceSha256": "71e0c8e00816a1dcecbddcee14c657caf31bdeb166a589bb4f8dfbaa1ee11f4b",
+          "managed": false
+        }
+      ]
+    },
+    {
+      "id": "claude.custom.subagent-stop.glass",
+      "product": "Claude",
+      "event": "SubagentStop",
+      "provider": "custom",
+      "status": "implemented",
+      "responsibilities": [
+        "custom.subagent-notification"
+      ],
+      "outputs": [
+        "notification"
+      ],
+      "stateUpdates": [],
+      "sideEffects": [
+        "Glass audio"
+      ],
+      "risks": [
+        "audio"
+      ],
+      "sideEffectOwners": {
+        "audio": "custom"
+      },
+      "registrations": [
+        {
+          "registrationProvider": "custom",
+          "registrationPath": "/Users/sawairikeisuke/.claude/settings.json",
+          "matcher": "*",
+          "command": "node /Users/sawairikeisuke/.agents/hooks/subagent-stop.mjs",
+          "sourcePath": "/Users/sawairikeisuke/.agents/hooks/subagent-stop.mjs",
+          "sourceSha256": "b189835de40260db9ba3b8d8480e0a4226edc9a720b8a8bf9c92996096ec00fc",
+          "managed": false
+        }
+      ]
+    },
+    {
+      "id": "claude.context-mode.post-tool-use.capture",
+      "product": "Claude",
+      "event": "PostToolUse",
+      "provider": "context-mode",
+      "status": "implemented",
+      "responsibilities": [
+        "context-mode.context-capture"
+      ],
+      "outputs": [
+        "additionalContext",
+        "stdout-json"
+      ],
+      "stateUpdates": [
+        "context-capture"
+      ],
+      "sideEffects": [
+        "state-save"
+      ],
+      "risks": [
+        "state-save"
+      ],
+      "sideEffectOwners": {
+        "state-save": "context-mode"
+      },
+      "registrations": [
+        {
+          "registrationProvider": "context-mode",
+          "registrationPath": "/Users/sawairikeisuke/.claude/plugins/cache/context-mode/context-mode/1.0.169/hooks/hooks.json",
+          "matcher": "Bash|Read|Write|Edit|NotebookEdit|Glob|Grep|TodoWrite|TaskCreate|TaskUpdate|EnterPlanMode|ExitPlanMode|Skill|Agent|AskUserQuestion|EnterWorktree|mcp__",
+          "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/posttooluse.mjs\"",
+          "sourcePath": "/Users/sawairikeisuke/.claude/plugins/cache/context-mode/context-mode/1.0.169/hooks/posttooluse.mjs",
+          "sourceSha256": "02ead3ad9d5bf8e8367ccc63811a84b4d88bda0ddb3f43de58f51a2f678a63e3",
+          "managed": true,
+          "pluginVersion": "1.0.169"
+        }
+      ]
+    },
+    {
+      "id": "claude.context-mode.pre-compact.snapshot",
+      "product": "Claude",
+      "event": "PreCompact",
+      "provider": "context-mode",
+      "status": "implemented",
+      "responsibilities": [
+        "context-mode.compact-snapshot"
+      ],
+      "outputs": [
+        "stdout-json"
+      ],
+      "stateUpdates": [
+        "compact-snapshot"
+      ],
+      "sideEffects": [
+        "state-save"
+      ],
+      "risks": [
+        "state-save"
+      ],
+      "sideEffectOwners": {
+        "state-save": "context-mode"
+      },
+      "registrations": [
+        {
+          "registrationProvider": "context-mode",
+          "registrationPath": "/Users/sawairikeisuke/.claude/plugins/cache/context-mode/context-mode/1.0.169/hooks/hooks.json",
+          "matcher": "",
+          "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/precompact.mjs\"",
+          "sourcePath": "/Users/sawairikeisuke/.claude/plugins/cache/context-mode/context-mode/1.0.169/hooks/precompact.mjs",
+        "sourceSha256": "4b8b1599057fba8aa9466f6184cec2fe48548a7cafa7c5faf50dae7cef8b2cc1",
+          "managed": true,
+          "pluginVersion": "1.0.169"
+        }
+      ]
+    },
+    {
+      "id": "claude.context-mode.pre-tool-use.bridge",
+      "product": "Claude",
+      "event": "PreToolUse",
+      "provider": "context-mode",
+      "status": "implemented",
+      "responsibilities": [
+        "context-mode.tool-routing"
+      ],
+      "outputs": [
+        "deny",
+        "modify",
+        "allow",
+        "additionalContext",
+        "stdout-json"
+      ],
+      "stateUpdates": [],
+      "sideEffects": [],
+      "risks": [],
+      "sideEffectOwners": {},
+      "registrations": [
+        {
+          "registrationProvider": "context-mode",
+          "registrationPath": "/Users/sawairikeisuke/.claude/plugins/cache/context-mode/context-mode/1.0.169/hooks/hooks.json",
+          "matcher": "Bash",
+          "command": "node /Users/sawairikeisuke/.claude/hooks/pretooluse-bridge.mjs",
+          "sourcePath": "/Users/sawairikeisuke/.claude/hooks/pretooluse-bridge.mjs",
+          "sourceSha256": "8e5d328e1e79b51a02a14fb09243057077461f6f6e8d25eed15aaee50e6f21e5",
+          "managed": true,
+          "pluginVersion": "1.0.169"
+        },
+        {
+          "registrationProvider": "context-mode",
+          "registrationPath": "/Users/sawairikeisuke/.claude/plugins/cache/context-mode/context-mode/1.0.169/hooks/hooks.json",
+          "matcher": "WebFetch",
+          "command": "node /Users/sawairikeisuke/.claude/hooks/pretooluse-bridge.mjs",
+          "sourcePath": "/Users/sawairikeisuke/.claude/hooks/pretooluse-bridge.mjs",
+          "sourceSha256": "8e5d328e1e79b51a02a14fb09243057077461f6f6e8d25eed15aaee50e6f21e5",
+          "managed": true,
+          "pluginVersion": "1.0.169"
+        },
+        {
+          "registrationProvider": "context-mode",
+          "registrationPath": "/Users/sawairikeisuke/.claude/plugins/cache/context-mode/context-mode/1.0.169/hooks/hooks.json",
+          "matcher": "Read",
+          "command": "node /Users/sawairikeisuke/.claude/hooks/pretooluse-bridge.mjs",
+          "sourcePath": "/Users/sawairikeisuke/.claude/hooks/pretooluse-bridge.mjs",
+              "sourceSha256": "8e5d328e1e79b51a02a14fb09243057077461f6f6e8d25eed15aaee50e6f21e5",
+          "managed": true,
+          "pluginVersion": "1.0.169"
+        },
+        {
+          "registrationProvider": "context-mode",
+          "registrationPath": "/Users/sawairikeisuke/.claude/plugins/cache/context-mode/context-mode/1.0.169/hooks/hooks.json",
+          "matcher": "Grep",
+          "command": "node /Users/sawairikeisuke/.claude/hooks/pretooluse-bridge.mjs",
+          "sourcePath": "/Users/sawairikeisuke/.claude/hooks/pretooluse-bridge.mjs",
+          "sourceSha256": "8e5d328e1e79b51a02a14fb09243057077461f6f6e8d25eed15aaee50e6f21e5",
+          "managed": true,
+          "pluginVersion": "1.0.169"
+        },
+        {
+          "registrationProvider": "context-mode",
+          "registrationPath": "/Users/sawairikeisuke/.claude/plugins/cache/context-mode/context-mode/1.0.169/hooks/hooks.json",
+          "matcher": "Agent",
+          "command": "node /Users/sawairikeisuke/.claude/hooks/pretooluse-bridge.mjs",
+          "sourcePath": "/Users/sawairikeisuke/.claude/hooks/pretooluse-bridge.mjs",
+          "sourceSha256": "8e5d328e1e79b51a02a14fb09243057077461f6f6e8d25eed15aaee50e6f21e5",
+          "managed": true,
+          "pluginVersion": "1.0.169"
+        },
+        {
+          "registrationProvider": "context-mode",
+          "registrationPath": "/Users/sawairikeisuke/.claude/plugins/cache/context-mode/context-mode/1.0.169/hooks/hooks.json",
+          "matcher": "mcp__plugin_context-mode_context-mode__ctx_execute",
+          "command": "node /Users/sawairikeisuke/.claude/hooks/pretooluse-bridge.mjs",
+          "sourcePath": "/Users/sawairikeisuke/.claude/hooks/pretooluse-bridge.mjs",
+          "sourceSha256": "8e5d328e1e79b51a02a14fb09243057077461f6f6e8d25eed15aaee50e6f21e5",
+          "managed": true,
+          "pluginVersion": "1.0.169"
+        },
+        {
+          "registrationProvider": "context-mode",
+          "registrationPath": "/Users/sawairikeisuke/.claude/plugins/cache/context-mode/context-mode/1.0.169/hooks/hooks.json",
+          "matcher": "mcp__plugin_context-mode_context-mode__ctx_execute_file",
+          "command": "node /Users/sawairikeisuke/.claude/hooks/pretooluse-bridge.mjs",
+          "sourcePath": "/Users/sawairikeisuke/.claude/hooks/pretooluse-bridge.mjs",
+          "sourceSha256": "8e5d328e1e79b51a02a14fb09243057077461f6f6e8d25eed15aaee50e6f21e5",
+          "managed": true,
+          "pluginVersion": "1.0.169"
+        },
+        {
+          "registrationProvider": "context-mode",
+          "registrationPath": "/Users/sawairikeisuke/.claude/plugins/cache/context-mode/context-mode/1.0.169/hooks/hooks.json",
+          "matcher": "mcp__plugin_context-mode_context-mode__ctx_batch_execute",
+          "command": "node /Users/sawairikeisuke/.claude/hooks/pretooluse-bridge.mjs",
+          "sourcePath": "/Users/sawairikeisuke/.claude/hooks/pretooluse-bridge.mjs",
+          "sourceSha256": "8e5d328e1e79b51a02a14fb09243057077461f6f6e8d25eed15aaee50e6f21e5",
+          "managed": true,
+          "pluginVersion": "1.0.169"
+        },
+        {
+          "registrationProvider": "context-mode",
+          "registrationPath": "/Users/sawairikeisuke/.claude/plugins/cache/context-mode/context-mode/1.0.169/hooks/hooks.json",
+          "matcher": "mcp__",
+          "command": "node /Users/sawairikeisuke/.claude/hooks/pretooluse-bridge.mjs",
+          "sourcePath": "/Users/sawairikeisuke/.claude/hooks/pretooluse-bridge.mjs",
+          "sourceSha256": "8e5d328e1e79b51a02a14fb09243057077461f6f6e8d25eed15aaee50e6f21e5",
+          "managed": true,
+          "pluginVersion": "1.0.169"
+        }
+      ]
+    },
+    {
+      "id": "claude.context-mode.user-prompt.context",
+      "product": "Claude",
+      "event": "UserPromptSubmit",
+      "provider": "context-mode",
+      "status": "implemented",
+      "responsibilities": [
+        "context-mode.context-processing"
+      ],
+      "outputs": [
+        "additionalContext",
+        "stdout-json"
+      ],
+      "stateUpdates": [],
+      "sideEffects": [],
+      "risks": [],
+      "sideEffectOwners": {},
+      "registrations": [
+        {
+          "registrationProvider": "context-mode",
+          "registrationPath": "/Users/sawairikeisuke/.claude/plugins/cache/context-mode/context-mode/1.0.169/hooks/hooks.json",
+          "matcher": "",
+          "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/userpromptsubmit.mjs\"",
+          "sourcePath": "/Users/sawairikeisuke/.claude/plugins/cache/context-mode/context-mode/1.0.169/hooks/userpromptsubmit.mjs",
+          "sourceSha256": "d777abc6bfa2350526facc34f1f4502bc351dc01e67ad5a21244bc58cfbb3e9b",
+          "managed": true,
+          "pluginVersion": "1.0.169"
+        }
+      ]
+    },
+    {
+      "id": "claude.context-mode.session-start.init",
+      "product": "Claude",
+      "event": "SessionStart",
+      "provider": "context-mode",
+      "status": "implemented",
+      "responsibilities": [
+        "context-mode.initialization"
+      ],
+      "outputs": [
+        "additionalContext",
+        "stdout-json"
+      ],
+      "stateUpdates": [
+        "context-mode-state"
+      ],
+      "sideEffects": [],
+      "risks": [],
+      "sideEffectOwners": {},
+      "registrations": [
+        {
+          "registrationProvider": "context-mode",
+          "registrationPath": "/Users/sawairikeisuke/.claude/plugins/cache/context-mode/context-mode/1.0.169/hooks/hooks.json",
+          "matcher": "",
+          "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/sessionstart.mjs\"",
+          "sourcePath": "/Users/sawairikeisuke/.claude/plugins/cache/context-mode/context-mode/1.0.169/hooks/sessionstart.mjs",
+          "sourceSha256": "41952548f197dc40bac50afff2126802c83fc9cbbe8ecc86743cacaeb0ced001",
+          "managed": true,
+          "pluginVersion": "1.0.169"
+        }
+      ]
+    },
+    {
+      "id": "claude.custom.stop.ntfy",
+      "product": "Claude",
+      "event": "Stop",
+      "provider": "custom",
+      "status": "implemented",
+      "responsibilities": [
+        "custom.notification"
+      ],
+      "outputs": [
+        "notification"
+      ],
+      "stateUpdates": [],
+      "sideEffects": [
+        "ntfy notification",
+        "Keychain read",
+        "external network"
+      ],
+      "risks": [
+        "keychain-read",
+        "external-network"
+      ],
+      "sideEffectOwners": {
+        "keychain-read": "custom",
+        "external-network": "custom"
+      },
+      "registrations": [
+        {
+          "registrationProvider": "custom",
+          "registrationPath": "/Users/sawairikeisuke/.claude/settings.json",
+          "matcher": "*",
+          "command": "node /Users/sawairikeisuke/.agents/hooks/agent-notify-ntfy.mjs",
+          "sourcePath": "/Users/sawairikeisuke/.agents/hooks/agent-notify-ntfy.mjs",
+          "sourceSha256": "12d1889ee39437463688996ed506b171dd67c905388ec62f33592d2eac02e15c",
+          "managed": false
+        }
+      ]
+    },
+    {
+      "id": "claude.context-mode.stop.capture",
+      "product": "Claude",
+      "event": "Stop",
+      "provider": "context-mode",
+      "status": "implemented",
+      "responsibilities": [
+        "context-mode.turn-end-capture"
+      ],
+      "outputs": [
+        "stdout-json"
+      ],
+      "stateUpdates": [
+        "turn-end-capture"
+      ],
+      "sideEffects": [],
+      "risks": [],
+      "sideEffectOwners": {},
+      "registrations": [
+        {
+          "registrationProvider": "context-mode",
+          "registrationPath": "/Users/sawairikeisuke/.claude/plugins/cache/context-mode/context-mode/1.0.169/hooks/hooks.json",
+          "matcher": "",
+          "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/stop.mjs\"",
+          "sourcePath": "/Users/sawairikeisuke/.claude/plugins/cache/context-mode/context-mode/1.0.169/hooks/stop.mjs",
+          "sourceSha256": "b740f288239fa5b05b3db36e9ab39ea2495e454df88ac5895f2a58e7a7762e06",
+          "managed": true,
+          "pluginVersion": "1.0.169"
+        }
+      ]
+    },
+    {
+      "id": "codex.custom.pre-tool-use.bridge",
+      "product": "Codex",
+      "event": "PreToolUse",
+      "provider": "custom",
+      "status": "implemented",
+      "responsibilities": [
+        "custom.safety-guard"
+      ],
+      "outputs": [
+        "deny",
+        "modify",
+        "allow",
+        "stdout-json"
+      ],
+      "stateUpdates": [
+        "guard-state"
+      ],
+      "sideEffects": [
+        "file-write"
+      ],
+      "risks": [
+        "file-write"
+      ],
+      "sideEffectOwners": {
+        "file-write": "custom"
+      },
+      "registrations": [
+        {
+          "registrationProvider": "custom",
+          "registrationPath": "/Users/sawairikeisuke/.codex/hooks.json",
+          "matcher": "Read|NotebookEdit",
+          "command": "node /Users/sawairikeisuke/.codex/hooks/pretooluse-bridge.mjs",
+          "sourcePath": "/Users/sawairikeisuke/.codex/hooks/pretooluse-bridge.mjs",
+          "sourceSha256": "22c6d55479998c135bcced3646bdfb7259d32886b51755ae2b041f2820a1c56e",
+          "managed": false
+        }
+      ]
+    },
+    {
+      "id": "codex.custom.session-start.herdr",
+      "product": "Codex",
+      "event": "SessionStart",
+      "provider": "custom",
+      "status": "implemented",
+      "responsibilities": [
+        "custom.herdr-state"
+      ],
+      "outputs": [
+        "state-update"
+      ],
+      "stateUpdates": [
+        "herdr-agent-state"
+      ],
+      "sideEffects": [
+        "Herdr Unix socket"
+      ],
+      "risks": [
+        "herdr-unix-socket"
+      ],
+      "sideEffectOwners": {
+        "herdr-unix-socket": "custom"
+      },
+      "registrations": [
+        {
+          "registrationProvider": "custom",
+          "registrationPath": "/Users/sawairikeisuke/.codex/hooks.json",
+          "matcher": "*",
+          "command": "bash '/Users/sawairikeisuke/.codex/hooks/herdr-agent-state-aligned.sh'",
+          "sourcePath": "/Users/sawairikeisuke/.codex/hooks/herdr-agent-state-aligned.sh",
+          "sourceSha256": "c5a8ee14ff464499997c1549d6b29a992a382090b6a7c5e81acf02b1eda9d24b",
+          "managed": false
+        }
+      ]
+    },
+    {
+      "id": "codex.custom.user-prompt.delegate",
+      "product": "Codex",
+      "event": "UserPromptSubmit",
+      "provider": "custom",
+      "status": "implemented",
+      "responsibilities": [
+        "custom.delegate-policy"
+      ],
+      "outputs": [
+        "additionalContext"
+      ],
+      "stateUpdates": [],
+      "sideEffects": [],
+      "risks": [],
+      "sideEffectOwners": {},
+      "registrations": [
+        {
+          "registrationProvider": "custom",
+          "registrationPath": "/Users/sawairikeisuke/.codex/hooks.json",
+          "matcher": "*",
+          "command": "rtk proxy node /Users/sawairikeisuke/.codex/hooks/delegate_preflight.mjs",
+          "sourcePath": "/Users/sawairikeisuke/.codex/hooks/delegate_preflight.mjs",
+          "sourceSha256": "3a830f8edb04a5233e0e2ad642a385479385489c4757e9f825039340880c2f3e",
+          "managed": false
+        }
+      ]
+    },
+    {
+      "id": "codex.custom.permission-request.glass",
+      "product": "Codex",
+      "event": "PermissionRequest",
+      "provider": "custom",
+      "status": "implemented",
+      "responsibilities": [
+        "custom.permission-notification"
+      ],
+      "outputs": [
+        "notification"
+      ],
+      "stateUpdates": [],
+      "sideEffects": [
+        "Glass audio"
+      ],
+      "risks": [
+        "audio"
+      ],
+      "sideEffectOwners": {
+        "audio": "custom"
+      },
+      "registrations": [
+        {
+          "registrationProvider": "custom",
+          "registrationPath": "/Users/sawairikeisuke/.codex/hooks.json",
+          "matcher": "*",
+          "command": "node /Users/sawairikeisuke/.agents/hooks/notify-glass.mjs",
+          "sourcePath": "/Users/sawairikeisuke/.agents/hooks/notify-glass.mjs",
+          "sourceSha256": "71e0c8e00816a1dcecbddcee14c657caf31bdeb166a589bb4f8dfbaa1ee11f4b",
+          "managed": false
+        }
+      ]
+    },
+    {
+      "id": "codex.custom.stop.glass",
+      "product": "Codex",
+      "event": "Stop",
+      "provider": "custom",
+      "status": "implemented",
+      "responsibilities": [
+        "custom.notification"
+      ],
+      "outputs": [
+        "notification"
+      ],
+      "stateUpdates": [],
+      "sideEffects": [
+        "Glass audio"
+      ],
+      "risks": [
+        "audio"
+      ],
+      "sideEffectOwners": {
+        "audio": "custom"
+      },
+      "registrations": [
+        {
+          "registrationProvider": "custom",
+          "registrationPath": "/Users/sawairikeisuke/.codex/hooks.json",
+          "matcher": "*",
+          "command": "node /Users/sawairikeisuke/.agents/hooks/notify-glass.mjs",
+          "sourcePath": "/Users/sawairikeisuke/.agents/hooks/notify-glass.mjs",
+          "sourceSha256": "71e0c8e00816a1dcecbddcee14c657caf31bdeb166a589bb4f8dfbaa1ee11f4b",
+          "managed": false
+        }
+      ]
+    },
+    {
+      "id": "codex.custom.stop.ntfy",
+      "product": "Codex",
+      "event": "Stop",
+      "provider": "custom",
+      "status": "implemented",
+      "responsibilities": [
+        "custom.notification"
+      ],
+      "outputs": [
+        "notification"
+      ],
+      "stateUpdates": [],
+      "sideEffects": [
+        "ntfy notification",
+        "Keychain read",
+        "external network"
+      ],
+      "risks": [
+        "keychain-read",
+        "external-network"
+      ],
+      "sideEffectOwners": {
+        "keychain-read": "custom",
+        "external-network": "custom"
+      },
+      "registrations": [
+        {
+          "registrationProvider": "custom",
+          "registrationPath": "/Users/sawairikeisuke/.codex/hooks.json",
+          "matcher": "*",
+          "command": "node /Users/sawairikeisuke/.agents/hooks/agent-notify-ntfy.mjs",
+          "sourcePath": "/Users/sawairikeisuke/.agents/hooks/agent-notify-ntfy.mjs",
+          "sourceSha256": "12d1889ee39437463688996ed506b171dd67c905388ec62f33592d2eac02e15c",
+          "managed": false
+        }
+      ]
+    },
+    {
+      "id": "codex.custom.subagent-stop.glass",
+      "product": "Codex",
+      "event": "SubagentStop",
+      "provider": "custom",
+      "status": "implemented",
+      "responsibilities": [
+        "custom.subagent-notification"
+      ],
+      "outputs": [
+        "notification"
+      ],
+      "stateUpdates": [],
+      "sideEffects": [
+        "Glass audio"
+      ],
+      "risks": [
+        "audio"
+      ],
+      "sideEffectOwners": {
+        "audio": "custom"
+      },
+      "registrations": [
+        {
+          "registrationProvider": "custom",
+          "registrationPath": "/Users/sawairikeisuke/.codex/hooks.json",
+          "matcher": "*",
+          "command": "node /Users/sawairikeisuke/.agents/hooks/subagent-stop.mjs",
+          "sourcePath": "/Users/sawairikeisuke/.agents/hooks/subagent-stop.mjs",
+          "sourceSha256": "b189835de40260db9ba3b8d8480e0a4226edc9a720b8a8bf9c92996096ec00fc",
+          "managed": false
+        }
+      ]
+    },
+    {
+      "id": "codex.context-mode.pre-tool-use.bridge",
+      "product": "Codex",
+      "event": "PreToolUse",
+      "provider": "context-mode",
+      "status": "implemented",
+      "responsibilities": [
+        "context-mode.tool-routing"
+      ],
+      "outputs": [
+        "deny",
+        "modify",
+        "allow",
+        "additionalContext",
+        "stdout-json"
+      ],
+      "stateUpdates": [],
+      "sideEffects": [],
+      "risks": [],
+      "sideEffectOwners": {},
+      "registrations": [
+        {
+          "registrationProvider": "context-mode",
+          "registrationPath": "/Users/sawairikeisuke/.codex/plugins/cache/context-mode/context-mode/1.0.169/.codex-plugin/hooks.json",
+          "matcher": "local_shell|shell|shell_command|exec_command|Bash|Shell|apply_patch|Edit|Write|grep_files|ctx_execute|ctx_execute_file|ctx_batch_execute|ctx_fetch_and_index|ctx_search|ctx_index|mcp__",
+          "command": "node /Users/sawairikeisuke/.codex/hooks/pretooluse-bridge.mjs",
+          "sourcePath": "/Users/sawairikeisuke/.codex/hooks/pretooluse-bridge.mjs",
+          "sourceSha256": "22c6d55479998c135bcced3646bdfb7259d32886b51755ae2b041f2820a1c56e",
+          "managed": true,
+          "pluginVersion": "1.0.169"
+        }
+      ]
+    },
+    {
+      "id": "codex.context-mode.post-tool-use.capture",
+      "product": "Codex",
+      "event": "PostToolUse",
+      "provider": "context-mode",
+      "status": "implemented",
+      "responsibilities": [
+        "context-mode.context-capture"
+      ],
+      "outputs": [
+        "additionalContext",
+        "stdout-json"
+      ],
+      "stateUpdates": [
+        "context-capture"
+      ],
+      "sideEffects": [
+        "state-save"
+      ],
+      "risks": [
+        "state-save"
+      ],
+      "sideEffectOwners": {
+        "state-save": "context-mode"
+      },
+      "registrations": [
+        {
+          "registrationProvider": "context-mode",
+          "registrationPath": "/Users/sawairikeisuke/.codex/plugins/cache/context-mode/context-mode/1.0.169/.codex-plugin/hooks.json",
+          "matcher": "*",
+          "command": "node \"${PLUGIN_ROOT}/hooks/codex/posttooluse.mjs\"",
+          "sourcePath": "/Users/sawairikeisuke/.codex/plugins/cache/context-mode/context-mode/1.0.169/hooks/codex/posttooluse.mjs",
+          "sourceSha256": "5ba9654b8cbdab606ad9010db0c780d7af4449f52c41cac2f3e5b4bdaa07ab6b",
+          "managed": true,
+          "pluginVersion": "1.0.169"
+        }
+      ]
+    },
+    {
+      "id": "codex.context-mode.session-start.init",
+      "product": "Codex",
+      "event": "SessionStart",
+      "provider": "context-mode",
+      "status": "implemented",
+      "responsibilities": [
+        "context-mode.initialization"
+      ],
+      "outputs": [
+        "additionalContext",
+        "stdout-json"
+      ],
+      "stateUpdates": [
+        "context-mode-state"
+      ],
+      "sideEffects": [],
+      "risks": [],
+      "sideEffectOwners": {},
+      "registrations": [
+        {
+          "registrationProvider": "context-mode",
+          "registrationPath": "/Users/sawairikeisuke/.codex/plugins/cache/context-mode/context-mode/1.0.169/.codex-plugin/hooks.json",
+          "matcher": "*",
+          "command": "node \"${PLUGIN_ROOT}/hooks/codex/sessionstart.mjs\"",
+          "sourcePath": "/Users/sawairikeisuke/.codex/plugins/cache/context-mode/context-mode/1.0.169/hooks/codex/sessionstart.mjs",
+          "sourceSha256": "d76a4dc50691ccd187a6c5484ea3935d27cd507f923e83a81602b07cc411fbfd",
+          "managed": true,
+          "pluginVersion": "1.0.169"
+        }
+      ]
+    },
+    {
+      "id": "codex.context-mode.pre-compact.snapshot",
+      "product": "Codex",
+      "event": "PreCompact",
+      "provider": "context-mode",
+      "status": "implemented",
+      "responsibilities": [
+        "context-mode.compact-snapshot"
+      ],
+      "outputs": [
+        "stdout-json"
+      ],
+      "stateUpdates": [
+        "compact-snapshot"
+      ],
+      "sideEffects": [
+        "state-save"
+      ],
+      "risks": [
+        "state-save"
+      ],
+      "sideEffectOwners": {
+        "state-save": "context-mode"
+      },
+      "registrations": [
+        {
+          "registrationProvider": "context-mode",
+          "registrationPath": "/Users/sawairikeisuke/.codex/plugins/cache/context-mode/context-mode/1.0.169/.codex-plugin/hooks.json",
+          "matcher": "*",
+          "command": "node \"${PLUGIN_ROOT}/hooks/codex/precompact.mjs\"",
+          "sourcePath": "/Users/sawairikeisuke/.codex/plugins/cache/context-mode/context-mode/1.0.169/hooks/codex/precompact.mjs",
+          "sourceSha256": "6bd6a340c666883753081b6eb35db2ed975bc23e7d65b6e315617f04c7a2abbd",
+          "managed": true,
+          "pluginVersion": "1.0.169"
+        }
+      ]
+    },
+    {
+      "id": "codex.context-mode.user-prompt.context",
+      "product": "Codex",
+      "event": "UserPromptSubmit",
+      "provider": "context-mode",
+      "status": "implemented",
+      "responsibilities": [
+        "context-mode.context-processing"
+      ],
+      "outputs": [
+        "additionalContext",
+        "stdout-json"
+      ],
+      "stateUpdates": [],
+      "sideEffects": [],
+      "risks": [],
+      "sideEffectOwners": {},
+      "registrations": [
+        {
+          "registrationProvider": "context-mode",
+          "registrationPath": "/Users/sawairikeisuke/.codex/plugins/cache/context-mode/context-mode/1.0.169/.codex-plugin/hooks.json",
+          "matcher": "*",
+          "command": "node \"${PLUGIN_ROOT}/hooks/codex/userpromptsubmit.mjs\"",
+          "sourcePath": "/Users/sawairikeisuke/.codex/plugins/cache/context-mode/context-mode/1.0.169/hooks/codex/userpromptsubmit.mjs",
+          "sourceSha256": "18538f702fc6a9e97eab8a56fa2d5b7c7e36547dc86c831fb8149594314586cc",
+          "managed": true,
+          "pluginVersion": "1.0.169"
+        }
+      ]
+    },
+    {
+      "id": "codex.context-mode.stop.capture",
+      "product": "Codex",
+      "event": "Stop",
+      "provider": "context-mode",
+      "status": "implemented",
+      "responsibilities": [
+        "context-mode.turn-end-capture"
+      ],
+      "outputs": [
+        "stdout-json"
+      ],
+      "stateUpdates": [
+        "turn-end-capture"
+      ],
+      "sideEffects": [],
+      "risks": [],
+      "sideEffectOwners": {},
+      "registrations": [
+        {
+          "registrationProvider": "context-mode",
+          "registrationPath": "/Users/sawairikeisuke/.codex/plugins/cache/context-mode/context-mode/1.0.169/.codex-plugin/hooks.json",
+          "matcher": "*",
+          "command": "node \"${PLUGIN_ROOT}/hooks/codex/stop.mjs\"",
+          "sourcePath": "/Users/sawairikeisuke/.codex/plugins/cache/context-mode/context-mode/1.0.169/hooks/codex/stop.mjs",
+          "sourceSha256": "a98e2f6e734db6f0b8719aae80f2935ca30dad284512e5ee089959c2f09494ef",
+          "managed": true,
+          "pluginVersion": "1.0.169"
+        }
+      ]
+    }
+  ]
+}
