@@ -52,6 +52,8 @@ description: 日本株high-beta paper運用の日次処理を、intraday解決�
 - `max_risk_per_trade_pct=0.7`
 - `max_new_entries_per_day=2`
 - fill/exitはslippageと`paper_transaction_cost_bps_high_beta`を反映する。現行0bpsはpaper zero-fee仮定として明示する
+- 新しくpaper orderまたはhistory recordを生成するときは、同一runで参照した`rule_version`、`rules_source`、`max_position_value_jpy`、`paper_lot_size`をrecord単位に保存する。これらが取得できない場合は、推測で補完せず`legacy_rule_unconfirmed`としてfail-closeし、現行ルール準拠の成功例として扱わない
+- 既存履歴にrule provenanceがない場合は`legacy_risk_sizing_reconstruction.mjs`で観測notionalだけを再構成する。現行`max_position_value_jpy`を過去取引へ遡及適用してstateや判断を変更してはならない
 
 実資金への移行は対象外。証券会社の単元未満株の注文・手数料・約定モデルが確定するまでpaper専用とする。
 

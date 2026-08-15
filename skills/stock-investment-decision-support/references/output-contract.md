@@ -33,9 +33,10 @@
 
 - `selection_reason` `thesis_type` `catalyst` などの長文は chat へ全文展開せず、state / sidecar へ残す
 - `compact` では 1 行要約へ圧縮する
-- `auto2a` sidecar では `decision_date` `watchlist_as_of` `age_days` `freshness_rule` `classification_summary` `fetch_failures` `earnings_blackout_check` `lane_discipline` `contract_breach` を固定 field として残す
-- `auto2a` の `eligible` 候補では `outcome_trace` を固定 field として残す。`decision_reference_price`（`value` `as_of` `source`）、`next_1_3_business_days`（各日の `date`、`limit_status`、`stop_status`、`target_status`、`first_hit_date`、`first_hit_price`、`observation_status`）、`signal_expiry_reason` を含める
+- `auto2a` sidecar では `decision_date` `watchlist_as_of` `age_days` `freshness_rule` `classification_summary` `fetch_failures` `earnings_blackout_check` `lane_discipline` `contract_breach` `run_status` `no_run_reason` を固定 field として残す
+- `auto2a` の `eligible` 候補では `outcome_trace` を固定 field として残す。`execution_status` `not_filled_reason`、`decision_reference_price`（`value` `as_of` `source`）、`next_1_3_business_days`（各日の `date`、`limit_status`、`stop_status`、`target_status`、`first_hit_type`、`first_hit_date`、`first_hit_price`、`observation_status`）、`signal_expiry_reason` を含める。auto2aは注文を送信しないため、約定証跡がない場合は `execution_status=not_submitted`、`not_filled_reason=auto2a_decision_only` とする
 - `outcome_trace` の未取得値は `unknown` / `not_observed` とし、価格・到達日を推測しない。`blocked` / `no_trade` は `outcome_trace=null` とする
+- `run_status=completed` の `no_run_reason` は `null` とし、`not_run` / `incomplete` / `failed` では `market_closed` `holiday` `automation_not_scheduled` `upstream_incomplete` `reason_unconfirmed` の固定コードを必須とする。非稼働理由を確認できないときは `reason_unconfirmed` と記録し、候補を推測生成しない
 - `auto2b` sidecar では `decision_date` `audit_date` `snapshot_as_of` `same_day_freshness_ok` `stale_day` `entry_ready_tickers` `watch_tickers` `entry_style_summary` `execution_window_summary` `monitoring_valid_until` `publish_mode` `contract_breach` を固定 field として残す
 - `auto2b` の `publish_mode` は `normal` `stale_day_noop` `hard_stop` の 3 値に正規化する
 - `auto2b` sidecar では `stale_day` `same_day_freshness_ok` と、`auto4_buy_allowed=false` 候補の block reason を残す

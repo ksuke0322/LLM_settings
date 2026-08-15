@@ -1,0 +1,4 @@
+interface:
+  display_name: "Japanese Response Style"
+  short_description: "日本語の質問回答と作業報告を明快に整える共通ルール"
+  default_prompt: "ユーザーへの回答、進捗共有、作業報告を日本語で明快かつ検証可能に整える。"

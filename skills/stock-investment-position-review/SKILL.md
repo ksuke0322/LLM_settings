@@ -49,6 +49,8 @@ review_profile の既定値=auto
 - 長期保有を `kept` とする場合は、短期 trade-v2 の `thesis` と分離して `long_hold_rationale`、`thesis_invalidation_or_review_trigger`、ISO形式の `next_review_date`、`trim_conditions` を持つ
 - `trim_conditions` は `none`（検討済みで縮小条件なし）または `defined`（trigger / percentage / rationale を明記）とし、値が不明なら `needs_user_confirmation` として扱う
 - 長期4項目が未入力のときは、既存の短期 `thesis` から推測補完せず、`long_hold_governance_status=needs_user_confirmation` と `execution_trace_incomplete=true` を sidecar / report に残す
+- 各 holding の sidecar record は短期 `short_term_advisory`（`decision` と state / note 参照）と長期4項目を分離して持つ。短期 `exit` / `defend` / `hold` は長期保有理由の代用にしない
+- `long_hold_governance_status=complete` のときだけ長期4項目を値付きで公開し、`needs_user_confirmation` のときは `long_hold_rationale`、`thesis_invalidation_or_review_trigger`、`next_review_date`、trimの trigger / percentage / rationale を null のまま残す
 - 連続 `exit` holding には `未対応` `対応済み` `保有継続理由あり` のいずれか 1 行 trace を残す
 - `exit -> defend` など前日から top-level が変わった reversal では `decision_reason_note` に切替理由を 1 行残す
 - earnings blackout 判定は `next_earnings_date` を正本 field として参照し、`earnings_date` 欠落を未検証理由に使わない
