@@ -35,7 +35,7 @@ description: アイソメトリックポモドーロアプリ用に新しいテ�
 - 出力は短いJSONとし、`purpose`、`input_images`、`observations`、`uncertainties`、`failure`を含める。`observations[]`には少なくとも`item`、`evidence_image`(絶対パス)、`confidence`、`note`を記録する。
 - 画像未読、JSON不正、タイムアウト、低確信度、根拠画像が一意でない場合は失敗扱いにする。推測で補完せず、画像の削減・省略も行わない。
 - 親エージェントはCodexの結果、根拠画像、必須保持画像を確認してから次工程へ渡す。Codexの結果を正解ラベル、最終判定、設計仕様、修正方針として扱わない。
-- `mcp__codex__codex`の可用性が`false`または`unknown`の場合はMinistralへフォールバックしない。親が担当するか、実行可否を確認済みのCodex CLI経路へ戻す。
+- `mcp__codex__codex`の可用性が`false`または`unknown`の場合は別モデルへフォールバックせず、親が担当する。
 
 ### 工程別の固定用途
 
@@ -44,7 +44,7 @@ description: アイソメトリックポモドーロアプリ用に新しいテ�
 - **ステップ6 — `cool_reference_preflight`**: `cool<N>_reference.png`について、当該クールまでの要素が見えるか、未来クールの要素が混入していないか、画像未読や明白な破綻がないかを確認する。チェック画像の採用・再生成・設計適合の決定は親が行う。
 - **ステップ8 — `step8_review_preflight`**: 8A/8B/8Cの固定入力画像を一次確認し、画像の対応関係、重複・欠落候補、明白な違和感候補を整理する。画像を削減する場合も保持対象の最終判断は親が行い、最終判定・品質ゲートの合否は`isometric-story-review`と親が担う。
 
-Codex MCP画像一次解析は、Web検索画像の取得、Story Beatの設計、Blender実装、候補`.blend`の修正、8A/8B/8C以外の品質ゲート、Motion QA、App Integration QAを担当しない。Ministralは本ワークフローの画像一次解析に使用しない。
+Codex MCP画像一次解析は、Web検索画像の取得、Story Beatの設計、Blender実装、候補`.blend`の修正、8A/8B/8C以外の品質ゲート、Motion QA、App Integration QAを担当しない。
 
 ## レビュー成果物の提示
 
@@ -58,8 +58,8 @@ Codex MCP画像一次解析は、Web検索画像の取得、Story Beatの設計�
 ## Claude Code → Codex 委任（検査・証跡取得・レンダー実行）
 
 - Claude Code親は、要件・設計・Blender実装・修正・優先順位・人間レビュー・waiver・統合判断・正本採用を担当する。Codexは、検査、証跡整合、既存validator・既存定量QAスクリプトの実行、animatic・完成済みspike・静止画・動画のレンダー実行だけを行う。Codexは候補`.blend`を実装・修正・保存しない。
-- 実行時の標準経路はCodex MCPの完全一致ツール`mcp__codex__codex`から`gpt-5.6-luna` / `max`へ委任する。対象は画像一次解析、レンダー、既存validator、scene/timeline snapshot、定量QA、証跡整合であり、Ministralへ移管しない。MCP可用性が`false`または`unknown`ならMinistralへフォールバックしない。親または可用性を確認済みのCLI経路へ戻す。継続対話が必要な場合だけ`mcp__codex__codex_reply`の完全一致を確認する。
-- Codex委任は必須ではない。親が既存`AGENTS.md`のSubagent policyに照らしてCodex委任を選ぶ場合、`references/codex-delegation.md`を正本として、モデル、`reasoning effort`、依頼文、入力、検証、起動タイミングを固定する。
+- 実行時の標準経路はCodex MCPの完全一致ツール`mcp__codex__codex`から`gpt-5.6-luna` / `max`へ委任する。対象は画像一次解析、レンダー、既存validator、scene/timeline snapshot、定量QA、証跡整合である。MCP可用性が`false`または`unknown`なら別モデルへフォールバックせず、親が担当する。継続対話が必要な場合だけ`mcp__codex__codex_reply`の完全一致を確認する。
+- 入出力と検証条件を固定できる検査・証跡取得・レンダーはCodex委任を原則とする。`references/codex-delegation.md`を正本として、モデル、`reasoning effort`、依頼文、入力、検証、起動タイミングを固定する。
 
 ### 親のBlender実装とCodexの実行境界(最重要)
 

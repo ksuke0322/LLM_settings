@@ -1,6 +1,6 @@
 # Claude Code → Codex 委任規約
 
-この規約は、`isometric-story-workflow`でClaude Code親がdelegate先を選ぶ場合の正本である。Claude Code親は設計、Blender実装・修正、優先順位、waiver、人間レビュー、統合判断、正本採用を担当する。画像一次解析を含む限定された検査・既存スクリプトでの読取証跡取得・レンダー実行は、Codex MCPのLuna maxで行う。並列に独立実行できる読み取り調査はsubagentを候補にする。複数成果物をまたぐ原因追跡や設計判断は親が分解・統合する。**8A・8B・8Cの判定**は既存どおり`subagent_type: isometric-story-review`（Opus / medium）のClaude専用独立レビューであり、Codexへ置き換えない。
+この規約は、`isometric-story-workflow`でClaude Code親がdelegate先を選ぶ場合の正本である。Claude Code親は設計、Blender実装・修正、優先順位、waiver、人間レビュー、統合判断、正本採用を担当する。画像一次解析を含む検査・既存スクリプトでの読取証跡取得・レンダー実行は、Codex MCPのLuna maxで行う。並列に独立実行できる読み取り調査もCodex MCPのLuna maxへ委任する。複数成果物をまたぐ原因追跡や設計判断は親が分解・統合する。**8A・8B・8Cの判定**は既存どおり`subagent_type: isometric-story-review`（Opus / medium）のClaude専用独立レビューであり、Codexへ置き換えない。
 
 ## モデルとeffort
 
@@ -26,13 +26,12 @@ Codex/Luna maxの実行結果は、親が機械的に検証できる次のJSON�
 ```
 
 `scripts/validate_execution_report.py`で絶対パス、存在、SHA-256、status/exit codeの整合を確認する。`needs_parent_decision`、出力不足、JSON不正、入力不一致は成功扱いにしない。
-- このworkflowの画像一次解析は、Tier 1相当の短い分類・抽出であってもCodex MCPの`gpt-5.6-luna` / `max`を標準経路とする。画像・入力の読み取りと候補抽出に限定し、最終判定や設計判断を行わない。
-- 並列に独立実行できる読み取り調査・探索・ログ確認はsubagentを候補にする。
-- Tier 2以上、実装、コードレビュー、保存後の再検証を含むツール連鎖は`gpt-5.6-luna` / `max`または親を使う。複数validator・複数クール・複数成果物をまたぐ原因追跡は、親が分解して個別委任し、結果を統合する。
+- このworkflowの画像一次解析、読み取り調査、探索、ログ確認はCodex MCPの`gpt-5.6-luna` / `max`を標準経路とする。画像・入力の読み取りと候補抽出に限定し、最終判定や設計判断を行わない。
+- 検査、コードレビュー、保存後の再検証を含むツール連鎖は`gpt-5.6-luna` / `max`または親を使う。複数validator・複数クール・複数成果物をまたぐ原因追跡は、親が分解して個別委任し、結果を統合する。
 - Luna以外の追加モデルへは昇格しない。設計変更、世界観・視覚品質・素材の採否、例外・waiver、人間レビュー、修正方針が必要なら、親へ`needs_parent_decision`として返す。
 - CodexはBlender用スクリプト、実測スクリプト、レンダー設定を新規作成・修正しない。既存ファイルを指定どおり実行するだけに限定する。
 - `mcp__codex__codex`の可用性は、委任直前の動的ツール一覧で完全一致を確認する。継続対話が必要な場合だけ`mcp__codex__codex_reply`の完全一致を確認する。UI表示、設定ファイル、過去セッションの存在だけでは可用と判定しない。
-- MCP可用性が`false`または`unknown`の場合はMinistralへフォールバックしない。親が担当するか、実行可否を確認済みのCodex CLI経路へ戻す。CLIへ戻す場合もモデル、read-only、許可出力先、既存スクリプト限定の境界を維持する。
+- MCP可用性が`false`または`unknown`の場合は別モデルへフォールバックせず、親が担当する。
 - 実行後は親が既存どおりmtime、SHA-256、許可出力先、候補/正本`.blend`・manifest・state・設計書の不変性を確認する。Codexはこれらの正本やレビュー判定を変更しない。
 
 ### Codex MCP画像一次解析用
@@ -52,7 +51,7 @@ Codex/Luna maxの実行結果は、親が機械的に検証できる次のJSON�
 }
 ```
 
-委任直前に動的ツール一覧で`mcp__codex__codex`の完全一致を確認する。継続対話が必要な場合だけ`mcp__codex__codex_reply`の完全一致を別途確認する。MCP可用性が`false`または`unknown`の場合はMinistralへフォールバックせず、親または可用性を確認済みのCodex CLI経路へ戻す。
+委任直前に動的ツール一覧で`mcp__codex__codex`の完全一致を確認する。継続対話が必要な場合だけ`mcp__codex__codex_reply`の完全一致を別途確認する。MCP可用性が`false`または`unknown`の場合は別モデルへフォールバックせず、親が担当する。
 
 #### 入力と実行
 
@@ -90,7 +89,7 @@ Codex/Luna maxの実行結果は、親が機械的に検証できる次のJSON�
 - 8B: 制作レンダー、軸・ハブ・羽根・ステイ・接地を確認できるclose-up、構造確認に必要な実物写真を保持する。生成refは渡さない。
 - 8C: 対象Coolの全景と、スコア対象の各署名パーツclose-upを保持し、同じ情報を示す重複画像だけを削減する。
 
-Codex MCP画像一次解析は画像要約と候補抽出を担当するが、8A/8B/8Cの判定、指摘の採否、設計側の見直し、修正方針、waiver、収束判断は親または既存の独立レビューが担当する。Ministralはこのworkflowでは使用しない。
+Codex MCP画像一次解析は画像要約と候補抽出を担当するが、8A/8B/8Cの判定、指摘の採否、設計側の見直し、修正方針、waiver、収束判断は親または既存の独立レビューが担当する。
 
 ## 共通依頼文
 

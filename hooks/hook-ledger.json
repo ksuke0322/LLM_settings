@@ -574,7 +574,7 @@
           "matcher": "*",
           "command": "rtk proxy node /Users/sawairikeisuke/.codex/hooks/delegate_preflight.mjs",
           "sourcePath": "/Users/sawairikeisuke/.codex/hooks/delegate_preflight.mjs",
-          "sourceSha256": "3a830f8edb04a5233e0e2ad642a385479385489c4757e9f825039340880c2f3e",
+          "sourceSha256": "b8a99f90a85def3859651132fa21ec36007dde50ef4604e69136894f1e798aa9",
           "managed": false
         }
       ]
@@ -1177,7 +1177,7 @@
           "matcher": "*",
           "command": "rtk proxy node /Users/sawairikeisuke/.codex/hooks/delegate_preflight.mjs",
           "sourcePath": "/Users/sawairikeisuke/.codex/hooks/delegate_preflight.mjs",
-          "sourceSha256": "3a830f8edb04a5233e0e2ad642a385479385489c4757e9f825039340880c2f3e",
+          "sourceSha256": "b8a99f90a85def3859651132fa21ec36007dde50ef4604e69136894f1e798aa9",
           "managed": false
         }
       ]
