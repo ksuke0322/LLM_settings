@@ -8,6 +8,7 @@ description: "保有中の日本株について、trade-v2 recent analysis を�
 保有中の日本株を、短期ポジション管理目線でレビューする。新規候補の比較ではなく、`保有継続 / 一部利確 / 防衛 / 撤退条件 / 追加可否` を先に出す。
 
 共通運用は [../stock-shared/references/common-operating-rules.md](../stock-shared/references/common-operating-rules.md) を前提にする。詳細な出力列は [references/output-contract.md](references/output-contract.md) を使う。
+trend_viewerの品質、trend、event、provenanceの意味は [../stock-shared/references/trend-viewer-analysis-contract.md](../stock-shared/references/trend-viewer-analysis-contract.md) を正本とする。
 
 ## 使う場面 / 使わない場面
 
@@ -55,6 +56,27 @@ review_profile の既定値=auto
 - `exit -> defend` など前日から top-level が変わった reversal では `decision_reason_note` に切替理由を 1 行残す
 - earnings blackout 判定は `next_earnings_date` を正本 field として参照し、`earnings_date` 欠落を未検証理由に使わない
 
+## API入力契約
+
+短期レビューは、保有銘柄ごとに次の`trade-v2` endpointを取得する。
+
+`GET /stock/{ticker}/analysis?range=recent&schema=trade-v2`
+
+取得後、少なくとも次をsidecar / reportへ残す。
+
+- `schemaVersion`、`source`、実際のpathとquery、`asOf`、`fetchedAt`、`timezone`
+- `dataQuality`、`readiness`、APIの全`reasonCodes`
+- `feature.trendState`の`direction`、`strength`、`persistence`、`confirmation`、`regime`、`reasonCodes`
+- `feature.eventRisk`の`eventRiskLevel`、`hasUpcomingEvent`、`daysToEarnings`
+
+### 短期advisoryの品質ゲート
+
+- `schemaVersion`が`trade-v2`でない、`dataQuality`が`complete`でない、`readiness`が`ready`でない、必須fieldや`asOf`が欠ける場合は、レビューを`advisory_only` / `確認不能`として出す。
+- 上記の品質不足は保有継続・利確・防衛の長期ガバナンスを自動変更する根拠にしない。追加投資・新規執行の可否は必ず見送る。
+- `eventRiskLevel=unknown`はイベントなしと解釈せず、「イベントリスク未確認」として警告する。保有レビュー自体は続けてよいが、追加・paper注文・自動執行へ昇格させない。
+- `hasUpcomingEvent=true`または`eventRiskLevel=high`では追加を見送り、必要なら防衛・縮小の検討材料として表示する。ただしレビュー結果を自動注文へ変換しない。
+- `confidenceScore`は`confidenceSemantics=qualitative`の定性的な証拠強度であり、確率・勝率・期待収益率として表示しない。
+
 ## review_profile
 
 - `auto`: 文脈と銘柄特性から自動判定
@@ -77,15 +99,19 @@ review_profile の既定値=auto
 1. ticker を確定する。
 2. 各銘柄の `review_profile` を決める。
 3. `ctx_execute` の `javascript` で API をまとめて取得し、retry と JSON parse を sandbox 内で完結させる。
-4. `ctx_execute` で失敗した場合だけ Playwright/browser fetch、さらに失敗した場合だけ診断用 `curl` へ落とす。
-5. `setup` と `risk` を主根拠に保有レビューを作る。
-6. `portfolio_rules.json` があれば個別レビューの前に portfolio gate 警告を出す。
-7. 平均取得単価と株数がある場合は評価損益額と損益率を計算する。
-8. 既定は `compact` で返し、長い表は `full` 要求時だけ出す。
+4. レスポンスの`trade-v2`、品質、provenance、必須fieldを検証し、欠落・unknown・partialを推測補完しない。
+5. `feature.trendState`の`regime`、`confirmation`、`persistence`、`strength`を確認する。`indicatorState`の多数決や単一指標で状態を上書きせず、短期advisoryと追加可否を分ける。
+6. `feature.eventRisk`を確認し、unknown / upcoming / highの警告と追加ブロックを記録する。
+7. `ctx_execute` で失敗した場合だけ Playwright/browser fetch、さらに失敗した場合だけ診断用 `curl` へ落とす。
+8. `setup` と `risk` を主根拠に短期advisoryを作る。保有継続の長期理由とは別欄にする。
+9. `portfolio_rules.json` があれば個別レビューの前に portfolio gate 警告を出す。
+10. 平均取得単価と株数がある場合は評価損益額と損益率を計算する。
+11. 既定は `compact` で返し、長い表は `full` 要求時だけ出す。
 
 ## 分析観点
 
 - `setup.regime` `setup.setupType` `setup.setupScore` `setup.confidence`
+- `setup.trendState`の`direction` `strength` `persistence` `confirmation` `regime` `reasonCodes`
 - `setup.reasons` `setup.invalidations`
 - `risk.entryZone` `risk.stopPrice` `risk.target1` `risk.target2` `risk.minimumRR` `risk.timeStopDays` `risk.holdUntilCondition` `risk.riskWarnings`
 - `feature.chartSummary.latestClose`
@@ -98,6 +124,8 @@ review_profile の既定値=auto
   - `ema10Slope` `ema25Slope` `ema60Slope`
   - `breakoutCandidate`
 - `feature.indicatorState`
+
+個別indicatorは補助説明として表示してよいが、`trendState`の`regime`、confirmation、persistenceを再計算して上書きしない。
 
 ## 判定ラベルの正規化
 
@@ -120,7 +148,10 @@ review_profile の既定値=auto
 - `買い` `売り` と断定しない
 - API 判定を保有前提へ翻訳する
 - `setupType=no_trade`、`minimumRR` 不足、強い `riskWarnings` では `追加見送り` を優先する
+- `dataQuality`不足、`readiness`不一致、`eventRiskLevel=unknown|high`、`hasUpcomingEvent=true`では`追加見送り`を優先する。unknownを安全・イベントなしへ変換しない。
+- `trendState.regime=range|transition`、confirmation未成立、persistence不足、direction/strength unknownは短期advisoryの不確実性として残し、新規の追加根拠にしない。
 - `target1` 接近や過熱が強く、含み益が大きい場合は `trim` を優先してよい
 - `high_beta` では `gapPercent` `volumeRatioVsMa20` `breakoutCandidate` `timeStopDays` を通常より重く扱う
 - `large_cap` では time stop 単独より trend 崩れや invalidation を重く見る
 - paper lane で使う場合も review の根拠と hold / sell 判定を sidecar から追えるように残す
+- `hold` `trim` `defend` `exit`はadvisoryラベルであり、保有stateや注文へ自動反映しない。長期保有の継続・縮小・撤退は`long_hold_governance_status`とユーザー判断を分離して扱う。
