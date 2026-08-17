@@ -2,6 +2,12 @@
 
 stock skill共通で必要な最小契約だけを定める。lane固有の探索・判断・配分ルールは各skillを正本とする。
 
+## trend_viewer contract
+
+`analysis` / `intraday` のschema、品質status、trendState、eventRisk、coverage、provenanceの意味は [trend-viewer-analysis-contract.md](trend-viewer-analysis-contract.md) を正本とする。
+HTTP成功や値の存在だけで判断可能とはみなさず、`partial`、`insufficient`、`no_data`、`unknown`、`readiness=blocked|unknown`は執行へ進めない。
+lane固有の採用条件は各skillへ戻し、この共通referenceで重複定義しない。
+
 ## Freshness
 
 - stateとevidenceには`as_of`または取得時刻を残す。
