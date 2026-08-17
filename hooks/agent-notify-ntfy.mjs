@@ -1,19 +1,68 @@
 import { execFile } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
+import {
+  consumeTaskContext,
+  cleanupTaskContext,
+  DEFAULT_STATE_DIR,
+  recordTaskContext,
+  sanitizeTaskSummary,
+  TASK_UNKNOWN,
+} from "./agent-notify-context.mjs";
 
 const execFileAsync = promisify(execFile);
 const KEYCHAIN_SERVICE = "codex-ntfy-topic";
 const NTFY_BASE_URL = "https://ntfy.sh";
-const NOTIFICATION_TITLE = "Codex";
-const NOTIFICATION_MESSAGE = "Codexのターンが終了しました";
 const REQUEST_TIMEOUT_MS = 5_000;
 const TOPIC_PATTERN = /^[A-Za-z0-9_-]{8,128}$/;
-
-export const buildNotificationPayload = (_input = {}) => ({
-  title: NOTIFICATION_TITLE,
-  message: NOTIFICATION_MESSAGE,
+const PRODUCT_TITLES = Object.freeze({
+  codex: "codex",
+  "claude-code": "claude code",
 });
+const EVENTS = new Set(["stop", "subagent-stop"]);
+
+export {
+  consumeTaskContext,
+  cleanupTaskContext,
+  DEFAULT_STATE_DIR,
+  recordTaskContext,
+  sanitizeTaskSummary,
+  TASK_UNKNOWN,
+} from "./agent-notify-context.mjs";
+
+const asNonEmptyString = value =>
+  typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
+
+const getInputValue = (input, snakeKey, camelKey) => {
+  if (!input || typeof input !== "object") {
+    return null;
+  }
+
+  return asNonEmptyString(input[snakeKey]) ?? asNonEmptyString(input[camelKey]);
+};
+
+const isValidProduct = product => Object.hasOwn(PRODUCT_TITLES, product);
+
+const isValidEvent = event => EVENTS.has(event);
+
+export const buildNotificationPayload = ({
+  product = "codex",
+  event = "stop",
+  summary = TASK_UNKNOWN,
+} = {}) => {
+  if (!isValidProduct(product)) {
+    throw new Error("invalid notification product");
+  }
+  if (!isValidEvent(event)) {
+    throw new Error("invalid notification event");
+  }
+
+  const suffix = event === "subagent-stop" ? " [subagent]" : "";
+  return {
+    title: `${PRODUCT_TITLES[product]}${suffix}`,
+    message: sanitizeTaskSummary(summary),
+  };
+};
 
 export const buildNtfyRequest = ({ topic, payload }) => {
   if (!TOPIC_PATTERN.test(topic)) {
@@ -53,6 +102,35 @@ export const sendNotification = async ({
   return response;
 };
 
+const getSummaryFromState = async ({ input, event, stateDir }) => {
+  const sessionId = getInputValue(input, "session_id", "sessionId");
+  const inputAgentId = getInputValue(input, "agent_id", "agentId");
+  const agentId = event === "subagent-stop" ? inputAgentId : inputAgentId ?? "main";
+  if (!sessionId || !agentId || (event === "subagent-stop" && !inputAgentId)) {
+    return TASK_UNKNOWN;
+  }
+
+  const context = await consumeTaskContext({
+    product: input.product,
+    sessionId,
+    agentId,
+    stateDir,
+  });
+  return context.summary;
+};
+
+const resolveSummary = async ({ product, event, input, summary, stateDir }) => {
+  if (typeof summary === "string" && summary.trim()) {
+    return sanitizeTaskSummary(summary);
+  }
+
+  return getSummaryFromState({
+    input: { ...input, product },
+    event,
+    stateDir,
+  });
+};
+
 const readTopicFromKeychain = async () => {
   const account = process.env.USER;
 
@@ -79,20 +157,34 @@ const readTopicFromKeychain = async () => {
 };
 
 export const run = async ({
+  product = "codex",
+  event = "stop",
+  input = {},
+  summary,
+  stateDir = DEFAULT_STATE_DIR,
   readTopic = readTopicFromKeychain,
   fetchImpl = globalThis.fetch,
   logError = console.error,
 } = {}) => {
   try {
+    if (!isValidProduct(product) || !isValidEvent(event)) {
+      throw new Error("invalid notification arguments");
+    }
+
     const topic = await readTopic();
+    const message = await resolveSummary({ product, event, input, summary, stateDir });
     await sendNotification({
       topic,
-      payload: buildNotificationPayload(),
+      payload: buildNotificationPayload({ product, event, summary: message }),
       fetchImpl,
     });
     return true;
   } catch {
-    logError("[agent-notify] ntfy notification skipped");
+    try {
+      logError("[agent-notify] ntfy notification skipped");
+    } catch {
+      // Logging failure must not block the host hook.
+    }
     return false;
   }
 };
@@ -107,14 +199,39 @@ const readStdin = async () => {
   return Buffer.concat(chunks).toString("utf8");
 };
 
-const main = async () => {
+const parseInput = rawInput => {
   try {
-    await readStdin();
+    const input = JSON.parse(rawInput);
+    return input && typeof input === "object" && !Array.isArray(input) ? input : {};
+  } catch {
+    return {};
+  }
+};
+
+const parseCliArgs = args => {
+  const options = {};
+  for (let index = 0; index < args.length - 1; index += 1) {
+    if (args[index] === "--product") {
+      options.product = args[index + 1];
+      index += 1;
+    } else if (args[index] === "--event") {
+      options.event = args[index + 1];
+      index += 1;
+    }
+  }
+  return options;
+};
+
+const main = async () => {
+  const { product, event } = parseCliArgs(process.argv.slice(2));
+  let rawInput = "";
+  try {
+    rawInput = await readStdin();
   } catch {
     // A malformed or unavailable hook payload must not block Codex.
   }
 
-  await run();
+  await run({ product, event, input: parseInput(rawInput) });
 };
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

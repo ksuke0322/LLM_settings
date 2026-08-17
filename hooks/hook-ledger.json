@@ -390,6 +390,7 @@
       "orderIndependent": true,
       "responsibilities": [
         "custom.delegate-policy",
+        "custom.task-context",
         "context-mode.context-processing"
       ],
       "conflictPolicy": "separate-context-responsibilities"
@@ -575,6 +576,42 @@
           "command": "rtk proxy node /Users/sawairikeisuke/.codex/hooks/delegate_preflight.mjs",
           "sourcePath": "/Users/sawairikeisuke/.codex/hooks/delegate_preflight.mjs",
           "sourceSha256": "b8a99f90a85def3859651132fa21ec36007dde50ef4604e69136894f1e798aa9",
+          "managed": false
+        }
+      ]
+    },
+    {
+      "id": "claude.custom.user-prompt.ntfy-context",
+      "product": "Claude",
+      "event": "UserPromptSubmit",
+      "provider": "custom",
+      "status": "implemented",
+      "responsibilities": [
+        "custom.task-context"
+      ],
+      "outputs": [
+        "state-save"
+      ],
+      "stateUpdates": [
+        "ntfy-task-context"
+      ],
+      "sideEffects": [
+        "state-save"
+      ],
+      "risks": [
+        "state-save"
+      ],
+      "sideEffectOwners": {
+        "state-save": "custom"
+      },
+      "registrations": [
+        {
+          "registrationProvider": "custom",
+          "registrationPath": "/Users/sawairikeisuke/.claude/settings.json",
+          "matcher": "*",
+          "command": "node /Users/sawairikeisuke/.agents/hooks/agent-notify-context.mjs --product claude-code",
+          "sourcePath": "/Users/sawairikeisuke/.agents/hooks/agent-notify-context.mjs",
+          "sourceSha256": "bc0910e064b75b80f2b3e03d34a9705f9e7de411155178962934f5b6af12b099",
           "managed": false
         }
       ]
@@ -1041,9 +1078,9 @@
           "registrationProvider": "custom",
           "registrationPath": "/Users/sawairikeisuke/.claude/settings.json",
           "matcher": "*",
-          "command": "node /Users/sawairikeisuke/.agents/hooks/agent-notify-ntfy.mjs",
+          "command": "node /Users/sawairikeisuke/.agents/hooks/agent-notify-ntfy.mjs --product claude-code --event stop",
           "sourcePath": "/Users/sawairikeisuke/.agents/hooks/agent-notify-ntfy.mjs",
-          "sourceSha256": "12d1889ee39437463688996ed506b171dd67c905388ec62f33592d2eac02e15c",
+          "sourceSha256": "63111bfe789693301942971b71d7c2caec066677257687138585fb4b983fa10b",
           "managed": false
         }
       ]
@@ -1076,6 +1113,44 @@
           "sourceSha256": "b740f288239fa5b05b3db36e9ab39ea2495e454df88ac5895f2a58e7a7762e06",
           "managed": true,
           "pluginVersion": "1.0.169"
+        }
+      ]
+    },
+    {
+      "id": "claude.custom.subagent-stop.ntfy",
+      "product": "Claude",
+      "event": "SubagentStop",
+      "provider": "custom",
+      "status": "implemented",
+      "responsibilities": [
+        "custom.subagent-notification"
+      ],
+      "outputs": [
+        "notification"
+      ],
+      "stateUpdates": [],
+      "sideEffects": [
+        "ntfy notification",
+        "Keychain read",
+        "external network"
+      ],
+      "risks": [
+        "keychain-read",
+        "external-network"
+      ],
+      "sideEffectOwners": {
+        "keychain-read": "custom",
+        "external-network": "custom"
+      },
+      "registrations": [
+        {
+          "registrationProvider": "custom",
+          "registrationPath": "/Users/sawairikeisuke/.claude/settings.json",
+          "matcher": "*",
+          "command": "node /Users/sawairikeisuke/.agents/hooks/agent-notify-ntfy.mjs --product claude-code --event subagent-stop",
+          "sourcePath": "/Users/sawairikeisuke/.agents/hooks/agent-notify-ntfy.mjs",
+          "sourceSha256": "63111bfe789693301942971b71d7c2caec066677257687138585fb4b983fa10b",
+          "managed": false
         }
       ]
     },
@@ -1183,6 +1258,42 @@
       ]
     },
     {
+      "id": "codex.custom.user-prompt.ntfy-context",
+      "product": "Codex",
+      "event": "UserPromptSubmit",
+      "provider": "custom",
+      "status": "implemented",
+      "responsibilities": [
+        "custom.task-context"
+      ],
+      "outputs": [
+        "state-save"
+      ],
+      "stateUpdates": [
+        "ntfy-task-context"
+      ],
+      "sideEffects": [
+        "state-save"
+      ],
+      "risks": [
+        "state-save"
+      ],
+      "sideEffectOwners": {
+        "state-save": "custom"
+      },
+      "registrations": [
+        {
+          "registrationProvider": "custom",
+          "registrationPath": "/Users/sawairikeisuke/.codex/hooks.json",
+          "matcher": "*",
+          "command": "node /Users/sawairikeisuke/.agents/hooks/agent-notify-context.mjs --product codex",
+          "sourcePath": "/Users/sawairikeisuke/.agents/hooks/agent-notify-context.mjs",
+          "sourceSha256": "bc0910e064b75b80f2b3e03d34a9705f9e7de411155178962934f5b6af12b099",
+          "managed": false
+        }
+      ]
+    },
+    {
       "id": "codex.custom.permission-request.glass",
       "product": "Codex",
       "event": "PermissionRequest",
@@ -1281,9 +1392,9 @@
           "registrationProvider": "custom",
           "registrationPath": "/Users/sawairikeisuke/.codex/hooks.json",
           "matcher": "*",
-          "command": "node /Users/sawairikeisuke/.agents/hooks/agent-notify-ntfy.mjs",
+          "command": "node /Users/sawairikeisuke/.agents/hooks/agent-notify-ntfy.mjs --product codex --event stop",
           "sourcePath": "/Users/sawairikeisuke/.agents/hooks/agent-notify-ntfy.mjs",
-          "sourceSha256": "12d1889ee39437463688996ed506b171dd67c905388ec62f33592d2eac02e15c",
+          "sourceSha256": "63111bfe789693301942971b71d7c2caec066677257687138585fb4b983fa10b",
           "managed": false
         }
       ]
@@ -1323,7 +1434,45 @@
       ]
     },
     {
-      "id": "codex.context-mode.pre-tool-use.bridge",
+      "id": "codex.custom.subagent-stop.ntfy",
+      "product": "Codex",
+      "event": "SubagentStop",
+      "provider": "custom",
+      "status": "implemented",
+      "responsibilities": [
+        "custom.subagent-notification"
+      ],
+      "outputs": [
+        "notification"
+      ],
+      "stateUpdates": [],
+      "sideEffects": [
+        "ntfy notification",
+        "Keychain read",
+        "external network"
+      ],
+      "risks": [
+        "keychain-read",
+        "external-network"
+      ],
+      "sideEffectOwners": {
+        "keychain-read": "custom",
+        "external-network": "custom"
+      },
+      "registrations": [
+        {
+          "registrationProvider": "custom",
+          "registrationPath": "/Users/sawairikeisuke/.codex/hooks.json",
+          "matcher": "*",
+          "command": "node /Users/sawairikeisuke/.agents/hooks/agent-notify-ntfy.mjs --product codex --event subagent-stop",
+          "sourcePath": "/Users/sawairikeisuke/.agents/hooks/agent-notify-ntfy.mjs",
+          "sourceSha256": "63111bfe789693301942971b71d7c2caec066677257687138585fb4b983fa10b",
+          "managed": false
+        }
+      ]
+    },
+    {
+      "id": "codex.context-mode.pre-tool-use.direct",
       "product": "Codex",
       "event": "PreToolUse",
       "provider": "context-mode",
@@ -1347,9 +1496,9 @@
           "registrationProvider": "context-mode",
           "registrationPath": "/Users/sawairikeisuke/.codex/plugins/cache/context-mode/context-mode/1.0.169/.codex-plugin/hooks.json",
           "matcher": "local_shell|shell|shell_command|exec_command|Bash|Shell|apply_patch|Edit|Write|grep_files|ctx_execute|ctx_execute_file|ctx_batch_execute|ctx_fetch_and_index|ctx_search|ctx_index|mcp__",
-          "command": "node /Users/sawairikeisuke/.codex/hooks/pretooluse-bridge.mjs",
-          "sourcePath": "/Users/sawairikeisuke/.codex/hooks/pretooluse-bridge.mjs",
-          "sourceSha256": "22c6d55479998c135bcced3646bdfb7259d32886b51755ae2b041f2820a1c56e",
+          "command": "node \"${PLUGIN_ROOT}/hooks/codex/pretooluse.mjs\"",
+          "sourcePath": "/Users/sawairikeisuke/.codex/plugins/cache/context-mode/context-mode/1.0.169/hooks/codex/pretooluse.mjs",
+          "sourceSha256": "3d31580ad41412399ffd4824b2b6d80072e413e13ad027ef381caf0f52cdd2ed",
           "managed": true,
           "pluginVersion": "1.0.169"
         }
