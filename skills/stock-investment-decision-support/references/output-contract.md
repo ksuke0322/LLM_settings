@@ -13,6 +13,39 @@
   - `分類サマリー`
   - `取得失敗`
 
+## trend_viewer input contract
+
+auto2a / auto2bの短期判断は、候補ごとに次のendpointを取得した証跡を持つ。
+
+`GET /stock/{ticker}/analysis?range=recent&schema=trade-v2`
+
+共通のフィールド定義は`stock-shared/references/trend-viewer-analysis-contract.md`を参照する。
+出力には、少なくとも次の入力証跡を保持する。
+
+| 領域 | 固定field | 判定 |
+| --- | --- | --- |
+| provenance | `analysis_schema` `analysis_source` `analysis_as_of` `analysis_fetched_at` `analysis_timezone` | endpoint、schema、基準日、取得時刻を再現できること |
+| quality | `analysis_data_quality` `analysis_readiness` `analysis_reason_codes` | `complete`かつ`ready`以外はeligibleにしない |
+| trend | `trend_regime` `trend_direction` `trend_strength` `trend_persistence` `trend_confirmation` `trend_reason_codes` | `regime`とconfirmation/persistenceを正本とし、個別指標の多数決で上書きしない |
+| event | `event_risk_level` `event_has_upcoming_event` `event_days_to_earnings` | `unknown`、upcoming、highはentry・追加・paper注文をblockする |
+| consumer gate | `analysis_contract_status` `analysis_block_reason_codes` | `eligible`または`blocked`を機械判定できること |
+
+`analysis_reason_codes`と`trend_reason_codes`はAPIの値を保持し、`analysis_block_reason_codes`にはdecision側の固定block reasonを別に記録する。
+`confidenceScore`は`confidenceSemantics=qualitative`を保存し、確率や勝率として出力しない。
+
+### consumer gate
+
+`analysis_contract_status=eligible`を許可する条件は、次の全条件である。
+
+- `schemaVersion=trade-v2`
+- `dataQuality=complete`かつ`readiness=ready`
+- `asOf`、必須field、reason code、provenanceが揃っている
+- `trendState.regime`がsetupと整合し、`confirmation.confirmed=true`、必要な`persistence`、利用可能な`strength`を満たす
+- `eventRiskLevel`が既知で、upcoming/highではない
+- 公式証跡、setup、risk、limit/stop/targetが揃っている
+
+それ以外は`analysis_contract_status=blocked`とし、欠落・unknown・partialを別値や推測値で補完しない。
+
 ## Full
 
 ### Table 1
