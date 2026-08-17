@@ -15,6 +15,7 @@ description: 日本株high-beta paper運用の日次処理を、intraday解決�
 - KPI: `paper_high_beta_metrics.json`
 - 配分: `paper_high_beta_allocator_snapshot.json`
 - 実行証跡: `outputs/b-daily-run-YYYY-MM-DD.json`
+- API共通契約: `stock-shared/references/trend-viewer-analysis-contract.md`
 
 ## 実行順序
 
@@ -25,6 +26,42 @@ description: 日本株high-beta paper運用の日次処理を、intraday解決�
 5. Auto1bの `ranked → quote_available → evidence_current/evidence_stale → candidate_evidence → adopted → watchlist/reserve → eligible → orders` を当日 `as_of` の `period_funnel` としてmanifestへ保存し、候補別 `block_reason` を `block_reason_counts` へ集計する。過去履歴の約定・決済は `cumulative_funnel` に分離し、当日候補数と混ぜない。
 
 前段が`failed`または`incomplete`なら後段は実行せず、manifestに停止理由を書く。休日・休場日はstateを進めず`market_closed`を記録する。
+
+## trend_viewer API / quality gate
+
+日次flowは、候補・日付単位で次の2 endpointを使い、レスポンスの品質をmanifestへ保存する。
+
+- 日中足: `GET /stock/{ticker}/intraday?date=YYYY-MM-DD&interval=5m`。必要な検証用途だけ`interval=1m`を使う。
+- 日足短期判断: `GET /stock/{ticker}/analysis?range=recent&schema=trade-v2`。
+
+共通のフィールド定義は`stock-shared/references/trend-viewer-analysis-contract.md`を正本とする。
+
+### intradayの解決
+
+- `date`は`as_of`のJST暦日をそのまま使い、UTC日付へ変換しない。`timezone=Asia/Tokyo`を必須証跡とする。
+- `dataQuality`、`readiness`、`reasonCodes`、`asOf`、`fetchedAt`、`coverage`（`expectedBarCount`、`returnedBarCount`、`missingBarCount`、`gapIntervals`、`missingOhlcBarCount`）を保存する。
+- `dataQuality != complete`、`readiness != ready`、欠落バー、gap、OHLC欠落、またはcoverageの整合性不成立は、当日candidateを`intraday_incomplete`としてfail-closeする。後段のeligible・allocator・paper orderへ進めない。
+- `no_data`、`unknown`、空の`bars`、`expectedBarCount=null`を休日・休場と推測しない。市場カレンダーまたは明示された市場状態が確認できた場合だけ`market_closed`としてstate no-opにする。
+
+### trade-v2の判断
+
+- `schemaVersion=trade-v2`、`dataQuality=complete`、`readiness=ready`、必須field、`asOf`、`reasonCodes`、provenanceが揃う候補だけを判断へ渡す。
+- `feature.trendState`の`regime`、`direction`、`strength`、`persistence`、`confirmation`、`reasonCodes`を正本とする。`indicatorState`の多数決や単一指標でtrendを上書きしない。
+- `regime=range|transition`、confirmation未成立、persistence不足、direction/strength unknownは、短期entryの根拠にしない。
+- `feature.eventRisk.eventRiskLevel=unknown`、`hasUpcomingEvent=true`、または`high`は、イベントなしと補完せず`event_risk_blocked`としてeligible・paper orderを止める。
+- `confidenceScore`は`confidenceSemantics=qualitative`の定性的証拠強度であり、確率・勝率として扱わない。
+
+### manifestのAPI証跡
+
+候補またはstage recordに、少なくとも次を保持する。
+
+- `endpoint`、query（`schema`、`range`、`date`、`interval`）、`schemaVersion`
+- `source`、`asOf`、`fetchedAt`、`timezone`
+- `dataQuality`、`readiness`、全`reasonCodes`
+- intradayの`coverage`
+- `trendState`の要約、`eventRisk`の要約、consumer gateの`block_reason`
+
+API取得成功だけではstage成功としない。品質、coverage、event、trendのgateが通った場合だけ次段へ進め、失敗・未完了・確認不能は推測で補完しない。
 
 ## 単一eligibility契約
 
