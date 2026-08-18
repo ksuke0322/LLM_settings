@@ -11,6 +11,7 @@ export const DEFAULT_STATE_TTL_MS = 24 * 60 * 60 * 1_000;
 
 const PRODUCTS = new Set(["codex", "claude-code"]);
 const SYSTEM_MESSAGE_PATTERN = /^\s*<(?:system-reminder|task-notification|context_guidance|tool-result)\b/iu;
+const WORK_SUMMARY_MARKER_PATTERN = /<!--\s*ntfy-work-summary\s*:\s*([\s\S]*?)\s*-->/giu;
 const PRIVATE_KEY_PATTERN = /-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----[\s\S]*?-----END [A-Z0-9 ]*PRIVATE KEY-----/giu;
 const BEARER_PATTERN = /\bBearer\s+[A-Za-z0-9._~+/=-]+/giu;
 const ASSIGNED_SECRET_PATTERN = /\b(?:[A-Za-z][A-Za-z0-9_-]*_)?(?:api[ _-]?key|access[ _-]?token|auth[ _-]?token|refresh[ _-]?token|client[ _-]?secret|secret|password|passwd|private[ _-]?key)\b\s*[:=]\s*(?:"[^"]*"|'[^']*'|[^\s,;]+)/giu;
@@ -64,6 +65,26 @@ export const sanitizeTaskSummary = (value, { maxCodePoints = SUMMARY_MAX_CODE_PO
   return `${codePoints.slice(0, Math.max(0, maxCodePoints - 1)).join("")}…`;
 };
 
+export const extractWorkSummary = value => {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const matches = [...value.matchAll(WORK_SUMMARY_MARKER_PATTERN)];
+  if (matches.length !== 1) {
+    return null;
+  }
+
+  const [match] = matches;
+  const markerEnd = (match.index ?? -1) + match[0].length;
+  if (markerEnd < 0 || value.slice(markerEnd).trim()) {
+    return null;
+  }
+
+  const summary = sanitizeTaskSummary(match[1]);
+  return summary === TASK_UNKNOWN ? null : summary;
+};
+
 const normalizeProduct = product => PRODUCTS.has(product) ? product : null;
 
 const getInputValue = (input, snakeKey, camelKey) => {
@@ -98,6 +119,11 @@ export const makeTaskContextKey = ({ product, sessionId, agentId }) => {
 export const taskContextPath = ({ product, sessionId, agentId, stateDir = DEFAULT_STATE_DIR }) => {
   const key = makeTaskContextKey({ product, sessionId, agentId });
   return key ? join(stateDir, `${key}.json`) : null;
+};
+
+export const workSummaryPath = ({ product, sessionId, agentId, stateDir = DEFAULT_STATE_DIR }) => {
+  const key = makeTaskContextKey({ product, sessionId, agentId });
+  return key ? join(stateDir, `${key}.work.json`) : null;
 };
 
 export const cleanupTaskContext = async ({
@@ -138,54 +164,19 @@ export const cleanupTaskContext = async ({
   }
 };
 
-export const recordTaskContext = async ({
-  product,
-  input,
-  stateDir = DEFAULT_STATE_DIR,
-  now = new Date(),
-} = {}) => {
-  try {
-    const normalizedProduct = normalizeProduct(product);
-    const sessionId = getInputValue(input, "session_id", "sessionId");
-    const agentId = getInputValue(input, "agent_id", "agentId") ?? "main";
-    const prompt = getPrompt(input);
-    if (!normalizedProduct || !sessionId || !prompt || isSystemInput({ input, prompt })) {
-      return false;
-    }
+const captureTimestamp = now => now instanceof Date && !Number.isNaN(now.valueOf())
+  ? now.toISOString()
+  : new Date().toISOString();
 
-    const summary = sanitizeTaskSummary(prompt);
-    const path = taskContextPath({ product: normalizedProduct, sessionId, agentId, stateDir });
-    if (!path) {
-      return false;
-    }
-
-    await mkdir(stateDir, { recursive: true, mode: 0o700 });
-    const record = {
-      product: normalizedProduct,
-      sessionId,
-      agentId,
-      summary,
-      capturedAt: now instanceof Date && !Number.isNaN(now.valueOf())
-        ? now.toISOString()
-        : new Date().toISOString(),
-    };
-    const temporaryPath = `${path}.${process.pid}.${randomUUID()}.tmp`;
-    await writeFile(temporaryPath, `${JSON.stringify(record)}\n`, { encoding: "utf8", mode: 0o600 });
-    await rename(temporaryPath, path);
-    await cleanupTaskContext({ stateDir, now });
-    return true;
-  } catch {
-    return false;
-  }
+const writeStateRecord = async ({ path, record, stateDir, now }) => {
+  await mkdir(stateDir, { recursive: true, mode: 0o700 });
+  const temporaryPath = `${path}.${process.pid}.${randomUUID()}.tmp`;
+  await writeFile(temporaryPath, `${JSON.stringify(record)}\n`, { encoding: "utf8", mode: 0o600 });
+  await rename(temporaryPath, path);
+  await cleanupTaskContext({ stateDir, now });
 };
 
-export const consumeTaskContext = async ({
-  product,
-  sessionId,
-  agentId,
-  stateDir = DEFAULT_STATE_DIR,
-} = {}) => {
-  const path = taskContextPath({ product, sessionId, agentId, stateDir });
+const consumeSummaryState = async ({ path, product, sessionId, agentId, stateDir }) => {
   if (!path) {
     return { product, sessionId, agentId, summary: TASK_UNKNOWN };
   }
@@ -221,6 +212,106 @@ export const consumeTaskContext = async ({
   } catch {
     return { product, sessionId, agentId, summary: TASK_UNKNOWN };
   }
+};
+
+export const recordTaskContext = async ({
+  product,
+  input,
+  stateDir = DEFAULT_STATE_DIR,
+  now = new Date(),
+} = {}) => {
+  try {
+    const normalizedProduct = normalizeProduct(product);
+    const sessionId = getInputValue(input, "session_id", "sessionId");
+    const agentId = getInputValue(input, "agent_id", "agentId") ?? "main";
+    const prompt = getPrompt(input);
+    if (!normalizedProduct || !sessionId || !prompt || isSystemInput({ input, prompt })) {
+      return false;
+    }
+
+    const summary = sanitizeTaskSummary(prompt);
+    const path = taskContextPath({ product: normalizedProduct, sessionId, agentId, stateDir });
+    if (!path) {
+      return false;
+    }
+
+    const record = {
+      product: normalizedProduct,
+      sessionId,
+      agentId,
+      summary,
+      capturedAt: captureTimestamp(now),
+    };
+    await writeStateRecord({ path, record, stateDir, now });
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+export const recordWorkSummary = async ({
+  product,
+  input,
+  stateDir = DEFAULT_STATE_DIR,
+  now = new Date(),
+} = {}) => {
+  try {
+    const normalizedProduct = normalizeProduct(product);
+    const sessionId = getInputValue(input, "session_id", "sessionId");
+    const agentId = getInputValue(input, "agent_id", "agentId") ?? "main";
+    const lastAssistantMessage = getInputValue(input, "last_assistant_message", "lastAssistantMessage");
+    const summary = extractWorkSummary(lastAssistantMessage);
+    if (!normalizedProduct || !sessionId || !summary || !lastAssistantMessage || isSystemInput({ input, prompt: lastAssistantMessage })) {
+      return false;
+    }
+
+    const path = workSummaryPath({ product: normalizedProduct, sessionId, agentId, stateDir });
+    if (!path) {
+      return false;
+    }
+
+    const record = {
+      product: normalizedProduct,
+      sessionId,
+      agentId,
+      summary,
+      capturedAt: captureTimestamp(now),
+    };
+    await writeStateRecord({ path, record, stateDir, now });
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+export const consumeTaskContext = async ({
+  product,
+  sessionId,
+  agentId,
+  stateDir = DEFAULT_STATE_DIR,
+} = {}) => {
+  return consumeSummaryState({
+    path: taskContextPath({ product, sessionId, agentId, stateDir }),
+    product,
+    sessionId,
+    agentId,
+    stateDir,
+  });
+};
+
+export const consumeWorkSummary = async ({
+  product,
+  sessionId,
+  agentId,
+  stateDir = DEFAULT_STATE_DIR,
+} = {}) => {
+  return consumeSummaryState({
+    path: workSummaryPath({ product, sessionId, agentId, stateDir }),
+    product,
+    sessionId,
+    agentId,
+    stateDir,
+  });
 };
 
 export const captureTaskContext = async ({

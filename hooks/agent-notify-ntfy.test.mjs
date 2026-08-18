@@ -6,6 +6,7 @@ import test from "node:test";
 
 const notifierPath = "/Users/sawairikeisuke/.agents/hooks/agent-notify-ntfy.mjs";
 const contextPath = "/Users/sawairikeisuke/.agents/hooks/agent-notify-context.mjs";
+const agentsPath = "/Users/sawairikeisuke/.agents/AGENTS.md";
 const codexHooksPath = "/Users/sawairikeisuke/.codex/hooks.json";
 const claudeSettingsPath = "/Users/sawairikeisuke/.claude/settings.json";
 
@@ -32,6 +33,33 @@ test("通常ターンとsubagentの通知タイトルを製品・イベントか
   assert.equal(buildNotificationPayload({ product: "claude-code", event: "stop" }).title, "claude code");
   assert.equal(buildNotificationPayload({ product: "codex", event: "subagent-stop" }).title, "codex [subagent]");
   assert.equal(buildNotificationPayload({ product: "claude-code", event: "subagent-stop" }).title, "claude code [subagent]");
+});
+
+test("最終応答末尾の専用マーカーから作業要約だけを抽出する", async () => {
+  const { extractWorkSummary } = await import(notifierPath);
+
+  assert.equal(
+    extractWorkSummary("回答本文\n<!-- ntfy-work-summary: 実装を検証 🧪 -->"),
+    "実装を検証 🧪",
+  );
+  assert.equal(
+    extractWorkSummary("<!-- ntfy-work-summary: 途中の要約 -->\n補足本文"),
+    null,
+  );
+  assert.equal(
+    extractWorkSummary("<!-- ntfy-work-summary: 一つ目 -->\n<!-- ntfy-work-summary: 二つ目 -->"),
+    null,
+  );
+  assert.equal(
+    extractWorkSummary("<!-- ntfy-work-summary: api_key=sk-only-secret -->"),
+    null,
+  );
+  const longSummary = extractWorkSummary(
+    "<!-- ntfy-work-summary: 日本語と英字と絵文字を含む長い作業要約です 🧪 secret=abc123456 -->",
+  );
+  assert.ok(longSummary);
+  assert.ok([...longSummary].length <= 20);
+  assert.doesNotMatch(longSummary, /abc123456|secret/iu);
 });
 
 test("通知本文は空白・秘密情報・長さを安全に整形する", async () => {
@@ -91,6 +119,178 @@ test("Stop通知は対応するstateだけを消費して本文へ使う", async
     assert.equal(requests[0].options.headers.Title, "codex");
     assert.equal(requests[0].options.body, "Stopで使うタスク");
     assert.equal((await readdir(stateDir)).length, 0);
+  });
+});
+
+test("作業要約は依頼要約と別stateへ秘匿化して保存し、全文を残さない", async () => {
+  const notifier = await import(notifierPath);
+
+  await withTempState(async stateDir => {
+    const assistantMessage = "この長い最終応答全文は保存してはいけない。\n"
+      + "<!-- ntfy-work-summary: 実装を検証 🧪 -->";
+    assert.equal(await notifier.recordWorkSummary({
+      product: "codex",
+      input: {
+        session_id: "work-session",
+        agent_id: "work-agent",
+        last_assistant_message: assistantMessage,
+      },
+      stateDir,
+      now: new Date("2026-08-17T00:00:00.000Z"),
+    }), true);
+
+    const files = await readdir(stateDir);
+    assert.equal(files.length, 1);
+    const stored = await readFile(join(stateDir, files[0]), "utf8");
+    assert.doesNotMatch(stored, /この長い最終応答全文/);
+    const record = JSON.parse(stored);
+    assert.deepEqual(Object.keys(record).sort(), ["agentId", "capturedAt", "product", "sessionId", "summary"]);
+    assert.equal(record.product, "codex");
+    assert.equal(record.sessionId, "work-session");
+    assert.equal(record.agentId, "work-agent");
+    assert.equal(record.summary, "実装を検証 🧪");
+
+    assert.equal((await notifier.consumeWorkSummary({
+      product: "codex",
+      sessionId: "work-session",
+      agentId: "other-agent",
+      stateDir,
+    })).summary, "タスク不明");
+    assert.equal((await readdir(stateDir)).length, 1);
+    assert.equal((await notifier.consumeWorkSummary({
+      product: "codex",
+      sessionId: "work-session",
+      agentId: "work-agent",
+      stateDir,
+    })).summary, "実装を検証 🧪");
+    assert.equal((await readdir(stateDir)).length, 0);
+  });
+});
+
+test("作業要約は依頼要約より優先してStop通知本文になる", async () => {
+  const notifier = await import(notifierPath);
+
+  await withTempState(async stateDir => {
+    assert.equal(await notifier.recordTaskContext({
+      product: "codex",
+      input: { session_id: "priority-session", prompt: "依頼内容の要約" },
+      stateDir,
+    }), true);
+
+    const requests = [];
+    assert.equal(await notifier.run({
+      product: "codex",
+      event: "stop",
+      input: {
+        session_id: "priority-session",
+        last_assistant_message: "完了しました。\n<!-- ntfy-work-summary: 実装を検証 🧪 -->",
+      },
+      stateDir,
+      readTopic: async () => "codex-test-topic",
+      fetchImpl: async (url, options) => {
+        requests.push({ url, options });
+        return { ok: true, status: 200 };
+      },
+    }), true);
+    assert.equal(requests[0].options.body, "実装を検証 🧪");
+    assert.equal((await readdir(stateDir)).length, 0);
+  });
+});
+
+test("作業要約がない場合は既存の依頼要約へフォールバックする", async () => {
+  const notifier = await import(notifierPath);
+
+  await withTempState(async stateDir => {
+    assert.equal(await notifier.recordTaskContext({
+      product: "claude-code",
+      input: { session_id: "fallback-session", prompt: "依頼要約へ戻る" },
+      stateDir,
+    }), true);
+
+    const requests = [];
+    assert.equal(await notifier.run({
+      product: "claude-code",
+      event: "stop",
+      input: {
+        session_id: "fallback-session",
+        last_assistant_message: "通常の応答本文でマーカーなし",
+      },
+      stateDir,
+      readTopic: async () => "codex-test-topic",
+      fetchImpl: async (url, options) => {
+        requests.push({ url, options });
+        return { ok: true, status: 200 };
+      },
+    }), true);
+    assert.equal(requests[0].options.body, "依頼要約へ戻る");
+  });
+});
+
+test("マーカーがないターンは残存した前ターンの作業stateを流用しない", async () => {
+  const notifier = await import(notifierPath);
+
+  await withTempState(async stateDir => {
+    assert.equal(await notifier.recordWorkSummary({
+      product: "codex",
+      input: {
+        session_id: "stale-session",
+        last_assistant_message: "前ターン\n<!-- ntfy-work-summary: 前ターンの作業 -->",
+      },
+      stateDir,
+    }), true);
+    assert.equal(await notifier.recordTaskContext({
+      product: "codex",
+      input: { session_id: "stale-session", prompt: "今回の依頼" },
+      stateDir,
+    }), true);
+
+    const requests = [];
+    assert.equal(await notifier.run({
+      product: "codex",
+      event: "stop",
+      input: {
+        session_id: "stale-session",
+        last_assistant_message: "今回の応答にはマーカーがない",
+      },
+      stateDir,
+      readTopic: async () => "codex-test-topic",
+      fetchImpl: async (url, options) => {
+        requests.push({ url, options });
+        return { ok: true, status: 200 };
+      },
+    }), true);
+    assert.equal(requests[0].options.body, "今回の依頼");
+    assert.equal((await readdir(stateDir)).length, 1);
+  });
+});
+
+test("subagentの作業要約はagent_idがない場合に親stateへフォールバックしない", async () => {
+  const notifier = await import(notifierPath);
+
+  await withTempState(async stateDir => {
+    assert.equal(await notifier.recordTaskContext({
+      product: "codex",
+      input: { session_id: "subagent-session", agent_id: "main", prompt: "親の依頼" },
+      stateDir,
+    }), true);
+
+    const requests = [];
+    assert.equal(await notifier.run({
+      product: "codex",
+      event: "subagent-stop",
+      input: {
+        session_id: "subagent-session",
+        last_assistant_message: "subagentの応答\n<!-- ntfy-work-summary: 子作業を完了 -->",
+      },
+      stateDir,
+      readTopic: async () => "codex-test-topic",
+      fetchImpl: async (url, options) => {
+        requests.push({ url, options });
+        return { ok: true, status: 200 };
+      },
+    }), true);
+    assert.equal(requests[0].options.body, "タスク不明");
+    assert.equal((await readdir(stateDir)).length, 1);
   });
 });
 
@@ -185,6 +385,14 @@ test("不正入力・保存失敗・送信失敗はホスト処理をブロッ�
     input: { session_id: "s", prompt: "保存失敗" },
     stateDir: "/dev/null/agent-notify-state",
   }), false);
+  assert.equal(await notifier.recordWorkSummary({
+    product: "codex",
+    input: {
+      session_id: "s",
+      last_assistant_message: "保存失敗\n<!-- ntfy-work-summary: 作業要約 -->",
+    },
+    stateDir: "/dev/null/agent-notify-state",
+  }), false);
   assert.equal(await notifier.run({
     product: "codex",
     event: "stop",
@@ -217,6 +425,15 @@ test("TTLを過ぎた孤立stateは掃除される", async () => {
     assert.equal(await notifier.recordTaskContext({
       product: "codex",
       input: { session_id: "old-session", prompt: "期限切れstate" },
+      stateDir,
+      now: capturedAt,
+    }), true);
+    assert.equal(await notifier.recordWorkSummary({
+      product: "codex",
+      input: {
+        session_id: "old-session",
+        last_assistant_message: "期限切れ作業\n<!-- ntfy-work-summary: 期限切れ要約 -->",
+      },
       stateDir,
       now: capturedAt,
     }), true);
@@ -266,4 +483,13 @@ test("通知実装はMCPを判定・参照しない", async () => {
   const contextSource = await readFileText(contextPath, "utf8");
   assert.doesNotMatch(source, /mcp/i);
   assert.doesNotMatch(contextSource, /mcp/i);
+});
+
+test("共通指示にCodexとClaude Code向けの作業要約マーカー契約がある", async () => {
+  const { readFile: readFileText } = await import("node:fs/promises");
+  const source = await readFileText(agentsPath, "utf8");
+  assert.match(source, /ntfy-work-summary/);
+  assert.match(source, /最終応答の末尾/);
+  assert.match(source, /実際に行った作業/);
+  assert.match(source, /<!-- ntfy-work-summary:/);
 });

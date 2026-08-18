@@ -611,7 +611,7 @@
           "matcher": "*",
           "command": "node /Users/sawairikeisuke/.agents/hooks/agent-notify-context.mjs --product claude-code",
           "sourcePath": "/Users/sawairikeisuke/.agents/hooks/agent-notify-context.mjs",
-          "sourceSha256": "bc0910e064b75b80f2b3e03d34a9705f9e7de411155178962934f5b6af12b099",
+          "sourceSha256": "49e8b0bc27ec4b31d55b98b521e31ca0417beb0e917805a32916d280c54207e3",
           "managed": false
         }
       ]
@@ -1059,7 +1059,9 @@
       "outputs": [
         "notification"
       ],
-      "stateUpdates": [],
+      "stateUpdates": [
+        "ntfy-work-summary"
+      ],
       "sideEffects": [
         "ntfy notification",
         "Keychain read",
@@ -1080,7 +1082,7 @@
           "matcher": "*",
           "command": "node /Users/sawairikeisuke/.agents/hooks/agent-notify-ntfy.mjs --product claude-code --event stop",
           "sourcePath": "/Users/sawairikeisuke/.agents/hooks/agent-notify-ntfy.mjs",
-          "sourceSha256": "63111bfe789693301942971b71d7c2caec066677257687138585fb4b983fa10b",
+          "sourceSha256": "09aebc253428bad026aed8b13ff4b085813a17b720366a44b6ea3c9b66a04ee9",
           "managed": false
         }
       ]
@@ -1128,7 +1130,9 @@
       "outputs": [
         "notification"
       ],
-      "stateUpdates": [],
+      "stateUpdates": [
+        "ntfy-work-summary"
+      ],
       "sideEffects": [
         "ntfy notification",
         "Keychain read",
@@ -1149,7 +1153,7 @@
           "matcher": "*",
           "command": "node /Users/sawairikeisuke/.agents/hooks/agent-notify-ntfy.mjs --product claude-code --event subagent-stop",
           "sourcePath": "/Users/sawairikeisuke/.agents/hooks/agent-notify-ntfy.mjs",
-          "sourceSha256": "63111bfe789693301942971b71d7c2caec066677257687138585fb4b983fa10b",
+          "sourceSha256": "09aebc253428bad026aed8b13ff4b085813a17b720366a44b6ea3c9b66a04ee9",
           "managed": false
         }
       ]
@@ -1288,7 +1292,7 @@
           "matcher": "*",
           "command": "node /Users/sawairikeisuke/.agents/hooks/agent-notify-context.mjs --product codex",
           "sourcePath": "/Users/sawairikeisuke/.agents/hooks/agent-notify-context.mjs",
-          "sourceSha256": "bc0910e064b75b80f2b3e03d34a9705f9e7de411155178962934f5b6af12b099",
+          "sourceSha256": "49e8b0bc27ec4b31d55b98b521e31ca0417beb0e917805a32916d280c54207e3",
           "managed": false
         }
       ]
@@ -1373,7 +1377,9 @@
       "outputs": [
         "notification"
       ],
-      "stateUpdates": [],
+      "stateUpdates": [
+        "ntfy-work-summary"
+      ],
       "sideEffects": [
         "ntfy notification",
         "Keychain read",
@@ -1394,7 +1400,7 @@
           "matcher": "*",
           "command": "node /Users/sawairikeisuke/.agents/hooks/agent-notify-ntfy.mjs --product codex --event stop",
           "sourcePath": "/Users/sawairikeisuke/.agents/hooks/agent-notify-ntfy.mjs",
-          "sourceSha256": "63111bfe789693301942971b71d7c2caec066677257687138585fb4b983fa10b",
+          "sourceSha256": "09aebc253428bad026aed8b13ff4b085813a17b720366a44b6ea3c9b66a04ee9",
           "managed": false
         }
       ]
@@ -1445,7 +1451,9 @@
       "outputs": [
         "notification"
       ],
-      "stateUpdates": [],
+      "stateUpdates": [
+        "ntfy-work-summary"
+      ],
       "sideEffects": [
         "ntfy notification",
         "Keychain read",
@@ -1466,7 +1474,7 @@
           "matcher": "*",
           "command": "node /Users/sawairikeisuke/.agents/hooks/agent-notify-ntfy.mjs --product codex --event subagent-stop",
           "sourcePath": "/Users/sawairikeisuke/.agents/hooks/agent-notify-ntfy.mjs",
-          "sourceSha256": "63111bfe789693301942971b71d7c2caec066677257687138585fb4b983fa10b",
+          "sourceSha256": "09aebc253428bad026aed8b13ff4b085813a17b720366a44b6ea3c9b66a04ee9",
           "managed": false
         }
       ]

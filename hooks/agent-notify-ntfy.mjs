@@ -3,9 +3,12 @@ import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import {
   consumeTaskContext,
+  consumeWorkSummary,
   cleanupTaskContext,
   DEFAULT_STATE_DIR,
+  extractWorkSummary,
   recordTaskContext,
+  recordWorkSummary,
   sanitizeTaskSummary,
   TASK_UNKNOWN,
 } from "./agent-notify-context.mjs";
@@ -23,9 +26,12 @@ const EVENTS = new Set(["stop", "subagent-stop"]);
 
 export {
   consumeTaskContext,
+  consumeWorkSummary,
   cleanupTaskContext,
   DEFAULT_STATE_DIR,
+  extractWorkSummary,
   recordTaskContext,
+  recordWorkSummary,
   sanitizeTaskSummary,
   TASK_UNKNOWN,
 } from "./agent-notify-context.mjs";
@@ -44,6 +50,17 @@ const getInputValue = (input, snakeKey, camelKey) => {
 const isValidProduct = product => Object.hasOwn(PRODUCT_TITLES, product);
 
 const isValidEvent = event => EVENTS.has(event);
+
+const getNotificationIdentity = ({ input, event }) => {
+  const sessionId = getInputValue(input, "session_id", "sessionId");
+  const inputAgentId = getInputValue(input, "agent_id", "agentId");
+  const agentId = event === "subagent-stop" ? inputAgentId : inputAgentId ?? "main";
+  if (!sessionId || !agentId || (event === "subagent-stop" && !inputAgentId)) {
+    return null;
+  }
+
+  return { sessionId, agentId };
+};
 
 export const buildNotificationPayload = ({
   product = "codex",
@@ -102,21 +119,24 @@ export const sendNotification = async ({
   return response;
 };
 
-const getSummaryFromState = async ({ input, event, stateDir }) => {
-  const sessionId = getInputValue(input, "session_id", "sessionId");
-  const inputAgentId = getInputValue(input, "agent_id", "agentId");
-  const agentId = event === "subagent-stop" ? inputAgentId : inputAgentId ?? "main";
-  if (!sessionId || !agentId || (event === "subagent-stop" && !inputAgentId)) {
+const getSummaryFromState = async ({ input, event, stateDir, workSummarySaved = false }) => {
+  const identity = getNotificationIdentity({ input, event });
+  if (!identity) {
     return TASK_UNKNOWN;
   }
 
+  const { sessionId, agentId } = identity;
+  const product = input.product;
+  const workSummary = workSummarySaved
+    ? await consumeWorkSummary({ product, sessionId, agentId, stateDir })
+    : { summary: TASK_UNKNOWN };
   const context = await consumeTaskContext({
-    product: input.product,
+    product,
     sessionId,
     agentId,
     stateDir,
   });
-  return context.summary;
+  return workSummary.summary !== TASK_UNKNOWN ? workSummary.summary : context.summary;
 };
 
 const resolveSummary = async ({ product, event, input, summary, stateDir }) => {
@@ -124,10 +144,26 @@ const resolveSummary = async ({ product, event, input, summary, stateDir }) => {
     return sanitizeTaskSummary(summary);
   }
 
+  const normalizedInput = input && typeof input === "object" ? input : {};
+  const identity = getNotificationIdentity({ input: normalizedInput, event });
+  if (!identity) {
+    return TASK_UNKNOWN;
+  }
+
+  const workSummarySaved = await recordWorkSummary({
+    product,
+    input: {
+      ...normalizedInput,
+      agent_id: identity.agentId,
+    },
+    stateDir,
+  });
+
   return getSummaryFromState({
-    input: { ...input, product },
+    input: { ...normalizedInput, product },
     event,
     stateDir,
+    workSummarySaved,
   });
 };
 
