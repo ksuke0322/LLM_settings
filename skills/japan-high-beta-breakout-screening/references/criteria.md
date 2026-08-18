@@ -16,9 +16,13 @@
 ## 1b / 2b 境界
 
 - 1b は材料・thesis鮮度、価格構造、出来高持続、相対強度、流動性、撤退条件から継続監視価値を判定する
+- 1bの観測APIは `GET /stock/{ticker}/analysis?range=recent&schema=trade-v2` とし、query、schema、source、as_of、fetched_at、data_quality、readiness、reason_codesをtechnical evidenceへ紐づける
 - trade-v2 の `feature.chartSummary` / `feature.metrics` は価格・出来高の観測値として使ってよい
+- `dataQuality`不足、必須field欠落、`asOf=null`、取得不能は `technical_evidence_incomplete` として残し、nullや欠落を0・neutral・現在値へ補完しない。`readiness`は保存するが、1b観測値を執行readyへ昇格させるゲートにはしない
 - `setupType=no_trade` は 1b の除外や降格には使わない
+- `readiness=blocked|unknown`、`feature.trendState` / `feature.indicatorState` / `setup` / `risk` / `eventRisk` は 1bのentry、RR、注文、採用hard gateへ使わない
 - オシレータ、`entry zone`、`minimumRR` / RR、当日 setup は 2b の執行判定に限定する
+- `intraday-v1`のバーとcoverageは日次high-beta flowの責務であり、1bのtechnical evidenceへ混在させない
 - 単日の押しや過熱、相対順位低下だけでは既存候補を除外しない
 
 ## 優先順位
