@@ -125,7 +125,7 @@ Codex MCP画像一次解析は、Web検索画像の取得、Story Beatの設計�
 5. **(ストーリー単位)** テーマ固有差分(寸法変数・オブジェクト一覧・state構成)を`references/prompt-db-template.md`に従って本番制作差分メモ(`design/prompt_notes.md`)へ保存(ルール本体は再掲しない)
 6. **(クール単位ループ)** 設計書ファイル+本番制作差分メモを明示Readし、クール用ファイル・クール別チェック画像・manifestを準備。**クール1の空`.blend`作成とblender-mcp接続は人間が行う — 必須の停止点**(クール2以降は`save_as_mainfile`での付け替えのみで停止不要)
 7. **(クール単位ループ)** fetchしたテーマ固有差分+クール別チェック画像+`blender-isometric-rules`スキルで該当クールを実際に制作。制作は**7a ブロックアウト精緻化 → 7b 個別作り込み → 7c テクスチャリング**の3工程を順に踏む(プリミティブ直置き+後付けだけで完成としない)
-   7e. **(クール単位ループ)** 実装変更後の自己検証レンダー。変更したkindだけを同じカメラ・frameで再レンダーし、変更前後を`verify_render_delta.py`で比較する。差分が閾値未満ならStep 8のrender setを作らず、親が実装を見直す。
+   7e. **(クール単位ループ)** 実装変更後の自己検証レンダー。変更したkindだけを同じカメラ・frameで再レンダーし、変更前後を`verify_render_delta.py`で比較する。差分が閾値未満ならStep 8のrender setを作らず、親が実装を見直す。差分スクリプトの`pass`はピクセル変化の存在だけを示し、意図した視覚変更であることの確認は親が担当する。
    7.5. **(クール単位ループ)** 全アセット棚卸し(作り込みティア監査)。全オブジェクトを種類単位で機械列挙し、ティア・本物マテリアル・作り込み・接地の未達をゼロにする — 必須hard gate
 8. **(クール単位ループ)** 構造的自己レビューに加え、独立サブエージェントによる(8A)Acceptance Matrixレビュー、(8B)常識・実物資料レビュー、(8C)仕様実現レビューを未解決の必須項目ゼロまでループ
 9. **(クール単位ループ)** 人間が目視レビュー(最終frame静止画が対象) — 必須の停止点
@@ -240,8 +240,9 @@ Codex MCP画像一次解析は、Web検索画像の取得、Story Beatの設計�
 ### ステップ7e: 実装変更の自己検証レンダー
 
 - 親が7b/7cで変更した後、変更したkindのclose-upだけを変更前と同じframe・camera・出力条件で再レンダーする。
-- `scripts/verify_render_delta.py --before <before.png> --after <after.png> --threshold 0.002`を実行し、`changed_ratio`が閾値以上であることを確認する。必要なら`--region x,y,width,height`で対象領域だけを比較する。
-- 同一PNG、または対象領域内に変更がない場合は`status=fail`とし、Step 8のrender setを作成しない。変更が画面に現れたことを親が画像で確認してから次へ進む。
+- `scripts/verify_render_delta.py --before <before.png> --after <after.png> --threshold 0.002`を実行し、`changed_ratio`が閾値以上であることを確認する。必要なら`--region <x> <y> <width> <height>`で対象領域だけを比較する。
+- 有効な画像で変更が閾値以上なら`status=pass`・終了コード`0`、有効な画像で変更がないか閾値未満なら`status=fail`・終了コード`1`、破損・未対応形式・サイズ不一致・領域不正など入力を評価できない場合は`status=error`・終了コード`2`とする。`error`を未変更の`fail`として扱わない。
+- 同一PNG、または対象領域内に変更がない場合は`status=fail`とし、Step 8のrender setを作成しない。変更が画面に現れたことを親がclose-up画像で読み、意図した視覚変更であることを確認してから次へ進む。ピクセル差分だけではStep 8へ進めない。
 
 ### ステップ7.5: 全アセット棚卸し(作り込みティア監査) — hard gate
 
