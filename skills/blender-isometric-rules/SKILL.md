@@ -115,8 +115,9 @@ description: Blender(blender-mcp/bpy)でアイソメトリック映像素材を�
 
 ### 2.5.5 署名パーツのpx予算
 
-- 新規`story_contract.json`の各`objects[].signature_parts[]`には、`name`、`visualization`(`silhouette`または`contrast`)、`dominant_dimension`(正のworld寸法)を記録する。これは意図を別の文章へ置き換えるものではなく、描画スケールで成立するかを検査するための数値契約である。
-- `scripts/check_px_budget.py --contract <story_contract.json> --scale 332.3`を7.5で実行する。`dominant_dimension * scale`をpxへ換算し、silhouetteは12px、contrastは6pxを下限とする。
+- 新規`story_contract.json`の各`objects[].signature_parts[]`には、`name`、`visualization`(`silhouette`または`contrast`)、`dominant_dimension`(正のworld寸法)を記録する。これは意図を別の文章へ置き換えるものではなく、描画スケールで成立するかを検査するための数値契約である。凹みなど複数の可視境界で読む`contrast`要素は、境界本数を任意の`contrast_edges`(正の整数、省略時1)で明示する。
+- `scripts/check_px_budget.py --contract <story_contract.json> --scale 332.3`を7.5で実行する。`dominant_dimension * scale`をpxへ換算し、silhouetteは12px、contrastは可視境界1本あたり6pxを下限とする。`contrast_edges`が2以上なら元のpxを境界本数で割って判定し、元の`raw_pixels`も出力する。
+- 今回の較正例は、指組み`0.005`(1.6615px, silhouette)=FAIL、持ち手の旧深さ`0.024`(raw 7.9752px, `contrast_edges=2`により各3.9876px)=FAIL、受け縁`0.100`(33.23px, silhouette)=PASSである。
 - 閾値未満の署名パーツが1件でもあればFAIL。設計を粗くするか、現スケールでは実現不能であることを記録してから再検査する。px予算FAILを残したままStep 8へ進めてはならない。
 
 ## 3. マテリアル・質感

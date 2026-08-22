@@ -77,14 +77,26 @@ def _validate_part(part: Any, location: str, object_label: str, errors: list[str
         errors.append(f"{location}.dominant_dimension must be a positive number")
         return
 
-    output.append(
-        {
-            "object": object_label,
-            "part": name,
-            "visualization": visualization,
-            "dominant_dimension": dominant_dimension,
-        }
-    )
+    contrast_edges = 1
+    if "contrast_edges" in part:
+        if visualization != "contrast":
+            errors.append(f"{location}.contrast_edges is only valid for contrast parts")
+            return
+        candidate = part["contrast_edges"]
+        if isinstance(candidate, bool) or not isinstance(candidate, int) or candidate < 1:
+            errors.append(f"{location}.contrast_edges must be a positive integer")
+            return
+        contrast_edges = candidate
+
+    normalized = {
+        "object": object_label,
+        "part": name,
+        "visualization": visualization,
+        "dominant_dimension": dominant_dimension,
+    }
+    if contrast_edges != 1:
+        normalized["contrast_edges"] = contrast_edges
+    output.append(normalized)
 
 
 def _extract_signature_parts(contract: Any) -> list[dict[str, Any]]:
@@ -218,23 +230,24 @@ def main(argv: list[str] | None = None) -> int:
         parts = _extract_signature_parts(_load_contract(args.contract))
         for part in parts:
             try:
-                pixels = part["dominant_dimension"] * scale
+                raw_pixels = part["dominant_dimension"] * scale
+                edge_count = part.get("contrast_edges", 1)
+                pixels = raw_pixels / edge_count if part["visualization"] == "contrast" else raw_pixels
             except (OverflowError, TypeError):
                 raise ContractError(
                     [f"{part['object']}/{part['part']} pixel calculation is not finite"]
                 ) from None
-            if not math.isfinite(pixels):
+            if not math.isfinite(raw_pixels) or not math.isfinite(pixels):
                 raise ContractError(
                     [f"{part['object']}/{part['part']} pixel calculation is not finite"]
                 )
+            raw_pixels = round(raw_pixels, 6)
             pixels = round(pixels, 6)
             if pixels < thresholds[part["visualization"]]:
-                payload["below_threshold"].append(
-                    {
-                        **part,
-                        "pixels": pixels,
-                    }
-                )
+                below = {**part, "pixels": pixels}
+                if edge_count != 1:
+                    below["raw_pixels"] = raw_pixels
+                payload["below_threshold"].append(below)
         payload["status"] = "fail" if payload["below_threshold"] else "pass"
     except ContractError as error:
         payload["errors"] = error.errors

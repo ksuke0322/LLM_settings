@@ -259,7 +259,7 @@ Codex MCP画像一次解析は、Web検索画像の取得、Story Beatの設計�
      これは「作り込み品質OK」の証明ではない。**作り込み品質の合否は機械では判定せず、ステップ8B(物理的妥当性)・
      8C(署名パーツが設計どおり実現されているか)の独立レビューで判定する**。
 - **material/接地のFAILが1つでもあればステップ8へ進めない**(7b/7cへ戻る)。craftのWARNは「7bで作り込むべき候補」を示す助言として使い、最終的な作り込み合否は8B/8Cに委ねる。
-- **署名パーツのpx予算FAILが1つでもあればステップ8へ進めない**。`blender-isometric-rules/scripts/check_px_budget.py --contract <story_contract.json> --scale 332.3`を実行し、silhouetteは12px、contrastは6px以上であることを確認する。未達は設計を粗くするか、現スケールでは実現不能と記録してから先へ進む。
+- **署名パーツのpx予算FAILが1つでもあればステップ8へ進めない**。`blender-isometric-rules/scripts/check_px_budget.py --contract <story_contract.json> --scale 332.3`を実行し、silhouetteは12px、contrastは可視境界1本あたり6px以上であることを確認する。凹みなど複数境界で読むcontrastは契約の`contrast_edges`で境界本数を明示し、各境界の判定pxが6px未満ならFAILとする。未達は設計を粗くするか、現スケールでは実現不能と記録してから先へ進む。
 - 判定結果(種類ごとの material / 接地 / craft助言)を`evidence/cool<N>_asset_audit.md`へ記録する。
 - 「全部を1個ずつ見る」を、種類単位・機械列挙で網羅的かつ効率的に行うのが本ゲートの趣旨。既存のステップ8B・`review-checklist.md`B節(サンプル抽出・目視判定)を置き換えるものではなく、その前段で見落としをゼロにする網羅性チェックとして機能する。
 
