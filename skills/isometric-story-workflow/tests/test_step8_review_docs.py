@@ -57,6 +57,45 @@ class Step8ReviewDocumentationTests(unittest.TestCase):
         self.assertIn("定義されていないキーを追加しない", prompts)
         self.assertIn("gates.visual_acceptance.status", manifest)
 
+    def test_step7e_delta_measured_facts_and_parent_decision_are_documented(self):
+        skill = self._read("SKILL.md")
+        control = self._read("references/step8-review-control.md")
+        self.assertIn("ステップ7e", skill)
+        self.assertIn("verify_render_delta.py", skill)
+        self.assertIn("changed_ratio", skill)
+        self.assertIn("emit_measured_facts.py", skill)
+        self.assertIn("手入力してはならない", skill)
+        self.assertIn("--parent-decision", skill)
+        self.assertIn("3本", control)
+
+    def test_majority_advisory_and_single_run_restrictions_are_documented(self):
+        skill = self._read("SKILL.md")
+        control = self._read("references/step8-review-control.md")
+        self.assertIn("多数決 v1", control)
+        self.assertIn("項目単位", control)
+        self.assertIn("異なるレンダーの結果を同じ多数決へ混ぜてはならない", control)
+        self.assertIn("実測で反証した指摘", control)
+        self.assertIn("evidence/cool<N>_step8_majority.md", skill)
+        self.assertIn("evidence/cool<N>_step8_advisories.md", skill)
+        self.assertIn("その場で修正してはならない", skill)
+        self.assertIn("多数決で確定した指摘と、親が実測で裏付けた指摘だけ", skill)
+
+    def test_reference_conflicts_and_px_budget_are_documented(self):
+        skill = self._read("SKILL.md")
+        workflow_schema = self._read("references/story-contract-schema.md")
+        blender_rules = (SKILL_DIR.parent / "blender-isometric-rules" / "SKILL.md").read_text(encoding="utf-8")
+        conflicts = self._read("references/reference-conflicts-template.md")
+        self.assertIn("design/reference_conflicts.md", skill)
+        self.assertIn("validate_reference_conflicts.py", skill)
+        self.assertIn("signature_parts", workflow_schema)
+        self.assertIn("visualization", workflow_schema)
+        self.assertIn("dominant_dimension", workflow_schema)
+        self.assertIn("check_px_budget.py", skill)
+        self.assertIn("12px", skill)
+        self.assertIn("6px", skill)
+        self.assertIn("check_px_budget.py", blender_rules)
+        self.assertEqual(5, conflicts.count("## "))
+
 
 if __name__ == "__main__":
     unittest.main()

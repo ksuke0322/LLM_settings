@@ -46,11 +46,34 @@
       "entry_type": "drop",
       "motion_kind": "vertical",
       "signature_details": ["灯室", "回廊"],
+      "signature_parts": [
+        {"name": "灯室の輪郭", "visualization": "silhouette", "dominant_dimension": 0.12},
+        {"name": "回廊の陰影", "visualization": "contrast", "dominant_dimension": 0.03, "contrast_edges": 1}
+      ],
       "shared_material": true
     }
   ]
 }
 ```
+
+## 署名パーツのpx予算フィールド
+
+新規契約の各`objects[]`には、`signature_details`で意図を列挙した署名パーツに対応する
+`signature_parts`を必ず持たせる。`signature_parts[]`の必須フィールドは次の3つである。
+
+| フィールド | 型 | 意味 |
+|---|---|---|
+| `name` | string | `signature_details`と対応する名前付きパーツ |
+| `visualization` | `silhouette` または `contrast` | 輪郭で見せるか、色差・陰影で見せるか |
+| `dominant_dimension` | positive number | 現行設計で画面上の意味を支配するworld寸法 |
+| `contrast_edges` | positive integer, optional | `contrast`で読む可視境界の本数。省略時は1。凹みのように2面の境界で読む要素は2を指定する |
+
+描画スケールは`check_px_budget.py`へ渡し、`dominant_dimension * scale`をpxへ変換する。
+`silhouette`は12px未満、`contrast`は可視境界1本あたり6px未満をFAILとする。
+`contrast_edges`が2以上の場合は、`dominant_dimension * scale / contrast_edges`を各境界の
+判定pxとする。出力には元のworld寸法からの`raw_pixels`も残るため、幾何寸法と可読性判定を
+混同しない。未達のままStep 8へ進めず、設計を粗くするか、現スケールでは実現不能であることを
+設計記録へ残す。
 
 ## validator入力
 

@@ -20,7 +20,7 @@ description: アイソメトリックポモドーロアプリ用に新しいテ�
 
 ## 反復実行の制御
 
-- Step 7d/7.5、Step 8のCodex MCP画像一次解析、Step 9.5動画validator、Step 10 Motion QAは`references/repetition-control.md`と各ledgerを使う。同一入力・同一validator条件の`pass`だけを再利用し、入力revisionが変わったら再実行する。
+- Step 7d/7e/7.5、Step 8のCodex MCP画像一次解析、Step 9.5動画validator、Step 10 Motion QAは`references/repetition-control.md`と各ledgerを使う。同一入力・同一validator条件の`pass`だけを再利用し、入力revisionが変わったら再実行する。
 - 同一finding fingerprintが連続2回出た場合は3回目を自動起動せず`needs_parent_decision`で停止する。キャッシュ、timeout、JSON不正、画像・動画未読は品質gateのpassに変換しない。
 - Step 10の修正後はblendまたは動画のrevisionが更新されたことを確認してから再レンダー・再検査する。Step 9.5はmanifest構造を毎回確認し、動画のffprobe/full decodeだけを検証ledgerから再利用できる。
 
@@ -35,7 +35,7 @@ description: アイソメトリックポモドーロアプリ用に新しいテ�
 - 出力は短いJSONとし、`purpose`、`input_images`、`observations`、`uncertainties`、`failure`を含める。`observations[]`には少なくとも`item`、`evidence_image`(絶対パス)、`confidence`、`note`を記録する。
 - 画像未読、JSON不正、タイムアウト、低確信度、根拠画像が一意でない場合は失敗扱いにする。推測で補完せず、画像の削減・省略も行わない。
 - 親エージェントはCodexの結果、根拠画像、必須保持画像を確認してから次工程へ渡す。Codexの結果を正解ラベル、最終判定、設計仕様、修正方針として扱わない。
-- `mcp__codex__codex`の可用性が`false`または`unknown`の場合は別モデルへフォールバックせず、親が担当する。
+- `mcp__codex__codex`の可用性が`false`または`unknown`の場合はMinistralへフォールバックしない。別モデルへフォールバックせず、親が担当する。
 
 ### 工程別の固定用途
 
@@ -58,7 +58,7 @@ Codex MCP画像一次解析は、Web検索画像の取得、Story Beatの設計�
 ## Claude Code → Codex 委任（検査・証跡取得・レンダー実行）
 
 - Claude Code親は、要件・設計・Blender実装・修正・優先順位・人間レビュー・waiver・統合判断・正本採用を担当する。Codexは、検査、証跡整合、既存validator・既存定量QAスクリプトの実行、animatic・完成済みspike・静止画・動画のレンダー実行だけを行う。Codexは候補`.blend`を実装・修正・保存しない。
-- 実行時の標準経路はCodex MCPの完全一致ツール`mcp__codex__codex`から`gpt-5.6-luna` / `max`へ委任する。対象は画像一次解析、レンダー、既存validator、scene/timeline snapshot、定量QA、証跡整合である。MCP可用性が`false`または`unknown`なら別モデルへフォールバックせず、親が担当する。継続対話が必要な場合だけ`mcp__codex__codex_reply`の完全一致を確認する。
+- 実行時の標準経路はCodex MCPの完全一致ツール`mcp__codex__codex`から`gpt-5.6-luna` / `max`へ委任する。対象は画像一次解析、レンダー、既存validator、scene/timeline snapshot、定量QA、証跡整合である。MCP可用性が`false`または`unknown`ならMinistralへフォールバックしない。別モデルへフォールバックせず、親が担当する。継続対話が必要な場合だけ`mcp__codex__codex_reply`の完全一致を確認する。
 - 入出力と検証条件を固定できる検査・証跡取得・レンダーはCodex委任を原則とする。`references/codex-delegation.md`を正本として、モデル、`reasoning effort`、依頼文、入力、検証、起動タイミングを固定する。
 
 ### 親のBlender実装とCodexの実行境界(最重要)
@@ -87,7 +87,7 @@ Codex MCP画像一次解析は、Web検索画像の取得、Story Beatの設計�
 - ステップ4では親がspikeを実装し、Codexは親が固定したstate順序・尺・frame・カメラに沿うグレーanimaticと完成済みspikeをレンダーする。物語・時間設計・技術リスクの選定、レビュー・パケットの作成、人間レビューの依頼は親が行う。
 - ステップ8ではCodexに`step8_review_preflight`、完成state静止画・密集エリアclose-up・kind単位close-upのレンダー、既存定量QAを委任する。8A/8B/8Cの指摘の解釈・採否・設計側の見直し・候補`.blend`の修正は親が行い、Codexは修正後の再レンダーと既存定量QAだけを実行する。
 - ステップ9.5は`blender -b <file.blend> -a`のバックグラウンド起動による動画レンダー実行をCodexに委任する。完了判定、manifest更新、`validate_story_package.py --through render`の結果解釈、ユーザーへの提示は親が行う。
-- Codexは4・8・9.5のレンダー時と、7a〜7d/7.5・8修正後の既存定量QA時に、指定された静止画・動画・定量snapshotを出力してよい。親は各委任後に候補・正本の不変性、変更範囲、成果物、定量QAを確認し、7a→7b→7c→7d/7.5→8→9→9.5→10の順序を崩さない。
+- Codexは4・7e・8・9.5のレンダー時と、7a〜7d/7.5・8修正後の既存定量QA時に、指定された静止画・動画・定量snapshotを出力してよい。親は各委任後に候補・正本の不変性、変更範囲、成果物、定量QAを確認し、7a→7b→7c→7d→7e→7.5→8→9→9.5→10の順序を崩さない。
 - **8A・8B・8Cの判定そのものはCodexへ委任しない**。既存どおり`subagent_type: isometric-story-review`（Opus / medium）のClaude専用独立レビューとして実施し、作り込み品質のブロッキング権限はこの独立レビューに置く。Codexが担うのはレビュー前後のレンダーと既存証跡取得だけである。
 
 | ステップ  | Codexの担当  | 起動タイミング・目的                                                               | Claude Code親に残す判断                                | 標準モデル         |
@@ -100,7 +100,9 @@ Codex MCP画像一次解析は、Web検索画像の取得、Story Beatの設計�
 | 4         | 検査         | 人間レビュー前にreview packageをpreflight                                          | パケット内容、提示方式、承認の解釈                     | gpt-5.6-luna / max |
 | 5〜6      | 検査         | 差分メモ・契約・manifest骨格を照合                                                 | 本番差分、クール構成、素材採否、正本更新               | gpt-5.6-luna / max |
 | 7a〜7c    | 読取証跡取得 | 親の各実装後に既存scene/timeline抽出・定量QAを実行し、snapshotを出力               | ブロックアウト精緻化、作り込み、テクスチャリング、修正方針 | gpt-5.6-luna / max |
-| 7d/7.5    | 検査         | 定量QA後にFAIL/WARN、gate、証跡を整理                                              | 修正方針、WARN/waiverの採否                            | gpt-5.6-luna / max |
+| 7d        | 検査         | 定量QA後にFAIL/WARN、gate、証跡を整理                                              | 修正方針、WARN/waiverの採否                            | gpt-5.6-luna / max |
+| 7e        | レンダー・検査 | 実装変更前後を同一camera/frameで再レンダーし、`verify_render_delta.py`で可視差分を確認 | 変更の妥当性、Step 8移行可否                           | gpt-5.6-luna / max |
+| 7.5       | 検査         | 定量QA後に全アセット棚卸し、px予算、FAIL/WARN、gate、証跡を整理                    | 修正方針、WARN/waiverの採否                            | gpt-5.6-luna / max |
 | 8の前処理 | レンダー     | 完成state静止画・密集エリアclose-up・kind単位close-upをレンダー                    | 撮影対象kind、構図、レンダー要否                       | gpt-5.6-luna / max |
 | 8の前処理 | 検査         | 8A〜8Cの入力・evidence不足を抽出                                                   | 独立レビューの起動と判定                               | gpt-5.6-luna / max |
 | 8の修正   | 読取証跡・レンダー | 親が候補`.blend`を修正後、既存定量QAと必要な再レンダーを実行                     | 指摘の解釈・採否、設計側の見直し、候補修正、収束判断   | gpt-5.6-luna / max |
@@ -119,12 +121,13 @@ Codex MCP画像一次解析は、Web検索画像の取得、Story Beatの設計�
 3. **(ストーリー単位)** 共通の寸法変数・カメラ・トランジションの型を一括設計
    3.25. **(ストーリー単位)** 設計書と本番制作差分メモから`story_contract.json`を作成し、`validate_story_contract.py`を通す
    3.5. **(ストーリー単位)** 世界観リファレンス画像と必要なReference Packを生成し、設計書ファイルに添付
-4. **(ストーリー単位)** 低品質animaticと必要な技術spikeを作成し、人間レビュー — 必須の停止点
+4. **(ストーリー単位)** 低品質animaticと必要な技術spike、`design/reference_conflicts.md`を作成し、人間レビュー — 必須の停止点
 5. **(ストーリー単位)** テーマ固有差分(寸法変数・オブジェクト一覧・state構成)を`references/prompt-db-template.md`に従って本番制作差分メモ(`design/prompt_notes.md`)へ保存(ルール本体は再掲しない)
 6. **(クール単位ループ)** 設計書ファイル+本番制作差分メモを明示Readし、クール用ファイル・クール別チェック画像・manifestを準備。**クール1の空`.blend`作成とblender-mcp接続は人間が行う — 必須の停止点**(クール2以降は`save_as_mainfile`での付け替えのみで停止不要)
 7. **(クール単位ループ)** fetchしたテーマ固有差分+クール別チェック画像+`blender-isometric-rules`スキルで該当クールを実際に制作。制作は**7a ブロックアウト精緻化 → 7b 個別作り込み → 7c テクスチャリング**の3工程を順に踏む(プリミティブ直置き+後付けだけで完成としない)
+   7e. **(クール単位ループ)** 実装変更後の自己検証レンダー。変更したkindだけを同じカメラ・frameで再レンダーし、変更前後を`verify_render_delta.py`で比較する。差分が閾値未満ならStep 8のrender setを作らず、親が実装を見直す。差分スクリプトの`pass`はピクセル変化の存在だけを示し、意図した視覚変更であることの確認は親が担当する。
    7.5. **(クール単位ループ)** 全アセット棚卸し(作り込みティア監査)。全オブジェクトを種類単位で機械列挙し、ティア・本物マテリアル・作り込み・接地の未達をゼロにする — 必須hard gate
-8. **(クール単位ループ)** 構造的自己レビューに加え、独立サブエージェントによる(8A)Acceptance Matrixレビューと(8B)常識・実物資料レビューを未解決の必須項目ゼロまでループ
+8. **(クール単位ループ)** 構造的自己レビューに加え、独立サブエージェントによる(8A)Acceptance Matrixレビュー、(8B)常識・実物資料レビュー、(8C)仕様実現レビューを未解決の必須項目ゼロまでループ
 9. **(クール単位ループ)** 人間が目視レビュー(最終frame静止画が対象) — 必須の停止点
    9.5. **(クール単位ループ)** ステップ9の承認が得られたら、そのクールのプレビュー動画を書き出す(正式なフロー。追加の指示待ちは不要)
 10. **(クール単位ループ)** Motion QAと直前クールまでの通し再生 — 必須のhard gate
@@ -174,7 +177,8 @@ Codex MCP画像一次解析は、Web検索画像の取得、Story Beatの設計�
 
 ### ステップ4: 人間レビュー
 
-- 設計書ファイル(`design/story_design.md`)の絶対パス、世界観リファレンス画像、Reference Pack、低品質animatic、必要なspikeを`review/story_design_review.md`のレビュー・パケットへまとめ、クライアント別の提示規約に従ってレビューを依頼する。生成を始める前に物語・時間設計・視線誘導・設計の曖昧さを確定させる。
+- 設計書ファイル(`design/story_design.md`)の絶対パス、世界観リファレンス画像、Reference Pack、低品質animatic、必要なspike、`design/reference_conflicts.md`を`review/story_design_review.md`のレビュー・パケットへまとめ、クライアント別の提示規約に従ってレビューを依頼する。生成を始める前に物語・時間設計・視線誘導・設計の曖昧さと参考資料の衝突方針を確定させる。
+- `scripts/validate_reference_conflicts.py --file <design/reference_conflicts.md>`を実行し、5項目の必須欄、空欄、TBD、採用側の未記入を機械的に検査する。失敗した場合は人間レビューへ進めない。
 - Story Beat Sheetで技術リスクが1件でもある場合、グレーマテリアルまたは簡易形状のspikeを作り、リスクを先に検証する。省略する場合は理由・影響・承認者をwaiverとして残す。
 - 技術リスクには回転pivot・loop・重い散布だけでなく、**ステップ7bの高コストな作り込み手法**(曲面へのレリーフのUV破綻・継ぎ目、ディスプレイスメント適用時のメッシュ密度/レンダーコスト等)も含める。本制作前にspikeでUV破綻とコストを潰す(実装手法は`blender-isometric-rules`2.5章参照)。
 - Animaticと必要なspikeの承認なしで次に進まない。詳細は`references/quality-gates.md`を参照する。
@@ -228,10 +232,17 @@ Codex MCP画像一次解析は、Web検索画像の取得、Story Beatの設計�
 - scene validatorはsafe area、Collection、アセット初出、ティア、材質、作り込み、接地、stage内、寸法比、背景密度を、continuity validatorは前クール完成物・World・共有材質の未承認差分を、timeline validatorは予定frame/easing/演出タイプ・同時動作数を検証する。
 - `blender-isometric-rules/references/quantitative-qa.md` を同時に参照し、scene / timeline の入力は Blender の評価済み実シーンと実 F-Curve から抽出する。契約値を手転記した snapshot、目視だけの `grounded` / `crafted` / `coverage` は無効とする。
 - 各クールで `audit_assets.py` → scene contract → continuity（クール2以降）→ timeline の順に PASS を得る。FAIL はステップ8へ持ち込まず修正する。WARN は数値と waiver を review package に含める。
-- 実行は`run_blender_quantitative_qa.py --blend <cool.blend> --contract <story_contract.json> --cool <N> --output-dir <evidence> --ledger <absolute-quantitative-ledger>`を正本とする。必要なら`--video <cool.mp4>`を渡し、`ffprobe`の出力仕様判定も同じhard gateに含める。入力不変の`pass`だけを再利用し、同じFAIL fingerprintが2回連続した場合は親判断へ戻す。成果物・Custom Property・waiver形式は`story-contract-schema.md`と`blender-isometric-rules/references/quantitative-qa.md`に従う。
+- 実行は`run_blender_quantitative_qa.py --blend <cool.blend> --contract <story_contract.json> --cool <N> --output-dir <evidence> --ledger <absolute-quantitative-ledger>`を正本とする。再発停止後に親が修正方針を確定した場合だけ`--parent-decision "理由"`を追加し、判断を台帳へ1件記録してQAを続行する。未指定時の挙動は変えない。必要なら`--video <cool.mp4>`を渡し、`ffprobe`の出力仕様判定も同じhard gateに含める。入力不変の`pass`だけを再利用し、同じFAIL fingerprintが2回連続した場合は親判断へ戻す。成果物・Custom Property・waiver形式は`story-contract-schema.md`と`blender-isometric-rules/references/quantitative-qa.md`に従う。
 - **背景ディテールの視認個数(15〜30)は、評価済みGeometry Nodes出力から実測する。** GNスキャッターの結果はホストオブジェクトのメッシュへ実体化されるため、評価済みdepsgraphで`to_mesh()`し、**辺の連結成分(loose parts)を1個=背景ディテール1個として数える**。各連結成分の重心を`world_to_camera_view`でNDC化してフレーム内判定し、`scene.ray_cast`で遮蔽されないものを視認可能とする。
   - **Poisson分布をPython側で近似再現して数えるのは無効**とする(実際に、近似27個に対し実GN出力は23個という乖離が発生した)。`Distance Min`のチューニングも、近似ではなく実測個数をフィードバックして収束させる。
 - 失敗時は該当する制作工程へ戻る。静止画の定性レビューや動画レンダリングで機械的に再発見しない。
+
+### ステップ7e: 実装変更の自己検証レンダー
+
+- 親が7b/7cで変更した後、変更したkindのclose-upだけを変更前と同じframe・camera・出力条件で再レンダーする。
+- `scripts/verify_render_delta.py --before <before.png> --after <after.png> --threshold 0.002`を実行し、`changed_ratio`が閾値以上であることを確認する。必要なら`--region <x> <y> <width> <height>`で対象領域だけを比較する。
+- 有効な画像で変更が閾値以上なら`status=pass`・終了コード`0`、有効な画像で変更がないか閾値未満なら`status=fail`・終了コード`1`、破損・未対応形式・サイズ不一致・領域不正など入力を評価できない場合は`status=error`・終了コード`2`とする。`error`を未変更の`fail`として扱わない。
+- 同一PNG、または対象領域内に変更がない場合は`status=fail`とし、Step 8のrender setを作成しない。変更が画面に現れたことを親がclose-up画像で読み、意図した視覚変更であることを確認してから次へ進む。ピクセル差分だけではStep 8へ進めない。
 
 ### ステップ7.5: 全アセット棚卸し(作り込みティア監査) — hard gate
 
@@ -249,6 +260,7 @@ Codex MCP画像一次解析は、Web検索画像の取得、Story Beatの設計�
      これは「作り込み品質OK」の証明ではない。**作り込み品質の合否は機械では判定せず、ステップ8B(物理的妥当性)・
      8C(署名パーツが設計どおり実現されているか)の独立レビューで判定する**。
 - **material/接地のFAILが1つでもあればステップ8へ進めない**(7b/7cへ戻る)。craftのWARNは「7bで作り込むべき候補」を示す助言として使い、最終的な作り込み合否は8B/8Cに委ねる。
+- **署名パーツのpx予算FAILが1つでもあればステップ8へ進めない**。`blender-isometric-rules/scripts/check_px_budget.py --contract <story_contract.json> --scale 332.3`を実行し、silhouetteは12px、contrastは可視境界1本あたり6px以上であることを確認する。凹みなど複数境界で読むcontrastは契約の`contrast_edges`で境界本数を明示し、各境界の判定pxが6px未満ならFAILとする。未達は設計を粗くするか、現スケールでは実現不能と記録してから先へ進む。
 - 判定結果(種類ごとの material / 接地 / craft助言)を`evidence/cool<N>_asset_audit.md`へ記録する。
 - 「全部を1個ずつ見る」を、種類単位・機械列挙で網羅的かつ効率的に行うのが本ゲートの趣旨。既存のステップ8B・`review-checklist.md`B節(サンプル抽出・目視判定)を置き換えるものではなく、その前段で見落としをゼロにする網羅性チェックとして機能する。
 
@@ -259,6 +271,8 @@ Codex MCP画像一次解析は、Web検索画像の取得、Story Beatの設計�
 #### `step8_parent_baseline`（8A起動前hard stop）と再実行制御
 
 8Aを起動する前に、親エージェントは当該クールの基準参照画像1枚と現行完成stateレンダー1枚を自分で確認する。守る視覚アンカー3〜5個、参照画像と設計・物理妥当性が衝突する箇所、Acceptance Matrixへ反映した許容差・waiver候補を整理し、candidate/render set/current renderのSHA-256を添えて`evidence/cool<N>_step8_baseline.json`へ保存する。baselineと親の既知課題は独立レビュアーへ渡さず、親が確定した判定基準・必要な画像・実測値だけを渡す。
+
+参照画像と設計・実物資料の衝突を含む「設計上の確定事項」は、ステップ4で作成した`design/reference_conflicts.md`から機械的に転記する。8Aプロンプトへ親が手入力で別の採否を書くことは禁止する。
 
 基準画像が読めない、参照と設計の優先関係が未確定、Acceptance Matrixの必須/許容分類が曖昧、または現行レンダーがbaselineの対象と一致しない場合は、8Aを起動せず`needs_parent_decision`で停止する。baselineは8Aの開始条件であり、8B/8Cの独立性を弱める既知課題メモではない。
 
@@ -271,6 +285,11 @@ Codex MCP画像一次解析は、Web検索画像の取得、Story Beatの設計�
 
 **Codex MCPによる画像一次解析(前処理)**: 8A/8B/8Cに入る前に、上記「Codex MCP画像一次解析の共通ルール」の`step8_review_preflight`を実行する。Codexの結果は候補抽出・画像整理・違和感の事前把握にのみ使う。画像削減・保持の最終判断、8A/8B/8Cの最終判定、品質ゲートの合否、設計上の修正方針はCodexへ委任しない。
 - 同じ固定画像・model/config・prompt/schemaの成功済み一次解析は`scripts/validate_preflight_cache.py`で再利用可否を確認する。cache missや入力変更は通常の再解析へ進み、画像未読・timeout・JSON不正・低確信度は停止する。成功した短いJSONは`--record-report`でledgerへ記録する。記録時は`observations[]`の`item`・`evidence_image`・`confidence`・`note`を必須とし、confidenceは数値なら0.6以上、ラベルなら`medium`/`high`だけを許可する。
+- 8A/8B/8Cへ渡す寸法・接触面・px換算は、`scripts/emit_measured_facts.py --blend <cool.blend> --contract <story_contract.json> --output <evidence/cool<N>_measured_facts.md>`の出力をそのまま使う。親が実測値を手入力してはならない。出力にはworld bbox、回転を打ち消したlocal断面、接触面z、px換算、散布代表個体を含める。
+
+**多数決 v1を既定とする**: 8A/8B/8Cは同一レンダー・同一入力・同一プロンプトで独立3本を実施し、項目単位で2/3以上が挙げた指摘だけを確定する。8Aはrequired_match項目、8Bはhigh/medium項目、8Cはkind単位で集計する。多数決の記録は`references/step8-review-control.md`の様式に従い、`evidence/cool<N>_step8_majority.md`へ保存する。レンダーが変わったら再集計し、異なるレンダーを混ぜない。
+
+**修正対象の制限**: 修正してよいのは、多数決で確定した指摘と、親が実測で裏付けた指摘だけである。1本のrunだけが挙げた指摘は、実測で真偽を確定できる場合を除き修正しない。8Aの`improvable`、8Bの`minor`、8Cのnote欄はゲート条件ではなく、その場で修正してはならない。`evidence/cool<N>_step8_advisories.md`へ記録し、ステップ9の人間レビュー用パケットへ含めて採否を決める。
 
 ステップ8では**3種類の独立したレビューループをすべて実施**する(8A・8B・8C)。役割を1つのレビューに混載させない(混載は見落としの原因になり、実際に「PASSなのに低品質」の事故を生んだ)。
 
@@ -293,15 +312,15 @@ Codex MCP画像一次解析は、Web検索画像の取得、Story Beatの設計�
 
 #### ステップ8A: Acceptance Matrixレビュー(相対比較)
 
-3. **`subagent_type: isometric-story-review`(opus・effort中固定)**に、完成state静止画、クール別チェック画像、Reference Pack、Acceptance Matrixだけを渡す。作業経緯・既知の課題は共有しない。起動プロンプトは`references/step8-review-prompts.md`の「8A 雛形」節を使う。
-4. サブエージェントに各差分を「必須一致」「許容差あり」「改善可」「waiver」のいずれかへ分類させる。必須一致の未解決項目は親が実際に修正し、Codexへ再レンダリングを依頼して手順3へ戻る。
+3. **`subagent_type: isometric-story-review`(opus・effort中固定)**を、同一入力・同一プロンプトで3本独立起動する。完成state静止画、クール別チェック画像、Reference Pack、Acceptance Matrixだけを渡し、作業経緯・既知の課題は共有しない。起動プロンプトは`references/step8-review-prompts.md`の「8A 雛形」節を使う。
+4. サブエージェントに各差分を「必須一致」「許容差あり」「改善可」「waiver」のいずれかへ分類させ、required_matchの項目単位で2/3以上のものだけを確定する。確定した必須一致の未解決項目は親が実際に修正し、Codexへ再レンダリングを依頼して手順3へ戻る。単発のimprovableは修正しない。
 5. 「必須一致の未解決項目なし」になるまで、入力差分を台帳とvalidatorで確認しながら繰り返す。waiverは理由・影響・承認者が揃うまで未解決扱いとする。同一指摘fingerprintの連続再発や入力不変は自動反復せず、親の判断へ戻す。判定証跡をmanifestの`visual_acceptance`へ記録する。
 
 #### ステップ8B: 常識チェックレビュー(絶対妥当性・参考画像なし)
 
 6. 完成state静止画に加えて、**オブジェクトが密集するエリア(棚上・デスク上等の装飾小物、本棚の本の並び等)のクローズアップレンダリング**を用意する(全体静止画だけでは小さな装飾小物の破綻が解像度的に見逃されるため)。
 7. **`subagent_type: isometric-story-review`(opus・effort中固定)**に、**生成参考画像は渡さず**、全体静止画、クローズアップ、対象物の実物資料だけを渡す。一般常識と実物資料に照らし、**物として自然か**(形状、比率、向き、接地、接合の不自然さ・破綻)を列挙させる。ここでは物理的妥当性に集中する(署名パーツが設計どおり実現されているか・存在理由が読めるかは8Cで判定するため、8Bに混載しない)。起動プロンプトは`references/step8-review-prompts.md`の「8B 雛形」節を使う。
-8. サブエージェントが不自然な箇所を1件でも報告した場合: 親が実際に修正(寸法比・向き・配置等)し、Codexへ再レンダリングを依頼して手順7に戻る。
+8. 3本のうち2本以上が同じhigh/medium項目を報告した場合だけ、親が実際に修正(寸法比・向き・配置等)し、Codexへ再レンダリングを依頼して手順7に戻る。1本だけの指摘は実測で裏付けられない限り修正せず、`cool<N>_step8_advisories.md`へ記録する。
 9. サブエージェントが「不自然な箇所なし」と判定するまで、入力差分を台帳とvalidatorで確認しながら7〜8を繰り返す。waiverで8Bを完了扱いにしない。
 
 #### ステップ8C: 仕様実現レビュー(署名パーツの実現・チェックリスト駆動)
@@ -311,7 +330,7 @@ Codex MCP画像一次解析は、Web検索画像の取得、Story Beatの設計�
     1. 名前付き署名パーツが**記載どおりの形・位置・向きで実現されているか**(単に「在るか(presence)」ではなく「意図どおりに実現(realization)されているか」)。未実現のパーツを名指しで列挙させる。
     2. 描画スケールで「そのモノ/そのクラス」に読めるか(背景小物・背景ディテールはクラス単位で判定。素のprimitive=円錐/球/円柱に見えるものはNG)。
     3. 存在理由が読めるか(「なぜこの物がここにあるか」が画面から伝わるか。"とりあえず置いた"に見えるものはNG)。
-12. サブエージェントが「未実現の署名パーツ」「クラスに読めないkind」「存在理由が読めないオブジェクト」を1件でも報告した場合: 親が実際に修正(7bへ戻って作り込み、必要なら設計側の存在理由・パーツ定義も見直す)し、Codexへ再レンダリングを依頼して手順11に戻る。存在理由そのものが立たない物は削る判断も含める。
+12. 3本のうち2本以上が同じkindについて「未実現の署名パーツ」「クラスに読めないkind」「存在理由が読めないオブジェクト」を報告した場合だけ、親が実際に修正(7bへ戻って作り込み、必要なら設計側の存在理由・パーツ定義も見直す)し、Codexへ再レンダリングを依頼して手順11に戻る。1本だけのnoteは修正せずadvisoryに記録する。存在理由そのものが立たない物は削る判断も含める。
 13. サブエージェントが全kindについて上記3点を満たすと判定するまで、入力差分を台帳とvalidatorで確認しながら11〜12を繰り返す。waiverで8Cを完了扱いにしない。判定表を`evidence/cool<N>_signature_realization.md`に残し、manifestの`signature_realization`(8C)へ記録する。
 
 #### 収束条件
@@ -322,6 +341,7 @@ Codex MCP画像一次解析は、Web検索画像の取得、Story Beatの設計�
 ### ステップ9: 人間レビュー
 
 - 完成state(最終frame)の静止画と必要なクローズアップを`review/cool<N>_still_review.md`のレビュー・パケットへまとめ、クライアント別の提示規約に従ってレビューを依頼する。承認なしで次に進まない。
+- `evidence/cool<N>_step8_advisories.md`が存在する場合は、ステップ9の人間レビュー用パケットへ必ず添付し、advisoryの採否を人間が決める。advisoryだけを理由にステップ8を再実行してはならない。
 - 提示前に`validate_review_evidence.py`へ`required_gates=["animatic", "still_human_review"]`を渡し、現在必要なanimatic・静止画のパケット、主要成果物、絶対パスを検証する。ファイル不足を人間レビューへ持ち込まない。
 
 ### ステップ9.5: プレビュー動画レンダリング
