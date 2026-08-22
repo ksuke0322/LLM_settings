@@ -7,6 +7,8 @@ Step 8の独立レビューを、短い返却・入力差分・親判断の3点�
 ## 目次
 
 - [ReviewReport v1](#reviewreport-v1)
+- [多数決 v1](#多数決-v1)
+- [Advisory記録](#advisory記録)
 - [ReviewLedger v1](#reviewledger-v1)
 - [`step8_parent_baseline`](#step8_parent_baseline)
 - [再実行制御](#再実行制御)
@@ -49,6 +51,71 @@ ReviewReport v1は閉じたJSON契約であり、定義されていないトッ�
 8Cの`kinds`は1件以上とし、各要素に`kind`、`signature_realization`、`class_readable`、
 `existence_reason_readable`（各`pass|fail`）、`evidence_images`を持つ。全kindの3項目がすべて
 passの場合だけpassになる。いずれかがfail、読めない、またはwaiverの場合は完了にしない。
+
+## 多数決 v1
+
+8A/8B/8Cは、同一の現行レンダー、同一の入力画像集合、同一のプロンプトrevisionで、独立した3本の
+レビューを起動する。各起動は他の起動結果、親の既知課題、過去の指摘を受け取らない。
+
+- **項目単位の確定**: 3本のうち2本以上が同じ項目を挙げた場合だけ、確定した指摘として扱う。
+- **8A**: `required_match`の`kind + criterion + location`単位で数える。`allowed_difference`と`improvable`は確定指摘にしない。
+- **8B**: `high`/`medium`の`kind + criterion/location`単位で数える。`minor`はadvisoryとして記録する。
+- **8C**: `kind`単位で3つのpass/fail結果を集約する。1本でもfailを挙げた場合の扱いは、項目の2/3多数決とゲート条件を分けて記録する。
+- レンダー、入力画像、プロンプトrevisionのいずれかが変わったら、新しい3本を起動する。異なるレンダーの結果を同じ多数決へ混ぜてはならない。
+- 2/3未満の単発指摘は、親が実測で真偽を確認する場合を除き修正対象にしない。
+
+### `evidence/cool<N>_step8_majority.md` の記録様式
+
+```markdown
+# Cool <N> Step 8 Majority v1
+
+- render_sha256: <64桁>
+- prompt_revision: <revision>
+- run_count: 3
+- decision_rule: item-level 2 of 3
+
+## 8A required_match
+| item | run A | run B | run C | votes | decision |
+|---|---|---|---|---:|---|
+
+## 8B high/medium
+| item | run A | run B | run C | votes | decision |
+|---|---|---|---|---:|---|
+
+## 8C kind
+| kind | run A | run B | run C | votes | decision |
+|---|---|---|---|---:|---|
+
+## 実測で反証した指摘
+| item | 単発レビューの指摘 | 親の実測事実 | 判定 |
+|---|---|---|---|
+| tool_handle_bar | world bboxだけでは断面が扁平に見える | 回転を打ち消した断面は0.060 x 0.060 | 修正しない |
+| stand_stone_R1 | 天端が他の石より低く楔が無荷重に見える | 天端zは0.2862、楔が隙間を埋める | 修正しない |
+| hive_deep handhold | 持ち手が貫通している | 面z=0.500、底z=0.440、貫通なし | 修正しない |
+```
+
+このファイルは3本の入力が同一であることを証明する証跡であり、レビュー結果を後から都合よく
+合成するためのメモではない。各runのJSON絶対パスとSHA-256も実ファイル側へ併記する。
+
+## Advisory記録
+
+8Aの`improvable`、8Bの`minor`、8Cのnote欄はゲート条件ではない。その場で修正せず、次の様式で
+`evidence/cool<N>_step8_advisories.md`へ保存し、ステップ9の人間レビュー用パケットへ添付する。
+
+```markdown
+# Cool <N> Step 8 Advisories
+
+- render_sha256: <64桁>
+- majority_path: /absolute/path/evidence/cool<N>_step8_majority.md
+- human_review_owner: Step 9
+
+| source | item | note | gate_effect | step9_decision |
+|---|---|---|---|---|
+| 8A improvable / 8B minor / 8C note | ... | ... | none | pending |
+```
+
+`advisory`が存在しても8A/8B/8Cのhard gateを緩めない。採否はステップ9で人間が決め、ステップ8の
+再実行理由にしてはならない。
 
 ## ReviewLedger v1
 

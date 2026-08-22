@@ -113,6 +113,12 @@ description: Blender(blender-mcp/bpy)でアイソメトリック映像素材を�
   頂点数が素のcube/cylinder/cone/ico_sphere並み → 素のprimitive相当としてWARN。これはFAILにせず、7bで作り込むべき候補を示す助言に留める。合否は8B/8Cで判定する。
 - 出力は「種類 / 個数 / 材質判定 / 接地判定 / 作り込み(助言) / 色(助言) / 総合」の表。**material/接地のFAILが1件でも残る限りステップ8へ進めない**。craft/色のWARNは7bへ戻す指針として使う。
 
+### 2.5.5 署名パーツのpx予算
+
+- 新規`story_contract.json`の各`objects[].signature_parts[]`には、`name`、`visualization`(`silhouette`または`contrast`)、`dominant_dimension`(正のworld寸法)を記録する。これは意図を別の文章へ置き換えるものではなく、描画スケールで成立するかを検査するための数値契約である。
+- `scripts/check_px_budget.py --contract <story_contract.json> --scale 332.3`を7.5で実行する。`dominant_dimension * scale`をpxへ換算し、silhouetteは12px、contrastは6pxを下限とする。
+- 閾値未満の署名パーツが1件でもあればFAIL。設計を粗くするか、現スケールでは実現不能であることを記録してから再検査する。px予算FAILを残したままStep 8へ進めてはならない。
+
 ## 3. マテリアル・質感
 
 ### マテリアルは Principled BSDF を必須にする

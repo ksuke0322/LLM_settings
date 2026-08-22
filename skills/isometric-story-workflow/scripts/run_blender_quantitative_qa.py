@@ -7,6 +7,7 @@ and writes a single machine-readable report.
 from __future__ import annotations
 
 import argparse
+from datetime import datetime, timezone
 import json
 from pathlib import Path
 import shutil
@@ -209,6 +210,34 @@ def _record_operational_failure(
     )
 
 
+def _record_parent_decision(args: argparse.Namespace, key: dict[str, Any], ledger: dict[str, Any]) -> dict[str, Any]:
+    """Append one explicit parent decision before resuming a stopped QA run."""
+
+    previous_attempts = ledger.get("attempts", []) if isinstance(ledger, dict) else []
+    if not isinstance(previous_attempts, list) or not all(isinstance(attempt, dict) for attempt in previous_attempts):
+        previous_attempts = []
+    entry = {
+        "attempt": len(previous_attempts) + 1,
+        "key": key,
+        "status": "parent_decision",
+        "finding_fingerprints": [],
+        "parent_action": "fix",
+        "note": args.parent_decision.strip(),
+        "decided_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+    }
+    updated = dict(ledger) if isinstance(ledger, dict) else {}
+    updated.update({
+        "schema_version": 1,
+        "ledger_type": "quantitative_qa",
+        "status": "parent_decision",
+        "key": key,
+        "finding_fingerprints": [],
+        "attempts": [*previous_attempts, entry],
+    })
+    _write_json(args.ledger, updated)
+    return updated
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--blend", required=True, type=Path)
@@ -222,7 +251,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--waivers", type=Path)
     parser.add_argument("--approved-changes", type=Path, help="JSON array of previous-cool継続性差分の承認済みキー(例: [\"hive_body.dimensions\"])")
     parser.add_argument("--ledger", type=Path, help="optional QuantitativeQALedger v1 path")
+    parser.add_argument("--parent-decision", help="親が再発指摘の修正方針を確定した理由。--ledgerと併用する")
     args = parser.parse_args(argv)
+
+    if args.parent_decision is not None and not args.parent_decision.strip():
+        parser.error("--parent-decision must not be blank")
+    if args.parent_decision is not None and args.ledger is None:
+        parser.error("--parent-decision requires --ledger")
 
     if not args.blend.is_file() or not args.contract.is_file():
         parser.error("--blend and --contract must exist")
@@ -248,19 +283,24 @@ def main(argv: list[str] | None = None) -> int:
                 "detail": str(error),
             }, ensure_ascii=False))
             return 1
-        if rerun_decision(ledger) == "needs_parent_decision":
+        if args.parent_decision is not None:
+            ledger = _record_parent_decision(args, key, ledger)
+        elif rerun_decision(ledger) == "needs_parent_decision":
             print(json.dumps({"valid": False, "status": "needs_parent_decision", "errors": ["same finding fingerprint repeated twice"]}, ensure_ascii=False))
             return 1
-        decision = cache_decision(ledger, key, "quantitative_qa")
-        cached_report = args.output_dir / "quantitative_qa_report.json"
-        if decision["reuse"] and cached_report.is_file():
-            try:
-                cached = _read_json(cached_report)
-            except (OSError, json.JSONDecodeError):
-                cached = None
-            if isinstance(cached, dict) and cached.get("status") == "PASS" and cached.get("errors") == []:
-                print(json.dumps({"valid": True, "cached": True, "errors": []}, ensure_ascii=False))
-                return 0
+        if args.parent_decision is None:
+            decision = cache_decision(ledger, key, "quantitative_qa")
+            cached_report = args.output_dir / "quantitative_qa_report.json"
+            if decision["reuse"] and cached_report.is_file():
+                try:
+                    cached = _read_json(cached_report)
+                except (OSError, json.JSONDecodeError):
+                    cached = None
+                if isinstance(cached, dict) and cached.get("status") == "PASS" and cached.get("errors") == []:
+                    print(json.dumps({"valid": True, "cached": True, "errors": []}, ensure_ascii=False))
+                    return 0
+    elif args.parent_decision is not None:
+        ledger = _record_parent_decision(args, key, ledger)
     raw_dir = args.output_dir / "raw"
     raw_dir.mkdir(parents=True, exist_ok=True)
     command = [blender, "--background", str(args.blend), "--python", str(EXPORTER), "--", "--contract", str(args.contract), "--cool", str(args.cool), "--output-dir", str(raw_dir), "--ground-name", args.ground_name]

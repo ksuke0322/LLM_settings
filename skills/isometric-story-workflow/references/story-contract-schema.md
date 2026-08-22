@@ -46,11 +46,30 @@
       "entry_type": "drop",
       "motion_kind": "vertical",
       "signature_details": ["灯室", "回廊"],
+      "signature_parts": [
+        {"name": "灯室の輪郭", "visualization": "silhouette", "dominant_dimension": 0.12},
+        {"name": "回廊の陰影", "visualization": "contrast", "dominant_dimension": 0.03}
+      ],
       "shared_material": true
     }
   ]
 }
 ```
+
+## 署名パーツのpx予算フィールド
+
+新規契約の各`objects[]`には、`signature_details`で意図を列挙した署名パーツに対応する
+`signature_parts`を必ず持たせる。`signature_parts[]`の必須フィールドは次の3つである。
+
+| フィールド | 型 | 意味 |
+|---|---|---|
+| `name` | string | `signature_details`と対応する名前付きパーツ |
+| `visualization` | `silhouette` または `contrast` | 輪郭で見せるか、色差・陰影で見せるか |
+| `dominant_dimension` | positive number | 現行設計で画面上の意味を支配するworld寸法 |
+
+描画スケールは`check_px_budget.py`へ渡し、`dominant_dimension * scale`をpxへ変換する。
+`silhouette`は12px未満、`contrast`は6px未満をFAILとする。未達のままStep 8へ進めず、設計を
+粗くするか、現スケールでは実現不能であることを設計記録へ残す。
 
 ## validator入力
 
