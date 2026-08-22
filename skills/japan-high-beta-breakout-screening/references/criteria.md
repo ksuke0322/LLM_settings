@@ -53,6 +53,8 @@
 - `adoption_basis=technical_only` は `thesis_type=technical_continuation`、`material_score=0`、`catalyst_attribution.classification=unexplained` とする
 - technical-only の `technical_evidence` には `distance_from_20d_high_pct`、`volume_ratio_20d`、`relative_strength_20d_pct`、`average_daily_turnover_yen`、`as_of`、`source_url` を残し、すべて確認できた場合だけ `verification_status=complete` にする
 - technical evidence が一つでも欠ける候補は `technical_evidence_incomplete` とし、一次IRがないことではなくテクニカル採用根拠が不足していることを不採用理由にする
+- 20日高値乖離・出来高比はtrade-v2を優先し、相対強度は候補と日経平均の20営業日リターン差、平均売買代金は20営業日の終値×出来高の平均として同一`as_of`から導出する。ベンチマークや日足が不足する場合は推測で補完しない
+- analysis/chart/benchmarkの各取得は最大2回まで再試行し、`attempts`、`retry_count`、source別失敗理由、`missing_fields`を保存する。再試行後も欠損が残る場合は`verification_status=incomplete`を維持する
 - 第三者記事の説明は発見補助に限定し、technical-only の材料点や因果説明へ流用しない
 
 ### 判定基準

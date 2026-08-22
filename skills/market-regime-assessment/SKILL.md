@@ -33,6 +33,9 @@ description: "日本株短期運用の market regime を整理し、large_cap �
 - `sector_leaders`
 - `macro_risks`
 - `execution_caution`
+- 日次正本: `market_regime_snapshot.json`
+- snapshotは`snapshot_id`（`market-regime-YYYY-MM-DD`）、`as_of`、`generated_at`、`data_status`、`confidence`、`axes`、`reason_codes`、`source_refs`、`execution_policy`を持つ。`risk_on`等の判断が導出できない場合は`regime=unknown`とする
+- large-cap / high-beta のconsumerは、同じ`as_of`の`snapshot_id`を`regime_snapshot_ref`としてstateまたはsidecarへ保存する。参照が欠ける・stale・不一致の場合はregimeを推測せず、そのconsumerをfail-closedする
 
 ## 手順
 
@@ -42,6 +45,7 @@ description: "日本株短期運用の market regime を整理し、large_cap �
 4. `risk_on` `neutral` `risk_off` のどれかへ寄せる。
 5. `large_cap` と `high_beta` の優先度を決める。
 6. sector leaders と macro risks を短くまとめる。
+7. 日次flowでは、同一`as_of`のmarket evidenceを`market_regime_snapshot.json`へ保存し、large-cap/high-betaの古いcontextは`stale`として分離する。後続consumerは`snapshot_id`と`as_of`をreadbackする。
 
 ## 判断ルール
 
@@ -49,12 +53,14 @@ description: "日本株短期運用の market regime を整理し、large_cap �
 - グロース優位で TOPIX が弱い場合は `high_beta` 優位寄りにしてよい
 - 金利上昇と円安が同時進行する場合、金融や外需 large-cap に追い風になりやすい
 - 判断が割れる場合は `neutral` に留める
+- `market_regime_snapshot.json`の`data_status=partial|incomplete`を完全な地合い確認と扱わない。stale・unavailable軸を現在値へ補完せず、`regime=unknown`ならdownstreamのexecutionをfail-closedにする
 
 ## Breadth Evidence
 
 - breadthは `definition` `universe` `advancers` `decliners` `unchanged` `source_url` `published_at` `fetched_at` `data_completeness` を残す
 - 公式市場統計、指数提供者の構造化ページ、対象universeの日足算出の順に使う。Web検索は公式source URLの発見だけに使う
 - breadth欠損時は推測せず `data_incomplete=true` として execution caution を強める。producerの候補棚を空にする根拠には使わない
+- 日次snapshotのbreadthが同一`as_of`でない場合は`stale`、未取得の場合は`unavailable`として記録する。`market_regime`のproseだけから現在のregimeを再構成しない
 
 ## 出力形式
 

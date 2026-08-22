@@ -30,6 +30,10 @@ auto1bで利用してよいのは、`feature.chartSummary`と`feature.metrics`�
 
 API証跡には、少なくとも実際のendpointとquery、schema、source、asOf、fetchedAt、dataQuality、readiness、reasonCodesを候補の`technical_evidence`またはsidecarへ紐づける。
 
+`technical_evidence`の4項目は、`distance_from_20d_high_pct`と`volume_ratio_20d`をtrade-v2の`feature.metrics`から優先取得し、`relative_strength_20d_pct`と`average_daily_turnover_yen`は候補銘柄と日経平均ベンチマークの同一as_of時点の日足時系列から導出する。導出定義は「候補20営業日リターン−ベンチマーク20営業日リターン」と「20営業日の終値×出来高の平均」とする。
+
+analysis/chart/benchmarkの取得は各endpointにつき最大2回まで再試行し、`technical_evidence.attempts`、`retry_count`、各source、HTTP失敗理由を残す。再試行後も欠けるfieldは`missing_fields`へ列挙し、0、neutral、現在値で補完しない。4項目が同一as_ofで揃った場合だけ`verification_status=complete`とし、それ以外は`technical_evidence_incomplete`でfail-closeする。
+
 ## 探索
 
 - 通常scanは40〜50銘柄を上限にする。

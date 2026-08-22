@@ -33,6 +33,7 @@ review_profile の既定値=auto
 
 - holdings: `/Users/sawairikeisuke/Documents/stock-analysis/current_holdings.json`
 - portfolio rules: `/Users/sawairikeisuke/Documents/stock-analysis/portfolio_rules.json`
+- long-hold governance sidecar: `/Users/sawairikeisuke/Documents/stock-analysis/holdings_governance.json`
 
 ## lane 固有 freshness / schema
 
@@ -46,10 +47,14 @@ review_profile の既定値=auto
 - watchlist state を補助参照に使うなら stale file を根拠補強に使わない
 - `current_holdings.json` は watchlist ほど当日性を要求しないが、pending fill や必須 field 欠落は停止する
 - `auto3` では same-day 必須でなくても `as_of` と `age_days` を report / sidecar へ露出する
+- `holdings_governance.json` は `refresh_holdings_governance.mjs` で `current_holdings.json` と最新Auto3 reportから生成し、8/8など全保有件数のcoverageをreadbackする
+- 公式IRの将来exact dateだけを `event_evidence.verification_status=official_exact` として採用する。月だけ、未確認、過去日付、出典なしの `next_earnings_date` は current dateへ推測更新せず、`unverified` / `stale` とreason codeを残す
+- `holdings_governance.json` は `state_update_policy=sidecar_only` とし、保有数量、paper order、paper position、実注文を変更しない。validatorがpaper linkageの空配列と全mutation flag=falseを確認する
 - `thesis` `review_action` `status` または execution-aware field が欠ける holding は `execution_trace_incomplete` として扱う
 - 長期保有を `kept` とする場合は、短期 trade-v2 の `thesis` と分離して `long_hold_rationale`、`thesis_invalidation_or_review_trigger`、ISO形式の `next_review_date`、`trim_conditions` を持つ
 - `trim_conditions` は `none`（検討済みで縮小条件なし）または `defined`（trigger / percentage / rationale を明記）とし、値が不明なら `needs_user_confirmation` として扱う
 - 長期4項目が未入力のときは、既存の短期 `thesis` から推測補完せず、`long_hold_governance_status=needs_user_confirmation` と `execution_trace_incomplete=true` を sidecar / report に残す
+- 予定実行日のreport metadataには `run_status` と `no_run_reason` を必ず残す。正常実行は `completed` / `no_run_reason=null`、入力不足・休場は `not_run`、部分生成は `incomplete`、実行失敗は `failed` とし、非completedでは `market_closed`、`holiday`、`automation_not_scheduled`、`upstream_incomplete`、`reason_unconfirmed` の固定理由を使う。`not_run` はholding recordを推測生成しない
 - 各 holding の sidecar record は短期 `short_term_advisory`（`decision` と state / note 参照）と長期4項目を分離して持つ。短期 `exit` / `defend` / `hold` は長期保有理由の代用にしない
 - `long_hold_governance_status=complete` のときだけ長期4項目を値付きで公開し、`needs_user_confirmation` のときは `long_hold_rationale`、`thesis_invalidation_or_review_trigger`、`next_review_date`、trimの trigger / percentage / rationale を null のまま残す
 - 連続 `exit` holding には `未対応` `対応済み` `保有継続理由あり` のいずれか 1 行 trace を残す

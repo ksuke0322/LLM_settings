@@ -21,6 +21,7 @@ description: "東証33業種を基準に、日本株の large_cap 候補を洗�
 
 - watchlist: `/Users/sawairikeisuke/Documents/stock-analysis/large_cap_watchlist.json`
 - 保有除外参照: `/Users/sawairikeisuke/Documents/stock-analysis/current_holdings.json`
+- regime参照: `/Users/sawairikeisuke/Documents/stock-analysis/market_regime_snapshot.json`
 
 ## lane 固有 freshness / schema
 
@@ -47,6 +48,7 @@ description: "東証33業種を基準に、日本株の large_cap 候補を洗�
   - `liquidity_tier`
   - `execution_caution`
   - `regime_fit`
+  - `regime_snapshot_ref`（`snapshot_id`、`as_of`、`data_status`、`regime`）
 
 ## 入力解釈
 
@@ -74,10 +76,11 @@ description: "東証33業種を基準に、日本株の large_cap 候補を洗�
 2. JPX の東証33業種を基準にする。
 3. [references/criteria.md](references/criteria.md) の定量条件で候補を絞る。
 4. `current_holdings.json` を検証し、確定保有銘柄を ticker ベースで除外する。
-5. 財務安全性、収益力、業界地位、regime 適合を確認する。
-6. 母集団を作り、重点監視 `10〜15社` へ圧縮する。
-7. 継続レビュー時は残留理由と差し替え理由を明示する。
-8. 今回の run で採用なしでも、見送った業種や候補が `review_summary` `focus_names` `screening_excluded` から追えるようにする。
+5. `market_regime_snapshot.json`を読み、`snapshot_id`と`as_of`をstate/sidecarへ保存する。snapshotがstale・unavailable・不一致なら、regimeを推測せず、候補のregime overlayと実行判断を未確認として扱う。
+6. 財務安全性、収益力、業界地位、regime 適合を確認する。
+7. 母集団を作り、重点監視 `10〜15社` へ圧縮する。
+8. 継続レビュー時は残留理由と差し替え理由を明示する。
+9. 今回の run で採用なしでも、見送った業種や候補が `review_summary` `focus_names` `screening_excluded` から追えるようにする。
 
 ## 出力形式
 

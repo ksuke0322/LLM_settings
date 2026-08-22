@@ -15,17 +15,48 @@ description: 日本株high-beta paper運用の日次処理を、intraday解決�
 - KPI: `paper_high_beta_metrics.json`
 - 配分: `paper_high_beta_allocator_snapshot.json`
 - 実行証跡: `outputs/b-daily-run-YYYY-MM-DD.json`
+- run品質時系列: `outputs/b-daily-quality-history.json`
+- 日次地合いcontext: `market_regime_snapshot.json`
+- 見送り候補の事後観測: `opportunity_shadow_ledger.json`
+- 観測入力（任意、caller-supplied dated observations）: `shadow_observations.json`
 - API共通契約: `stock-shared/references/trend-viewer-analysis-contract.md`
 
 ## 実行順序
 
+0. deployment preflightとして、`b_daily_high_beta_pipeline.js`、`verify_b_daily_run.mjs`、`record_b_daily_quality.mjs`、`b_daily_quality.js`、`opportunity_shadow_ledger.js`、`market_regime_snapshot.js`、`holdings_governance.json`の存在、構文、新manifest契約（`run_key`、`input_as_of`、`publish_scope`、`duplicate_guard`）を読み取り専用で確認する。1つでも欠ける場合は`IMPLEMENTATION_NOT_DEPLOYED`として停止し、pipeline・state・manifest・quality history・gitを変更しない。旧形式4-stage manifestを新品質runへ加算しない。
 1. 18:30 snapshotを優先し、既存pending orderとopen positionのfill/exitを先に解決する。
 2. `node b_daily_high_beta_pipeline.js --as-of YYYY-MM-DD`を実行する。orchestratorはAuto1b収集器で当日の市場breadth・Yahooランキング40銘柄・Yahoo/Kabutan/Minkabu・TDnet・trade-v2を取得し、`market_evidence.json`を生成して`node validate_market_evidence.mjs`を通す。
-3. validator通過後にだけauto1b watchlist、auto2bのlive trade-v2判断、allocator、paper state更新を直列実行する。`approve`は必ず`pending_order`になる。
-4. orchestratorが全stageの入力revision、出力revision、reason_codesを単一manifestへ記録する。
-5. Auto1bの `ranked → quote_available → evidence_current/evidence_stale → candidate_evidence → adopted → watchlist/reserve → eligible → orders` を当日 `as_of` の `period_funnel` としてmanifestへ保存し、候補別 `block_reason` を `block_reason_counts` へ集計する。過去履歴の約定・決済は `cumulative_funnel` に分離し、当日候補数と混ぜない。
+3. market evidenceの成否にかかわらず`daily_market_regime_snapshot`を生成し、同一`as_of`のbreadthだけをcurrent contextへ採用する。`market_regime_snapshot.json`の`data_status`、各axisのstate、`reason_codes`、出力revisionをmanifestへ保存する。
+4. snapshotとvalidatorが通過した場合だけauto1b watchlist、auto2bのlive trade-v2判断、allocator、paper state更新を直列実行する。`approve`は必ず`pending_order`になる。
+5. orchestratorが全stageの入力revision、出力revision、reason_codesを単一manifestへ記録する。
+6. auto2bの後、paper state更新前にread-onlyの`shadow_observations.json`を生成し、その観測だけで`opportunity_shadow_ledger`を更新する。screened、candidate evidence、watch、reserve、blockedをpaper stateと別sidecarへ記録する。`opportunity_id`、source manifest、candidate as_of、1/3/5/10営業日窓、block理由を必須にし、注文・ポジションstateへの参照を持たせない。観測source失敗、基準価格欠落、観測バー不足は候補単位で`incomplete`とし、paper stateを更新しない。
+7. Auto1bの `ranked → quote_available → evidence_current/evidence_stale → candidate_evidence → adopted → watchlist/reserve → eligible → orders` を当日 `as_of` の `period_funnel` としてmanifestへ保存し、`adopted`（候補棚採用）と`execution_blocked`（実行不可）を分離する。`adoption_block_reason_counts`と`execution_block_reason_counts`を候補別に集計し、過去履歴の約定・決済は `cumulative_funnel` に分離して当日候補数と混ぜない。`adopted`はeligibleやpaper注文を意味しない。
+8. manifestの`run_key=b-daily-YYYY-MM-DD`、`input_as_of`、`publish_scope`、`duplicate_guard`を検証する。同じas_ofのcompleted manifestが既にあれば、pipelineを再実行せず`duplicate_skipped`として終了する。
+9. runnerと`verify_b_daily_run.mjs`の後に`node record_b_daily_quality.mjs --as-of YYYY-MM-DD`を実行し、stage status、verifier valid、input freshness、retry、technical/event/regime品質、候補単位block理由を`outputs/b-daily-quality-history.json`へ追加する。同じrun_keyの追加は拒否する。
+10. quality historyへの追加後、今回の`as_of`と`run_key`に一致する最新entryを再読込し、`daily_check`を日次運用点検として通知する。`passed`は正常、`market_closed`は明示された休場、`attention_required`は運用異常として扱い、`reason_codes`と`monitoring_points`を併記する。
+
+## 日次運用点検
+
+- 毎回の実行で、quality historyの最新entryが今回のrunと一致すること、`daily_check.status`、verifier、manifest、stage完了、input freshness、safety、consumer alignment、候補品質をreadbackする。これは追加のpipeline実行やstate変更を伴わない。
+- `daily_check`がない、quality historyが欠落・不正、または最新entryの`as_of`/`run_key`が今回と一致しない場合は`DAILY_CHECK: CONFIRMATION_UNAVAILABLE`として通知し、正常・休場・異常を推測しない。
+- `daily_check.status=passed`は`DAILY_CHECK: PASSED`、`market_closed`は`DAILY_CHECK: MARKET_CLOSED`、`attention_required`は`DAILY_CHECK: ATTENTION_REQUIRED`として、対象日・run key・reason codesを出力する。
+- `technical/event`の候補品質不足やregimeのpartialは、運用異常と混同せず`monitoring_points`と`block_reason_counts`に残す。candidateのblockを理由にgateを緩和しない。
+- 5営業日・10営業日の確認は、日次点検に加えて行う深掘りレビューであり、削除しない。quality historyで5回の有効run受入れと10回cadence判定を分離し、どちらかが不足する場合は`incomplete`または`observation_required`として記録する。fixtureや過去runの再構成だけで運用受入れ完了としない。
 
 前段が`failed`または`incomplete`なら後段は実行せず、manifestに停止理由を書く。休日・休場日はstateを進めず`market_closed`を記録する。
+
+## 実行頻度の判断
+
+- 品質履歴が10 run未満の間は`current_cadence`を維持し、paused中の単独high-beta automationを再開しない。
+- 10 runすべてでverifier valid、同日input、duplicate publishなし、lane混在なし、stale state消費なし、upstream incomplete後のpaper mutationなしを確認できたときだけ、追加のread-only shadow passを候補にする。
+- 条件未達時は`keep_current_cadence`として記録し、分析回数・探索銘柄数・gateを自動で緩和しない。
+
+## Opportunity shadow ledger
+
+- ledgerは見送りの妥当性を測る観測専用であり、`paper_high_beta_orders.json`、`paper_high_beta_positions.json`、`paper_high_beta_history.json`、実保有stateを変更しない。
+- 価格観測は`candidate_as_of`より後の日付を持つcaller-supplied observationだけを使う。過去日付、重複日付、不正値は無視または診断へ残し、forward-fill・proxy・推測で埋めない。
+- 基準価格がない候補、観測バーが不足した候補は`incomplete`へ遷移し、`entry_reference_price_unavailable`または`insufficient_observation_bars`を残す。
+- `missed_gain_pct`は観測終値returnの最大正値、`avoided_loss_pct`は観測MAEの最大負値の絶対値、`net_outcome_pct`は両者の差としてblock理由別に集計する。MFE/MAEやvolume/regimeが欠けた場合はnullのままにする。
 
 ## trend_viewer API / quality gate
 

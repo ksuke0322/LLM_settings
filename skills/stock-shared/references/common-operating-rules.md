@@ -25,6 +25,20 @@ lane固有の採用条件は各skillへ戻し、この共通referenceで重複�
 - 判断に使ったsource、as_of、入力revision、出力revisionを追跡可能にする。
 - state/JSON sidecarを正本とし、automation memoryやchat proseを機械再利用の正本にしない。
 
+## event evidence
+
+- 候補棚では、公式exact dateがないイベント情報を`unverified`として保持してよい。
+- 実行可能性では、`verification_status=official_verified`、`time_precision=date`、ISO形式の`earnings_date`、判定時点以降の日付を満たす`official_exact`だけを許可する。
+- `month_window`、`unverified`、過去日付、欠落は`EVENT_EVIDENCE_UNVERIFIED`、`EVENT_DATE_NOT_EXACT`、`EVENT_EVIDENCE_STALE`、`EVENT_EVIDENCE_MISSING`などの候補単位reason codeを残してfail-closeする。
+- APIの`feature.eventRisk`と公式event evidenceは別証跡として保存し、どちらか一方の成功で他方を補完しない。
+
+## holdings governance
+
+- `current_holdings.json` は実保有の正本、`holdings_governance.json` は長期保有意図・イベント証跡を保持するsidecarとして分離する。
+- sidecarは全保有銘柄をcoverageし、短期`short_term_advisory`と長期`long_hold_governance_status`を別フィールドで持つ。短期`hold` / `trim` / `defend` / `exit`を長期理由へ転用しない。
+- 長期項目がユーザー確認前なら`needs_user_confirmation`、`execution_trace_incomplete=true`、長期理由・invalidation/review trigger・next review date・trim詳細はnullのままにする。
+- sidecar生成は`state_update_policy=sidecar_only`で行い、`current_holdings.json`、paper state、注文を自動更新しない。
+
 ## Publish
 
 - publish前にJSON parse、必須field、件数、lane境界をreadbackする。
