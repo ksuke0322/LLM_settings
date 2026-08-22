@@ -104,28 +104,77 @@ class EmitMeasuredFactsPureHelperTests(unittest.TestCase):
         self.assertEqual(["stand_stone_R1", "stand_stone_R2"], [item["name"] for item in selected])
         self.assertEqual([True, False], [item["representative"] for item in selected])
 
-    def test_handhold_detection_reports_recess_not_hole(self):
-        script = load_script()
+    def _closed_recess_fixture(self, base=0.452):
         points = [
-            (0.5000002, 0.0, 0.0),
-            (0.5000001, 0.1, 0.1),
-            (0.4399998, 0.0, 0.0),
-            (0.4400001, 0.1, 0.1),
+            (0.500, -1.0, -1.0),
+            (0.500, 1.0, -1.0),
+            (0.500, 1.0, 1.0),
+            (0.500, -1.0, 1.0),
+            (base, -1.0, -1.0),
+            (base, 1.0, -1.0),
+            (base, 1.0, 1.0),
+            (base, -1.0, 1.0),
         ]
+        faces = [
+            (0, 1, 5, 4),
+            (1, 2, 6, 5),
+            (2, 3, 7, 6),
+            (3, 0, 4, 7),
+            (4, 5, 6, 7),
+        ]
+        return points, faces
 
-        handhold = script.detect_handhold(points)
-
-        self.assertEqual({"face": 0.500, "base": 0.440, "through": False}, handhold)
-        self.assertIsNone(script.detect_handhold([(0.5, 0.0, 0.0)]))
-
-    def test_handhold_detection_normalizes_visual_opening_plane(self):
+    def test_recess_detection_reports_measured_planes_and_depth(self):
         script = load_script()
-        points = [(0.500, 0.0, 0.0), (0.452, 0.1, 0.1)]
+        points, faces = self._closed_recess_fixture()
+
+        recess = script.detect_recess(points, faces)
+
+        self.assertEqual(0.500, recess["face"])
+        self.assertEqual(0.452, recess["base"])
+        self.assertAlmostEqual(0.048, recess["depth"])
+        self.assertFalse(recess["through"])
+        self.assertNotIn("note", recess)
+        self.assertIsNone(script.detect_recess([(0.5, 0.0, 0.0)]))
+
+    def test_recess_detection_follows_a_moved_inner_plane(self):
+        script = load_script()
+        points, faces = self._closed_recess_fixture(base=0.318)
 
         self.assertEqual(
-            {"face": 0.500, "base": 0.440, "through": False},
-            script.detect_handhold(points),
+            {
+                "face": 0.500,
+                "base": 0.318,
+                "depth": 0.182,
+                "through": False,
+            },
+            script.detect_recess(points, faces),
         )
+
+    def test_recess_detection_reports_true_for_an_open_tunnel(self):
+        script = load_script()
+        points, faces = self._closed_recess_fixture()
+
+        self.assertTrue(script.detect_recess(points, faces[:-1])["through"])
+
+    def test_recess_detection_is_undetermined_without_topology(self):
+        script = load_script()
+        result = script.detect_recess([(0.500, 0.0, 0.0), (0.452, 0.1, 0.1)])
+
+        self.assertEqual(0.500, result["face"])
+        self.assertEqual(0.452, result["base"])
+        self.assertAlmostEqual(0.048, result["depth"])
+        self.assertIsNone(result["through"])
+        self.assertEqual("not determined", result["note"])
+
+    def test_recess_detector_has_no_case_specific_constants_or_heading(self):
+        script = load_script()
+        source = SCRIPT.read_text(encoding="utf-8")
+
+        self.assertNotIn("HANDHOLD_", source)
+        self.assertNotIn("detect_handhold", source)
+        self.assertNotIn("Beehive handhold", source)
+        self.assertEqual("recess", script._MEASURED_RECESS_KEY)
 
     def test_malformed_selection_and_contract_fail_closed(self):
         script = load_script()
@@ -158,7 +207,7 @@ class EmitMeasuredFactsPureHelperTests(unittest.TestCase):
                 "cross_section": (1.0, 1.0),
                 "bottom_z": 0.0,
                 "top_z": 1.0,
-                "handhold": None,
+                "recess": None,
             },
             {
                 "name": "stand_stone_R2",
@@ -170,7 +219,7 @@ class EmitMeasuredFactsPureHelperTests(unittest.TestCase):
                 "top_z": 2.0,
                 "evaluated_bottom_z": 1.0,
                 "evaluated_top_z": 2.0,
-                "handhold": None,
+                "recess": None,
             },
         ]
 
@@ -186,6 +235,8 @@ class EmitMeasuredFactsPureHelperTests(unittest.TestCase):
         self.assertIn("  - bottom_z_px: 0.000000", markdown)
         self.assertIn("- top_z: 1.000000", markdown)
         self.assertIn("  - top_z_px: 10.000000", markdown)
+        self.assertIn("### Recess measurement", markdown)
+        self.assertNotIn("Beehive handhold", markdown)
         self.assertIn("## Contacting Pairs", markdown)
 
 

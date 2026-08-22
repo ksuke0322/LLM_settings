@@ -18,12 +18,7 @@ from typing import Any, Iterable, Mapping, Sequence
 DEFAULT_FRAME = 300
 DEFAULT_SCALE = 332.3
 DEFAULT_TOLERANCE = 1e-6
-HANDHOLD_FACE = 0.500
-HANDHOLD_BASE = 0.440
-# The current beehive fixture offsets the visual inner plane by 0.012 world
-# units.  The emitted fact remains the contract face/base pair, while this
-# alternate plane lets the detector verify the recess without manual input.
-HANDHOLD_VISUAL_BASE = HANDHOLD_BASE + 0.012
+_MEASURED_RECESS_KEY = "recess"
 
 
 class MeasuredFactsError(RuntimeError):
@@ -85,29 +80,209 @@ def calculate_local_cross_section(points: Iterable[Any]) -> dict[str, Any]:
     return local_cross_section(points)
 
 
-def _has_plane(values: Iterable[float], target: float, tolerance: float) -> bool:
-    return any(math.isclose(value, target, abs_tol=tolerance, rel_tol=0.0) for value in values)
+def _plane_clusters(values: Iterable[float], tolerance: float) -> list[tuple[float, tuple[float, ...]]]:
+    """Cluster measured coordinates into observed parallel planes."""
+
+    ordered = sorted(float(value) for value in values)
+    clusters: list[list[float]] = []
+    for value in ordered:
+        if not clusters or not math.isclose(value, clusters[-1][-1], abs_tol=tolerance, rel_tol=0.0):
+            clusters.append([value])
+        else:
+            clusters[-1].append(value)
+    return [(sum(cluster) / len(cluster), tuple(cluster)) for cluster in clusters]
 
 
-def detect_handhold(local_points: Iterable[Any], tolerance: float = 1e-4) -> dict[str, Any] | None:
-    """Detect the beehive handhold recess from its two local x planes.
+def _face_edges(face: Sequence[int]) -> tuple[tuple[int, int], ...]:
+    if len(face) < 3:
+        return ()
+    return tuple(
+        (min(face[index], face[(index + 1) % len(face)]), max(face[index], face[(index + 1) % len(face)]))
+        for index in range(len(face))
+    )
 
-    The geometry is a recess: the returned ``through`` value is always false.
-    The fixture's visual opening plane may be offset by 0.012 from the
-    contract base; that visual plane is normalized back to the contract fact.
-    Only the presence of both measured planes is sufficient; no hole is
-    inferred from the existence of the planes.
+
+def _normalize_faces(faces: Iterable[Sequence[int]] | None) -> list[tuple[int, ...]] | None:
+    if faces is None:
+        return None
+    normalized: list[tuple[int, ...]] = []
+    for face in faces:
+        indices = tuple(int(index) for index in face)
+        if len(indices) >= 3:
+            normalized.append(indices)
+    return normalized
+
+
+def _coordinate_matches(value: float, plane: float, tolerance: float) -> bool:
+    return math.isclose(value, plane, abs_tol=tolerance, rel_tol=0.0)
+
+
+def _face_is_on_plane(
+    face: Sequence[int],
+    points: Sequence[tuple[float, float, float]],
+    plane: float,
+    tolerance: float,
+) -> bool:
+    return all(_coordinate_matches(points[index][0], plane, tolerance) for index in face)
+
+
+def _bridge_face(
+    face: Sequence[int],
+    points: Sequence[tuple[float, float, float]],
+    first_plane: float,
+    second_plane: float,
+    tolerance: float,
+) -> bool:
+    values = [points[index][0] for index in face]
+    return (
+        any(_coordinate_matches(value, first_plane, tolerance) for value in values)
+        and any(_coordinate_matches(value, second_plane, tolerance) for value in values)
+        and all(
+            _coordinate_matches(value, first_plane, tolerance)
+            or _coordinate_matches(value, second_plane, tolerance)
+            for value in values
+        )
+    )
+
+
+def _closed_recess_candidates(
+    points: Sequence[tuple[float, float, float]],
+    faces: Sequence[tuple[int, ...]],
+    tolerance: float,
+) -> list[tuple[int, float, float, int]]:
+    """Return ``(support, outer, inner, bridge_count)`` closed recess candidates."""
+
+    edge_faces: dict[tuple[int, int], list[int]] = {}
+    for face_index, face in enumerate(faces):
+        for edge in _face_edges(face):
+            edge_faces.setdefault(edge, []).append(face_index)
+
+    candidates: list[tuple[int, float, float, int]] = []
+    for cap_index, cap in enumerate(faces):
+        if not _face_is_on_plane(cap, points, points[cap[0]][0], tolerance):
+            continue
+        inner = points[cap[0]][0]
+        bridges_by_outer: dict[float, set[tuple[int, int]]] = {}
+        bridge_counts: dict[float, int] = {}
+        for edge in _face_edges(cap):
+            for neighbor_index in edge_faces.get(edge, []):
+                if neighbor_index == cap_index:
+                    continue
+                neighbor = faces[neighbor_index]
+                neighbor_values = [points[index][0] for index in neighbor]
+                outer_values = [value for value in neighbor_values if not _coordinate_matches(value, inner, tolerance)]
+                if not outer_values or not _bridge_face(neighbor, points, inner, outer_values[0], tolerance):
+                    continue
+                outer = _plane_clusters(outer_values, tolerance)[0][0]
+                if outer - inner <= tolerance * 2:
+                    continue
+                bridges_by_outer.setdefault(outer, set()).add(edge)
+                bridge_counts[outer] = bridge_counts.get(outer, 0) + 1
+        for outer, edges in bridges_by_outer.items():
+            if len(edges) >= min(3, len(_face_edges(cap))):
+                candidates.append((len(edges), outer, inner, bridge_counts[outer]))
+    return candidates
+
+
+def _open_tunnel_candidates(
+    points: Sequence[tuple[float, float, float]],
+    faces: Sequence[tuple[int, ...]],
+    tolerance: float,
+) -> list[tuple[int, float, float, int]]:
+    """Return open plane-pair candidates whose inner ring has no cap face."""
+
+    pair_candidates: set[tuple[float, float]] = set()
+    for face in faces:
+        face_planes = [plane for plane, _values in _plane_clusters((points[index][0] for index in face), tolerance)]
+        if len(face_planes) == 2:
+            pair_candidates.add((max(face_planes), min(face_planes)))
+
+    candidates: list[tuple[int, float, float, int]] = []
+    for outer, inner in pair_candidates:
+        bridge_faces = [face for face in faces if _bridge_face(face, points, inner, outer, tolerance)]
+        if len(bridge_faces) < 3:
+            continue
+        inner_edges: set[tuple[int, int]] = set()
+        for face in bridge_faces:
+            for edge in _face_edges(face):
+                if _coordinate_matches(points[edge[0]][0], inner, tolerance) and _coordinate_matches(
+                    points[edge[1]][0], inner, tolerance
+                ):
+                    inner_edges.add(edge)
+        if len(inner_edges) < 3:
+            continue
+        degrees: dict[int, int] = {}
+        for left, right in inner_edges:
+            degrees[left] = degrees.get(left, 0) + 1
+            degrees[right] = degrees.get(right, 0) + 1
+        if degrees and all(degree == 2 for degree in degrees.values()):
+            candidates.append((len(inner_edges), outer, inner, len(bridge_faces)))
+    return candidates
+
+
+def _select_recess_candidate(
+    candidates: Sequence[tuple[int, float, float, int]],
+    tolerance: float,
+) -> tuple[int, float, float, int] | None:
+    """Select the most meaningful candidate in the canonical positive frame."""
+
+    if not candidates:
+        return None
+    pool = [candidate for candidate in candidates if candidate[2] >= -tolerance]
+    if not pool:
+        return None
+    four_sided = [candidate for candidate in pool if candidate[0] >= 4]
+    if four_sided:
+        pool = four_sided
+    return max(pool, key=lambda item: (abs(item[1] - item[2]), item[0], item[3]))
+
+
+def detect_recess(
+    local_points: Iterable[Any],
+    faces: Iterable[Sequence[int]] | None = None,
+    tolerance: float = 1e-4,
+) -> dict[str, Any] | None:
+    """Measure a recess from observed planes and optional mesh topology.
+
+    Coordinates are returned as measured.  A closed inner cap proves
+    ``through=False``; an open inner ring proves ``through=True``.  Without
+    enough topology the measurement is retained, but ``through`` is null.
     """
 
-    x_values = [_point_values(point)[0] for point in local_points]
-    if not _has_plane(x_values, HANDHOLD_FACE, tolerance):
+    points = [_point_values(point) for point in local_points]
+    if not points:
         return None
-    if not (
-        _has_plane(x_values, HANDHOLD_BASE, tolerance)
-        or _has_plane(x_values, HANDHOLD_VISUAL_BASE, tolerance)
-    ):
-        return None
-    return {"face": HANDHOLD_FACE, "base": HANDHOLD_BASE, "through": False}
+    normalized_faces = _normalize_faces(faces)
+    if normalized_faces is None:
+        clusters = _plane_clusters((point[0] for point in points), tolerance)
+        if len(clusters) != 2:
+            return None
+        face = clusters[1][0]
+        base = clusters[0][0]
+        return {
+            "face": face,
+            "base": base,
+            "depth": abs(face - base),
+            "through": None,
+            "note": "not determined",
+        }
+
+    closed = _select_recess_candidate(
+        _closed_recess_candidates(points, normalized_faces, tolerance),
+        tolerance,
+    )
+    if closed is not None:
+        _support, face, base, _bridge_count = closed
+        return {"face": face, "base": base, "depth": abs(face - base), "through": False}
+
+    open_tunnel = _select_recess_candidate(
+        _open_tunnel_candidates(points, normalized_faces, tolerance),
+        tolerance,
+    )
+    if open_tunnel is not None:
+        _support, face, base, _bridge_count = open_tunnel
+        return {"face": face, "base": base, "depth": abs(face - base), "through": True}
+    return None
 
 
 def default_output_path(blend_path: Path, cool: int) -> Path:
@@ -404,7 +579,11 @@ def _fmt_values(values: Sequence[float]) -> str:
 
 
 def _fmt_bool(value: Any) -> str:
-    return "true" if value is True else "false"
+    if value is True:
+        return "true"
+    if value is False:
+        return "false"
+    return "null"
 
 
 def _dimension_lines(label: str, values: Sequence[float], scale: float, indent: str = "") -> list[str]:
@@ -494,20 +673,23 @@ def format_markdown(
             lines.extend(_scalar_dimension_lines("evaluated_bottom_z", float(record["evaluated_bottom_z"]), scale))
             lines.extend(_scalar_dimension_lines("evaluated_top_z", float(record["evaluated_top_z"]), scale))
 
-        handhold = record.get("handhold")
-        lines.extend(["", "### Beehive handhold recess"])
-        if handhold is None:
+        recess = record.get(_MEASURED_RECESS_KEY)
+        lines.extend(["", "### Recess measurement"])
+        if recess is None:
             lines.append("- detected: false")
         else:
             lines.extend([
                 "- detected: true",
-                f"- face: {float(handhold['face']):.6f}",
-                f"  - face_px: {float(handhold['face']) * scale:.6f}",
-                f"- base: {float(handhold['base']):.6f}",
-                f"  - base_px: {float(handhold['base']) * scale:.6f}",
-                f"- through: {_fmt_bool(handhold.get('through'))}",
-                "- note: recess, not a hole",
+                f"- face: {float(recess['face']):.6f}",
+                f"  - face_px: {float(recess['face']) * scale:.6f}",
+                f"- base: {float(recess['base']):.6f}",
+                f"  - base_px: {float(recess['base']) * scale:.6f}",
+                f"- depth: {float(recess['depth']):.6f}",
+                f"  - depth_px: {float(recess['depth']) * scale:.6f}",
+                f"- through: {_fmt_bool(recess.get('through'))}",
             ])
+            if recess.get("note"):
+                lines.append(f"- note: {recess['note']}")
 
     lines.extend(["", "## Contacting Pairs", ""])
     if contacts:
@@ -636,7 +818,19 @@ def collect_measured_objects(
                     _point_values(obj.matrix_world @ vertex.co) for vertex in source_vertices
                 ]
                 source_world_bbox = bbox(source_world_points) if source_world_points else world_bbox
-                handhold = detect_handhold(rotation_cancelled_points)
+                source_faces = [
+                    tuple(int(index) for index in polygon.vertices)
+                    for polygon in getattr(getattr(obj, "data", None), "polygons", [])
+                ]
+                recess_points = (
+                    _frame_points(obj, obj.matrix_world, [obj.matrix_world @ vertex.co for vertex in source_vertices])
+                    if source_vertices
+                    else rotation_cancelled_points
+                )
+                recess_faces = source_faces if source_faces else [
+                    tuple(int(index) for index in polygon.vertices) for polygon in mesh.polygons
+                ]
+                recess = detect_recess(recess_points, recess_faces)
                 row = {key: value for key, value in record.items() if key != "_object"}
                 row.update({
                     "world_bbox": world_bbox,
@@ -653,7 +847,7 @@ def collect_measured_objects(
                     "top_z": source_world_bbox["max"][2],
                     "evaluated_bottom_z": world_bbox["min"][2],
                     "evaluated_top_z": world_bbox["max"][2],
-                    "handhold": handhold,
+                    _MEASURED_RECESS_KEY: recess,
                 })
                 measured.append(row)
             finally:
