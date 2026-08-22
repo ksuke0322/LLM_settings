@@ -18,7 +18,7 @@ REQUIRED_FIELDS = (
 FIELD_PATTERN = re.compile(r"^-\s+([a-z_]+):\s*(.*)$", re.MULTILINE)
 SECTION_PATTERN = re.compile(r"^##\s+(\d+)\.\s+(.+?)\s*$", re.MULTILINE)
 TBD_PATTERN = re.compile(r"\b(?:tbd|todo|unknown)\b|未定|未確認|要確認", re.IGNORECASE)
-ADOPT_PATTERN = re.compile(r"reference|design|real|hybrid|参照|設計|実物|併用", re.IGNORECASE)
+ADOPT_PATTERN = re.compile(r"^(?:design|reference|real_data|hybrid):\s*\S", re.IGNORECASE)
 
 
 def _sections(content: str) -> list[tuple[int, str, str]]:
@@ -51,8 +51,10 @@ def validate_content(content: str, expected_count: int = 5) -> dict[str, Any]:
             elif TBD_PATTERN.search(value):
                 errors.append(f"item {number} {field} contains TBD/unknown")
         adopt = fields.get("adopt", "")
-        if adopt and not ADOPT_PATTERN.search(adopt):
-            errors.append(f"item {number} adopt must name the adopted side")
+        if adopt and not ADOPT_PATTERN.match(adopt):
+            errors.append(
+                f"item {number} adopt must start with design:, reference:, real_data:, or hybrid: and include a decision"
+            )
         if not title.strip():
             errors.append(f"item {number} title is blank")
 
