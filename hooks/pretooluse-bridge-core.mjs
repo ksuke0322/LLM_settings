@@ -3,6 +3,7 @@ import { spawn } from "node:child_process";
 const home = "/Users/sawairikeisuke";
 const bridgeTimeoutMs = 5000;
 const maxOutputBytes = 1024 * 1024;
+const codexRewriteFallbackReason = "Codex PreToolUse input rewrite is unsupported; manual retry required";
 
 const pluginRoot = `${home}/.codex/plugins/cache/context-mode/context-mode/1.0.169`;
 const claudePluginRoot = `${home}/.claude/plugins/cache/context-mode/context-mode/1.0.169`;
@@ -205,13 +206,16 @@ export const mergeHookResponses = ({ product, custom, plugin, secondaryPlugin })
   return { decision: "none" };
 };
 
-export const formatHookResponse = (_product, merged) => {
+export const formatHookResponse = (product, merged) => {
   if (!merged || merged.decision === "none") return null;
 
   const hookSpecificOutput = { hookEventName: "PreToolUse" };
   if (merged.decision === "deny") {
     hookSpecificOutput.permissionDecision = "deny";
     hookSpecificOutput.permissionDecisionReason = merged.reason;
+  } else if (product === "Codex" && merged.decision === "modify") {
+    hookSpecificOutput.permissionDecision = "deny";
+    hookSpecificOutput.permissionDecisionReason = codexRewriteFallbackReason;
   } else {
     hookSpecificOutput.permissionDecision = "allow";
     if (merged.updatedInput !== undefined) hookSpecificOutput.updatedInput = merged.updatedInput;

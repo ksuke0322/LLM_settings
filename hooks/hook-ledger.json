@@ -1,5 +1,659 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "pluginUpdatePolicy": {
+    "mode": "detect-only",
+    "autoUpdatePreserved": true
+  },
+  "pluginSnapshots": {
+    "Claude": {
+      "version": "1.0.169",
+      "manifestPath": "/Users/sawairikeisuke/.claude/plugins/cache/context-mode/context-mode/1.0.169/hooks/hooks.json",
+      "manifestSha256": "dbb2f86ecef269821e5078f409b3b364b12bb17d691162ed5fccd96387bd8d1c"
+    },
+    "Codex": {
+      "version": "1.0.169",
+      "manifestPath": "/Users/sawairikeisuke/.codex/plugins/cache/context-mode/context-mode/1.0.169/.codex-plugin/hooks.json",
+      "manifestSha256": "6613bb6580906f76f9c9767d731af91b4b7c4c02692203e261bdfbc55f8b2456"
+    }
+  },
+  "pretooluseSafetyMatrix": {
+    "Claude": {
+      "shell": {
+        "matcher": "Bash",
+        "probes": [
+          "Bash"
+        ],
+        "routes": [
+          "custom",
+          "context-mode"
+        ],
+        "decision": "deny-or-rewrite",
+        "inputRewrite": "supported",
+        "unsupportedFallback": "none"
+      },
+      "mutation": {
+        "matcher": "Write|Edit|NotebookEdit",
+        "probes": [
+          "Write",
+          "Edit",
+          "NotebookEdit"
+        ],
+        "routes": [
+          "custom"
+        ],
+        "decision": "deny",
+        "inputRewrite": "supported",
+        "unsupportedFallback": "none"
+      },
+      "context": {
+        "matcher": "WebFetch|Read|Grep|Agent|mcp__",
+        "probes": [
+          "WebFetch",
+          "Read",
+          "Grep",
+          "Agent",
+          "mcp__example"
+        ],
+        "routes": [
+          "context-mode"
+        ],
+        "decision": "context-or-deny",
+        "inputRewrite": "supported",
+        "unsupportedFallback": "none"
+      }
+    },
+    "Codex": {
+    "read": {
+      "matcher": "Read",
+      "probes": [
+        "Read"
+      ],
+      "routes": [
+        "custom"
+      ],
+      "decision": "deny",
+      "inputRewrite": "unsupported",
+      "unsupportedFallback": "deny-manual-retry"
+    },
+    "notebookEdit": {
+      "matcher": "NotebookEdit",
+      "probes": [
+        "NotebookEdit"
+      ],
+      "routes": [
+        "custom",
+        "context-mode"
+      ],
+      "decision": "deny-or-context",
+      "inputRewrite": "unsupported",
+      "unsupportedFallback": "deny-manual-retry"
+    },
+      "shellAndMutation": {
+        "matcher": "local_shell|shell|shell_command|exec_command|Bash|Shell|apply_patch|Edit|Write|grep_files|ctx_execute|ctx_execute_file|ctx_batch_execute|ctx_fetch_and_index|ctx_search|ctx_index|mcp__",
+        "probes": [
+          "exec_command",
+          "apply_patch",
+          "Edit",
+          "Write",
+          "mcp__example"
+        ],
+        "routes": [
+          "context-mode"
+        ],
+        "decision": "context-or-deny",
+        "inputRewrite": "unsupported",
+        "unsupportedFallback": "deny-manual-retry"
+      }
+    }
+  },
+  "registrationProvenance": [
+    {
+      "entryId": "claude.custom.permission-request.glass",
+      "registrationIndex": 0,
+      "sourcePaths": [
+        {
+          "path": "/Users/sawairikeisuke/.agents/hooks/notify-glass.mjs",
+          "role": "hook-script",
+          "sha256": "71e0c8e00816a1dcecbddcee14c657caf31bdeb166a589bb4f8dfbaa1ee11f4b"
+        }
+      ],
+      "interpreterPath": "node",
+      "timeoutMs": null,
+      "timeoutSource": "unverified"
+    },
+    {
+      "entryId": "claude.custom.user-prompt.delegate",
+      "registrationIndex": 0,
+      "sourcePaths": [
+        {
+          "path": "/Users/sawairikeisuke/.codex/hooks/delegate_preflight.mjs",
+          "role": "hook-script",
+          "sha256": "b8a99f90a85def3859651132fa21ec36007dde50ef4604e69136894f1e798aa9"
+        }
+      ],
+      "interpreterPath": "node",
+      "timeoutMs": null,
+      "timeoutSource": "unverified"
+    },
+    {
+      "entryId": "claude.custom.user-prompt.ntfy-context",
+      "registrationIndex": 0,
+      "sourcePaths": [
+        {
+          "path": "/Users/sawairikeisuke/.agents/hooks/agent-notify-context.mjs",
+          "role": "hook-script",
+          "sha256": "49e8b0bc27ec4b31d55b98b521e31ca0417beb0e917805a32916d280c54207e3"
+        }
+      ],
+      "interpreterPath": "node",
+      "timeoutMs": null,
+      "timeoutSource": "unverified"
+    },
+    {
+      "entryId": "claude.custom.pre-tool-use.bridge",
+      "registrationIndex": 0,
+      "sourcePaths": [
+        {
+          "path": "/Users/sawairikeisuke/.claude/hooks/pretooluse-bridge.mjs",
+          "role": "hook-script",
+          "sha256": "8e5d328e1e79b51a02a14fb09243057077461f6f6e8d25eed15aaee50e6f21e5"
+        }
+      ],
+      "interpreterPath": "node",
+      "timeoutMs": null,
+      "timeoutSource": "unverified"
+    },
+    {
+      "entryId": "claude.exception.session-start.cache-heal",
+      "registrationIndex": 0,
+      "sourcePaths": [
+        {
+          "path": "/Users/sawairikeisuke/.claude/hooks/context-mode-cache-heal.mjs",
+          "role": "hook-script",
+          "sha256": "91d978ec49151a3e4f79bd0eb568ba275815c7e2f99cd55d2e75ba5e32df19e4"
+        }
+      ],
+      "interpreterPath": null,
+      "timeoutMs": null,
+      "timeoutSource": "unverified"
+    },
+    {
+      "entryId": "claude.custom.session-start.herdr",
+      "registrationIndex": 0,
+      "sourcePaths": [
+        {
+          "path": "/Users/sawairikeisuke/.claude/hooks/herdr-agent-state.sh",
+          "role": "hook-script",
+          "sha256": "ffd5a76b7c62f5313040fc1e98fa010ff19a7aa85dd9fe6f325b9729d5f01b46"
+        }
+      ],
+      "interpreterPath": "bash",
+      "timeoutMs": 10000,
+      "timeoutSource": "explicit"
+    },
+    {
+      "entryId": "claude.custom.stop.glass",
+      "registrationIndex": 0,
+      "sourcePaths": [
+        {
+          "path": "/Users/sawairikeisuke/.agents/hooks/notify-glass.mjs",
+          "role": "hook-script",
+          "sha256": "71e0c8e00816a1dcecbddcee14c657caf31bdeb166a589bb4f8dfbaa1ee11f4b"
+        }
+      ],
+      "interpreterPath": "node",
+      "timeoutMs": null,
+      "timeoutSource": "unverified"
+    },
+    {
+      "entryId": "claude.custom.subagent-stop.glass",
+      "registrationIndex": 0,
+      "sourcePaths": [
+        {
+          "path": "/Users/sawairikeisuke/.agents/hooks/subagent-stop.mjs",
+          "role": "hook-script",
+          "sha256": "b189835de40260db9ba3b8d8480e0a4226edc9a720b8a8bf9c92996096ec00fc"
+        }
+      ],
+      "interpreterPath": "node",
+      "timeoutMs": null,
+      "timeoutSource": "unverified"
+    },
+    {
+      "entryId": "claude.context-mode.post-tool-use.capture",
+      "registrationIndex": 0,
+      "sourcePaths": [
+        {
+          "path": "/Users/sawairikeisuke/.claude/plugins/cache/context-mode/context-mode/1.0.169/hooks/posttooluse.mjs",
+          "role": "hook-script",
+          "sha256": "02ead3ad9d5bf8e8367ccc63811a84b4d88bda0ddb3f43de58f51a2f678a63e3"
+        }
+      ],
+      "interpreterPath": "node",
+      "timeoutMs": null,
+      "timeoutSource": "unverified"
+    },
+    {
+      "entryId": "claude.context-mode.pre-compact.snapshot",
+      "registrationIndex": 0,
+      "sourcePaths": [
+        {
+          "path": "/Users/sawairikeisuke/.claude/plugins/cache/context-mode/context-mode/1.0.169/hooks/precompact.mjs",
+          "role": "hook-script",
+          "sha256": "4b8b1599057fba8aa9466f6184cec2fe48548a7cafa7c5faf50dae7cef8b2cc1"
+        }
+      ],
+      "interpreterPath": "node",
+      "timeoutMs": null,
+      "timeoutSource": "unverified"
+    },
+    {
+      "entryId": "claude.context-mode.pre-tool-use.bridge",
+      "registrationIndex": 0,
+      "sourcePaths": [
+        {
+          "path": "/Users/sawairikeisuke/.claude/hooks/pretooluse-bridge.mjs",
+          "role": "hook-script",
+          "sha256": "8e5d328e1e79b51a02a14fb09243057077461f6f6e8d25eed15aaee50e6f21e5"
+        }
+      ],
+      "interpreterPath": "node",
+      "timeoutMs": null,
+      "timeoutSource": "unverified"
+    },
+    {
+      "entryId": "claude.context-mode.pre-tool-use.bridge",
+      "registrationIndex": 1,
+      "sourcePaths": [
+        {
+          "path": "/Users/sawairikeisuke/.claude/hooks/pretooluse-bridge.mjs",
+          "role": "hook-script",
+          "sha256": "8e5d328e1e79b51a02a14fb09243057077461f6f6e8d25eed15aaee50e6f21e5"
+        }
+      ],
+      "interpreterPath": "node",
+      "timeoutMs": null,
+      "timeoutSource": "unverified"
+    },
+    {
+      "entryId": "claude.context-mode.pre-tool-use.bridge",
+      "registrationIndex": 2,
+      "sourcePaths": [
+        {
+          "path": "/Users/sawairikeisuke/.claude/hooks/pretooluse-bridge.mjs",
+          "role": "hook-script",
+          "sha256": "8e5d328e1e79b51a02a14fb09243057077461f6f6e8d25eed15aaee50e6f21e5"
+        }
+      ],
+      "interpreterPath": "node",
+      "timeoutMs": null,
+      "timeoutSource": "unverified"
+    },
+    {
+      "entryId": "claude.context-mode.pre-tool-use.bridge",
+      "registrationIndex": 3,
+      "sourcePaths": [
+        {
+          "path": "/Users/sawairikeisuke/.claude/hooks/pretooluse-bridge.mjs",
+          "role": "hook-script",
+          "sha256": "8e5d328e1e79b51a02a14fb09243057077461f6f6e8d25eed15aaee50e6f21e5"
+        }
+      ],
+      "interpreterPath": "node",
+      "timeoutMs": null,
+      "timeoutSource": "unverified"
+    },
+    {
+      "entryId": "claude.context-mode.pre-tool-use.bridge",
+      "registrationIndex": 4,
+      "sourcePaths": [
+        {
+          "path": "/Users/sawairikeisuke/.claude/hooks/pretooluse-bridge.mjs",
+          "role": "hook-script",
+          "sha256": "8e5d328e1e79b51a02a14fb09243057077461f6f6e8d25eed15aaee50e6f21e5"
+        }
+      ],
+      "interpreterPath": "node",
+      "timeoutMs": null,
+      "timeoutSource": "unverified"
+    },
+    {
+      "entryId": "claude.context-mode.pre-tool-use.bridge",
+      "registrationIndex": 5,
+      "sourcePaths": [
+        {
+          "path": "/Users/sawairikeisuke/.claude/hooks/pretooluse-bridge.mjs",
+          "role": "hook-script",
+          "sha256": "8e5d328e1e79b51a02a14fb09243057077461f6f6e8d25eed15aaee50e6f21e5"
+        }
+      ],
+      "interpreterPath": "node",
+      "timeoutMs": null,
+      "timeoutSource": "unverified"
+    },
+    {
+      "entryId": "claude.context-mode.pre-tool-use.bridge",
+      "registrationIndex": 6,
+      "sourcePaths": [
+        {
+          "path": "/Users/sawairikeisuke/.claude/hooks/pretooluse-bridge.mjs",
+          "role": "hook-script",
+          "sha256": "8e5d328e1e79b51a02a14fb09243057077461f6f6e8d25eed15aaee50e6f21e5"
+        }
+      ],
+      "interpreterPath": "node",
+      "timeoutMs": null,
+      "timeoutSource": "unverified"
+    },
+    {
+      "entryId": "claude.context-mode.pre-tool-use.bridge",
+      "registrationIndex": 7,
+      "sourcePaths": [
+        {
+          "path": "/Users/sawairikeisuke/.claude/hooks/pretooluse-bridge.mjs",
+          "role": "hook-script",
+          "sha256": "8e5d328e1e79b51a02a14fb09243057077461f6f6e8d25eed15aaee50e6f21e5"
+        }
+      ],
+      "interpreterPath": "node",
+      "timeoutMs": null,
+      "timeoutSource": "unverified"
+    },
+    {
+      "entryId": "claude.context-mode.pre-tool-use.bridge",
+      "registrationIndex": 8,
+      "sourcePaths": [
+        {
+          "path": "/Users/sawairikeisuke/.claude/hooks/pretooluse-bridge.mjs",
+          "role": "hook-script",
+          "sha256": "8e5d328e1e79b51a02a14fb09243057077461f6f6e8d25eed15aaee50e6f21e5"
+        }
+      ],
+      "interpreterPath": "node",
+      "timeoutMs": null,
+      "timeoutSource": "unverified"
+    },
+    {
+      "entryId": "claude.context-mode.user-prompt.context",
+      "registrationIndex": 0,
+      "sourcePaths": [
+        {
+          "path": "/Users/sawairikeisuke/.claude/plugins/cache/context-mode/context-mode/1.0.169/hooks/userpromptsubmit.mjs",
+          "role": "hook-script",
+          "sha256": "d777abc6bfa2350526facc34f1f4502bc351dc01e67ad5a21244bc58cfbb3e9b"
+        }
+      ],
+      "interpreterPath": "node",
+      "timeoutMs": null,
+      "timeoutSource": "unverified"
+    },
+    {
+      "entryId": "claude.context-mode.session-start.init",
+      "registrationIndex": 0,
+      "sourcePaths": [
+        {
+          "path": "/Users/sawairikeisuke/.claude/plugins/cache/context-mode/context-mode/1.0.169/hooks/sessionstart.mjs",
+          "role": "hook-script",
+          "sha256": "41952548f197dc40bac50afff2126802c83fc9cbbe8ecc86743cacaeb0ced001"
+        }
+      ],
+      "interpreterPath": "node",
+      "timeoutMs": null,
+      "timeoutSource": "unverified"
+    },
+    {
+      "entryId": "claude.custom.stop.ntfy",
+      "registrationIndex": 0,
+      "sourcePaths": [
+        {
+          "path": "/Users/sawairikeisuke/.agents/hooks/agent-notify-ntfy.mjs",
+          "role": "hook-script",
+          "sha256": "09aebc253428bad026aed8b13ff4b085813a17b720366a44b6ea3c9b66a04ee9"
+        }
+      ],
+      "interpreterPath": "node",
+      "timeoutMs": null,
+      "timeoutSource": "unverified"
+    },
+    {
+      "entryId": "claude.context-mode.stop.capture",
+      "registrationIndex": 0,
+      "sourcePaths": [
+        {
+          "path": "/Users/sawairikeisuke/.claude/plugins/cache/context-mode/context-mode/1.0.169/hooks/stop.mjs",
+          "role": "hook-script",
+          "sha256": "b740f288239fa5b05b3db36e9ab39ea2495e454df88ac5895f2a58e7a7762e06"
+        }
+      ],
+      "interpreterPath": "node",
+      "timeoutMs": null,
+      "timeoutSource": "unverified"
+    },
+    {
+      "entryId": "claude.custom.subagent-stop.ntfy",
+      "registrationIndex": 0,
+      "sourcePaths": [
+        {
+          "path": "/Users/sawairikeisuke/.agents/hooks/agent-notify-ntfy.mjs",
+          "role": "hook-script",
+          "sha256": "09aebc253428bad026aed8b13ff4b085813a17b720366a44b6ea3c9b66a04ee9"
+        }
+      ],
+      "interpreterPath": "node",
+      "timeoutMs": null,
+      "timeoutSource": "unverified"
+    },
+    {
+      "entryId": "codex.custom.pre-tool-use.bridge",
+      "registrationIndex": 0,
+      "sourcePaths": [
+        {
+          "path": "/Users/sawairikeisuke/.codex/hooks/pretooluse-bridge.mjs",
+          "role": "hook-script",
+          "sha256": "22c6d55479998c135bcced3646bdfb7259d32886b51755ae2b041f2820a1c56e"
+        }
+      ],
+      "interpreterPath": "node",
+      "timeoutMs": null,
+      "timeoutSource": "unverified"
+    },
+    {
+      "entryId": "codex.custom.session-start.herdr",
+      "registrationIndex": 0,
+      "sourcePaths": [
+        {
+          "path": "/Users/sawairikeisuke/.codex/hooks/herdr-agent-state-aligned.sh",
+          "role": "hook-script",
+          "sha256": "c5a8ee14ff464499997c1549d6b29a992a382090b6a7c5e81acf02b1eda9d24b"
+        }
+      ],
+      "interpreterPath": "bash",
+      "timeoutMs": 10000,
+      "timeoutSource": "explicit"
+    },
+    {
+      "entryId": "codex.custom.user-prompt.delegate",
+      "registrationIndex": 0,
+      "sourcePaths": [
+        {
+          "path": "/Users/sawairikeisuke/.codex/hooks/delegate_preflight.mjs",
+          "role": "hook-script",
+          "sha256": "b8a99f90a85def3859651132fa21ec36007dde50ef4604e69136894f1e798aa9"
+        }
+      ],
+      "interpreterPath": "node",
+      "timeoutMs": null,
+      "timeoutSource": "unverified"
+    },
+    {
+      "entryId": "codex.custom.user-prompt.ntfy-context",
+      "registrationIndex": 0,
+      "sourcePaths": [
+        {
+          "path": "/Users/sawairikeisuke/.agents/hooks/agent-notify-context.mjs",
+          "role": "hook-script",
+          "sha256": "49e8b0bc27ec4b31d55b98b521e31ca0417beb0e917805a32916d280c54207e3"
+        }
+      ],
+      "interpreterPath": "node",
+      "timeoutMs": null,
+      "timeoutSource": "unverified"
+    },
+    {
+      "entryId": "codex.custom.permission-request.glass",
+      "registrationIndex": 0,
+      "sourcePaths": [
+        {
+          "path": "/Users/sawairikeisuke/.agents/hooks/notify-glass.mjs",
+          "role": "hook-script",
+          "sha256": "71e0c8e00816a1dcecbddcee14c657caf31bdeb166a589bb4f8dfbaa1ee11f4b"
+        }
+      ],
+      "interpreterPath": "node",
+      "timeoutMs": null,
+      "timeoutSource": "unverified"
+    },
+    {
+      "entryId": "codex.custom.stop.glass",
+      "registrationIndex": 0,
+      "sourcePaths": [
+        {
+          "path": "/Users/sawairikeisuke/.agents/hooks/notify-glass.mjs",
+          "role": "hook-script",
+          "sha256": "71e0c8e00816a1dcecbddcee14c657caf31bdeb166a589bb4f8dfbaa1ee11f4b"
+        }
+      ],
+      "interpreterPath": "node",
+      "timeoutMs": null,
+      "timeoutSource": "unverified"
+    },
+    {
+      "entryId": "codex.custom.stop.ntfy",
+      "registrationIndex": 0,
+      "sourcePaths": [
+        {
+          "path": "/Users/sawairikeisuke/.agents/hooks/agent-notify-ntfy.mjs",
+          "role": "hook-script",
+          "sha256": "09aebc253428bad026aed8b13ff4b085813a17b720366a44b6ea3c9b66a04ee9"
+        }
+      ],
+      "interpreterPath": "/Users/sawairikeisuke/.volta/bin/node",
+      "timeoutMs": 10000,
+      "timeoutSource": "explicit"
+    },
+    {
+      "entryId": "codex.custom.subagent-stop.glass",
+      "registrationIndex": 0,
+      "sourcePaths": [
+        {
+          "path": "/Users/sawairikeisuke/.agents/hooks/subagent-stop.mjs",
+          "role": "hook-script",
+          "sha256": "b189835de40260db9ba3b8d8480e0a4226edc9a720b8a8bf9c92996096ec00fc"
+        }
+      ],
+      "interpreterPath": "node",
+      "timeoutMs": null,
+      "timeoutSource": "unverified"
+    },
+    {
+      "entryId": "codex.custom.subagent-stop.ntfy",
+      "registrationIndex": 0,
+      "sourcePaths": [
+        {
+          "path": "/Users/sawairikeisuke/.agents/hooks/agent-notify-ntfy.mjs",
+          "role": "hook-script",
+          "sha256": "09aebc253428bad026aed8b13ff4b085813a17b720366a44b6ea3c9b66a04ee9"
+        }
+      ],
+      "interpreterPath": "/Users/sawairikeisuke/.volta/bin/node",
+      "timeoutMs": null,
+      "timeoutSource": "unverified"
+    },
+    {
+      "entryId": "codex.context-mode.pre-tool-use.direct",
+      "registrationIndex": 0,
+      "sourcePaths": [
+        {
+          "path": "/Users/sawairikeisuke/.codex/plugins/cache/context-mode/context-mode/1.0.169/hooks/codex/pretooluse.mjs",
+          "role": "hook-script",
+          "sha256": "3d31580ad41412399ffd4824b2b6d80072e413e13ad027ef381caf0f52cdd2ed"
+        }
+      ],
+      "interpreterPath": "node",
+      "timeoutMs": null,
+      "timeoutSource": "unverified"
+    },
+    {
+      "entryId": "codex.context-mode.post-tool-use.capture",
+      "registrationIndex": 0,
+      "sourcePaths": [
+        {
+          "path": "/Users/sawairikeisuke/.codex/plugins/cache/context-mode/context-mode/1.0.169/hooks/codex/posttooluse.mjs",
+          "role": "hook-script",
+          "sha256": "5ba9654b8cbdab606ad9010db0c780d7af4449f52c41cac2f3e5b4bdaa07ab6b"
+        }
+      ],
+      "interpreterPath": "node",
+      "timeoutMs": null,
+      "timeoutSource": "unverified"
+    },
+    {
+      "entryId": "codex.context-mode.session-start.init",
+      "registrationIndex": 0,
+      "sourcePaths": [
+        {
+          "path": "/Users/sawairikeisuke/.codex/plugins/cache/context-mode/context-mode/1.0.169/hooks/codex/sessionstart.mjs",
+          "role": "hook-script",
+          "sha256": "d76a4dc50691ccd187a6c5484ea3935d27cd507f923e83a81602b07cc411fbfd"
+        }
+      ],
+      "interpreterPath": "node",
+      "timeoutMs": null,
+      "timeoutSource": "unverified"
+    },
+    {
+      "entryId": "codex.context-mode.pre-compact.snapshot",
+      "registrationIndex": 0,
+      "sourcePaths": [
+        {
+          "path": "/Users/sawairikeisuke/.codex/plugins/cache/context-mode/context-mode/1.0.169/hooks/codex/precompact.mjs",
+          "role": "hook-script",
+          "sha256": "6bd6a340c666883753081b6eb35db2ed975bc23e7d65b6e315617f04c7a2abbd"
+        }
+      ],
+      "interpreterPath": "node",
+      "timeoutMs": null,
+      "timeoutSource": "unverified"
+    },
+    {
+      "entryId": "codex.context-mode.user-prompt.context",
+      "registrationIndex": 0,
+      "sourcePaths": [
+        {
+          "path": "/Users/sawairikeisuke/.codex/plugins/cache/context-mode/context-mode/1.0.169/hooks/codex/userpromptsubmit.mjs",
+          "role": "hook-script",
+          "sha256": "18538f702fc6a9e97eab8a56fa2d5b7c7e36547dc86c831fb8149594314586cc"
+        }
+      ],
+      "interpreterPath": "node",
+      "timeoutMs": null,
+      "timeoutSource": "unverified"
+    },
+    {
+      "entryId": "codex.context-mode.stop.capture",
+      "registrationIndex": 0,
+      "sourcePaths": [
+        {
+          "path": "/Users/sawairikeisuke/.codex/plugins/cache/context-mode/context-mode/1.0.169/hooks/codex/stop.mjs",
+          "role": "hook-script",
+          "sha256": "a98e2f6e734db6f0b8719aae80f2935ca30dad284512e5ee089959c2f09494ef"
+        }
+      ],
+      "interpreterPath": "node",
+      "timeoutMs": null,
+      "timeoutSource": "unverified"
+    }
+  ],
   "kind": "common-hook-ledger",
   "authority": "contract-only",
   "scope": "read-only-static-audit",
@@ -688,7 +1342,7 @@
           "matcher": "*",
           "command": "\"/Users/sawairikeisuke/.claude/hooks/context-mode-cache-heal.mjs\"",
           "sourcePath": "/Users/sawairikeisuke/.claude/hooks/context-mode-cache-heal.mjs",
-          "sourceSha256": "ec2b0232c9d68e31f33fd70fc37bc59cb8e8f75796940b48c84564096f7f0e53",
+          "sourceSha256": "91d978ec49151a3e4f79bd0eb568ba275815c7e2f99cd55d2e75ba5e32df19e4",
           "managed": false
         }
       ]
@@ -1398,7 +2052,7 @@
           "registrationProvider": "custom",
           "registrationPath": "/Users/sawairikeisuke/.codex/hooks.json",
           "matcher": "*",
-          "command": "node /Users/sawairikeisuke/.agents/hooks/agent-notify-ntfy.mjs --product codex --event stop",
+          "command": "/Users/sawairikeisuke/.volta/bin/node /Users/sawairikeisuke/.agents/hooks/agent-notify-ntfy.mjs --product codex --event stop",
           "sourcePath": "/Users/sawairikeisuke/.agents/hooks/agent-notify-ntfy.mjs",
           "sourceSha256": "09aebc253428bad026aed8b13ff4b085813a17b720366a44b6ea3c9b66a04ee9",
           "managed": false
@@ -1472,7 +2126,7 @@
           "registrationProvider": "custom",
           "registrationPath": "/Users/sawairikeisuke/.codex/hooks.json",
           "matcher": "*",
-          "command": "node /Users/sawairikeisuke/.agents/hooks/agent-notify-ntfy.mjs --product codex --event subagent-stop",
+          "command": "/Users/sawairikeisuke/.volta/bin/node /Users/sawairikeisuke/.agents/hooks/agent-notify-ntfy.mjs --product codex --event subagent-stop",
           "sourcePath": "/Users/sawairikeisuke/.agents/hooks/agent-notify-ntfy.mjs",
           "sourceSha256": "09aebc253428bad026aed8b13ff4b085813a17b720366a44b6ea3c9b66a04ee9",
           "managed": false

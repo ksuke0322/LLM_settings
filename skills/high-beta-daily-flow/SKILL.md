@@ -5,7 +5,7 @@ description: 日本株high-beta paper運用の日次処理を、intraday解決�
 
 # High Beta Daily Flow
 
-目的は、月次純利益10万円を安定して目指せるか検証可能なpaper運用を、重複ゲートなしで毎営業日一度だけ進めること。実売買は行わない。
+目的は、`monthly_profit_goal_contract.json`の目標・利益定義に対して、重複ゲートなしで検証可能なpaper運用を毎営業日一度だけ進めること。実売買は行わない。
 
 ## 正本
 
@@ -41,14 +41,14 @@ description: 日本株high-beta paper運用の日次処理を、intraday解決�
 - `daily_check`がない、quality historyが欠落・不正、または最新entryの`as_of`/`run_key`が今回と一致しない場合は`DAILY_CHECK: CONFIRMATION_UNAVAILABLE`として通知し、正常・休場・異常を推測しない。
 - `daily_check.status=passed`は`DAILY_CHECK: PASSED`、`market_closed`は`DAILY_CHECK: MARKET_CLOSED`、`attention_required`は`DAILY_CHECK: ATTENTION_REQUIRED`として、対象日・run key・reason codesを出力する。
 - `technical/event`の候補品質不足やregimeのpartialは、運用異常と混同せず`monitoring_points`と`block_reason_counts`に残す。candidateのblockを理由にgateを緩和しない。
-- 5営業日・10営業日の確認は、日次点検に加えて行う深掘りレビューであり、削除しない。quality historyで5回の有効run受入れと10回cadence判定を分離し、どちらかが不足する場合は`incomplete`または`observation_required`として記録する。fixtureや過去runの再構成だけで運用受入れ完了としない。
+- 受入れ・cadenceの確認は、日次点検に加えて行う深掘りレビューであり、削除しない。`b_flow_experiments/config.json`のsample policyを読み、real runだけを数え、fixtureや過去runの再構成だけで運用受入れ完了としない。設定値が読めない場合は`incomplete`または`observation_required`として記録する。
 
 前段が`failed`または`incomplete`なら後段は実行せず、manifestに停止理由を書く。休日・休場日はstateを進めず`market_closed`を記録する。
 
 ## 実行頻度の判断
 
-- 品質履歴が10 run未満の間は`current_cadence`を維持し、paused中の単独high-beta automationを再開しない。
-- 10 runすべてでverifier valid、同日input、duplicate publishなし、lane混在なし、stale state消費なし、upstream incomplete後のpaper mutationなしを確認できたときだけ、追加のread-only shadow passを候補にする。
+- 品質履歴が`b_flow_experiments/config.json`のsample policyを満たすまで`current_cadence`を維持し、paused中の単独high-beta automationを再開しない。
+- 同configのsample policyを満たすrunでverifier valid、同日input、duplicate publishなし、lane混在なし、stale state消費なし、upstream incomplete後のpaper mutationなしを確認できたときだけ、追加のread-only shadow passを候補にする。
 - 条件未達時は`keep_current_cadence`として記録し、分析回数・探索銘柄数・gateを自動で緩和しない。
 
 ## Opportunity shadow ledger
@@ -114,12 +114,8 @@ API取得成功だけではstage成功としない。品質、coverage、event�
 
 ## paper sizing
 
-- `paper_capital_jpy=1,000,000`
-- `paper_lot_size=10`
-- `max_position_value_jpy=100,000`
-- `max_risk_per_trade_pct=0.7`
-- `max_new_entries_per_day=2`
-- fill/exitはslippageと`paper_transaction_cost_bps_high_beta`を反映する。現行0bpsはpaper zero-fee仮定として明示する
+- paper capital、lot、position cap、risk、daily entry limitは`portfolio_rules.json`から読み、固定値をskillに複製しない。
+- fill/exitはslippageと`portfolio_rules.json`の`paper_transaction_cost_bps_high_beta`を反映する。取得不能なcostはunknownのままfail-closeする。
 - 新しくpaper orderまたはhistory recordを生成するときは、同一runで参照した`rule_version`、`rules_source`、`max_position_value_jpy`、`paper_lot_size`をrecord単位に保存する。これらが取得できない場合は、推測で補完せず`legacy_rule_unconfirmed`としてfail-closeし、現行ルール準拠の成功例として扱わない
 - 既存履歴にrule provenanceがない場合は`legacy_risk_sizing_reconstruction.mjs`で観測notionalだけを再構成する。現行`max_position_value_jpy`を過去取引へ遡及適用してstateや判断を変更してはならない
 
@@ -127,4 +123,4 @@ API取得成功だけではstage成功としない。品質、coverage、event�
 
 ## KPI
 
-`paper_high_beta_metrics.json`だけを正本とし、月次純実現損益、10万円達成率、直近3か月中央値、直近4か月達成比率、投下資本利益率、最大ドローダウン、期待値、profit factor、funnel、block reason件数を更新する。月次サンプルが4か月未満なら `sample_status=insufficient_sample` とし、中央値・達成比率・安定達成判定を安定性根拠に使わない。`period_metrics` と `cumulative_metrics` を分離して記録する。
+`paper_high_beta_metrics.json`だけを派生KPI outputとして扱い、目標・利益定義・観測サンプル条件は`monthly_profit_goal_contract.json`と`b_flow_experiments/config.json`から読み取る。サンプル不足時は`sample_status=insufficient_sample`とし、中央値・達成比率・安定達成判定を安定性根拠に使わない。`period_metrics`と`cumulative_metrics`を分離して記録する。

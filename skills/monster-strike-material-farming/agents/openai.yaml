@@ -1,0 +1,7 @@
+interface:
+  display_name: "モンスト素材周回"
+  short_description: "iPhoneミラーリングで進化素材クエストをソロ周回"
+  default_prompt: "Use $monster-strike-material-farming to run the requested Monster Strike evolution-material quest via iPhone Mirroring."
+
+policy:
+  allow_implicit_invocation: true
