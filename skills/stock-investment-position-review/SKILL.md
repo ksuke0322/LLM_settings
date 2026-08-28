@@ -78,8 +78,8 @@ review_profile の既定値=auto
 
 - `schemaVersion`が`trade-v2`でない、`dataQuality`が`complete`でない、`readiness`が`ready`でない、必須fieldや`asOf`が欠ける場合は、レビューを`advisory_only` / `確認不能`として出す。
 - 上記の品質不足は保有継続・利確・防衛の長期ガバナンスを自動変更する根拠にしない。追加投資・新規執行の可否は必ず見送る。
-- `eventRiskLevel=unknown`はイベントなしと解釈せず、「イベントリスク未確認」として警告する。保有レビュー自体は続けてよいが、追加・paper注文・自動執行へ昇格させない。
-- `hasUpcomingEvent=true`または`eventRiskLevel=high`では追加を見送り、必要なら防衛・縮小の検討材料として表示する。ただしレビュー結果を自動注文へ変換しない。
+- `eventRiskLevel=unknown`はイベントなしと解釈せず、「イベントリスク未確認」として警告する。保有レビューは続け、決算情報だけでレビューやrunを停止しない。
+- `hasUpcomingEvent=true`または`eventRiskLevel=high`も注意情報として表示する。決算情報だけで追加・保有継続・防衛・縮小を止めず、レビュー結果を自動注文へ変換しない。
 - `confidenceScore`は`confidenceSemantics=qualitative`の定性的な証拠強度であり、確率・勝率・期待収益率として表示しない。
 
 ## review_profile
@@ -106,7 +106,7 @@ review_profile の既定値=auto
 3. `ctx_execute` の `javascript` で API をまとめて取得し、retry と JSON parse を sandbox 内で完結させる。
 4. レスポンスの`trade-v2`、品質、provenance、必須fieldを検証し、欠落・unknown・partialを推測補完しない。
 5. `feature.trendState`の`regime`、`confirmation`、`persistence`、`strength`を確認する。`indicatorState`の多数決や単一指標で状態を上書きせず、短期advisoryと追加可否を分ける。
-6. `feature.eventRisk`を確認し、unknown / upcoming / highの警告と追加ブロックを記録する。
+6. `feature.eventRisk`を確認し、unknown / upcoming / highを注意情報として記録する。決算情報だけでレビューを止めない。
 7. `ctx_execute` で失敗した場合だけ Playwright/browser fetch、さらに失敗した場合だけ診断用 `curl` へ落とす。
 8. `setup` と `risk` を主根拠に短期advisoryを作る。保有継続の長期理由とは別欄にする。
 9. `portfolio_rules.json` があれば個別レビューの前に portfolio gate 警告を出す。
@@ -153,7 +153,7 @@ review_profile の既定値=auto
 - `買い` `売り` と断定しない
 - API 判定を保有前提へ翻訳する
 - `setupType=no_trade`、`minimumRR` 不足、強い `riskWarnings` では `追加見送り` を優先する
-- `dataQuality`不足、`readiness`不一致、`eventRiskLevel=unknown|high`、`hasUpcomingEvent=true`では`追加見送り`を優先する。unknownを安全・イベントなしへ変換しない。
+- `dataQuality`不足、`readiness`不一致は追加見送りの根拠にする。`eventRiskLevel=unknown|high`、`hasUpcomingEvent=true`は注意情報として残すが、決算情報だけで追加見送りや保有判断を固定しない。unknownを安全・イベントなしへ変換しない。
 - `trendState.regime=range|transition`、confirmation未成立、persistence不足、direction/strength unknownは短期advisoryの不確実性として残し、新規の追加根拠にしない。
 - `target1` 接近や過熱が強く、含み益が大きい場合は `trim` を優先してよい
 - `high_beta` では `gapPercent` `volumeRatioVsMa20` `breakoutCandidate` `timeStopDays` を通常より重く扱う

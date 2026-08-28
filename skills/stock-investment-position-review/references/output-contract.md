@@ -28,13 +28,13 @@
 | provenance | `analysis_endpoint` `analysis_schema` `analysis_source` `analysis_as_of` `analysis_fetched_at` `analysis_timezone` | どの時点・schemaの分析かを再現する |
 | quality | `analysis_data_quality` `analysis_readiness` `analysis_reason_codes` | 品質不足を`advisory_only` / `確認不能`として表示する |
 | trend | `trend_regime` `trend_direction` `trend_strength` `trend_persistence` `trend_confirmation` `trend_reason_codes` | `trendState`を正本にし、個別indicatorの多数決で上書きしない |
-| event | `event_risk_level` `event_has_upcoming_event` `event_days_to_earnings` | unknownは未確認警告、upcoming/highは追加ブロック |
+| event | `event_risk_level` `event_has_upcoming_event` `event_days_to_earnings` | unknown/upcoming/highは未確認・注意情報として表示し、決算情報だけでは追加をブロックしない |
 | review | `short_term_advisory` `analysis_quality_status` `review_status` `analysis_warning_codes` | 短期判断と長期保有ガバナンスを分離する |
 
 ### status / gate
 
 - `analysis_quality_status=complete`は、`schemaVersion=trade-v2`、`dataQuality=complete`、`readiness=ready`、必須field、`asOf`、provenanceが揃う場合だけ付与する。
-- 品質不足、`trendState`の確認不能、`eventRiskLevel=unknown`、upcoming/highは、`review_status=advisory_only`または`blocked`とし、追加・paper注文・自動執行を許可しない。
+- 品質不足、`trendState`の確認不能は、`review_status=advisory_only`または`blocked`とし、追加・paper注文・自動執行を許可しない。`eventRiskLevel=unknown`、upcoming/highは注意情報として記録するが、決算情報だけでreviewを止めない。
 - `eventRiskLevel=unknown`はイベントなしと表示せず、`analysis_warning_codes`に`EVENT_RISK_UNKNOWN`を残す。
 - `trend_regime=range|transition`、confirmation未成立、persistence不足は短期advisoryの不確実性であり、保有継続や自動売却の根拠へ直結させない。
 - `short_term_advisory`の`hold` `trim` `defend` `exit`は保有レビューの提案ラベルで、長期4項目やユーザー操作を上書きしない。

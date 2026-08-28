@@ -79,7 +79,7 @@ description: 日本株high-beta paper運用の日次処理を、intraday解決�
 - `schemaVersion=trade-v2`、`dataQuality=complete`、`readiness=ready`、必須field、`asOf`、`reasonCodes`、provenanceが揃う候補だけを判断へ渡す。
 - `feature.trendState`の`regime`、`direction`、`strength`、`persistence`、`confirmation`、`reasonCodes`を正本とする。`indicatorState`の多数決や単一指標でtrendを上書きしない。
 - `regime=range|transition`、confirmation未成立、persistence不足、direction/strength unknownは、短期entryの根拠にしない。
-- `feature.eventRisk.eventRiskLevel=unknown`、`hasUpcomingEvent=true`、または`high`は、イベントなしと補完せず`event_risk_blocked`としてeligible・paper orderを止める。
+- `feature.eventRisk.eventRiskLevel=unknown`、`hasUpcomingEvent=true`、または`high`は、イベントなしと補完せず注意情報としてmanifestへ残す。決算情報だけで`eligible`やpaper orderを止めない。
 - `confidenceScore`は`confidenceSemantics=qualitative`の定性的証拠強度であり、確率・勝率として扱わない。
 
 ### manifestのAPI証跡
@@ -92,7 +92,7 @@ description: 日本株high-beta paper運用の日次処理を、intraday解決�
 - intradayの`coverage`
 - `trendState`の要約、`eventRisk`の要約、consumer gateの`block_reason`
 
-API取得成功だけではstage成功としない。品質、coverage、event、trendのgateが通った場合だけ次段へ進め、失敗・未完了・確認不能は推測で補完しない。
+API取得成功だけではstage成功としない。品質、coverage、trendのgateが通った場合だけ次段へ進め、eventの取得状態は注意情報として保存する。失敗・未完了・確認不能は推測で補完しない。
 
 ## 単一eligibility契約
 

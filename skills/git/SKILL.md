@@ -10,6 +10,13 @@ description: Git 操作（ブランチ作成、コミット、push、PR 作成�
 - ブランチ名と worktree 名の命名は `branch-worktree-naming` skill に従う
   - source of truth は `branch-worktree-naming` とし、この skill では命名規則を重複定義しない
 
+## worktree作業の終了時
+
+- worktreeを使った作業では、変更・検証・作業結果の整理が完了した最後に、必ずユーザーへ `mainへマージして、mainを更新しますか？ (y/n)` と確認する
+- ユーザーの明示的な `y` を受け取るまで、mainへのマージやmainの更新を行わない
+- `y` の場合は、この skill のmain直push禁止とPR経由のルールに従って作業ブランチをmainへ取り込み、取り込み結果を確認してからmainを更新する
+- `n` の場合は、mainへのマージとmainの更新を行わず、作業ブランチとworktreeを保持したまま状態を報告する
+
 ## push
 
 - mainブランチへの直push禁止

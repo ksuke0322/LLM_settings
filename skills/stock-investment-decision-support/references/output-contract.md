@@ -27,8 +27,8 @@ auto2a / auto2bの短期判断は、候補ごとに次のendpointを取得した
 | provenance | `analysis_schema` `analysis_source` `analysis_as_of` `analysis_fetched_at` `analysis_timezone` | endpoint、schema、基準日、取得時刻を再現できること |
 | quality | `analysis_data_quality` `analysis_readiness` `analysis_reason_codes` | `complete`かつ`ready`以外はeligibleにしない |
 | trend | `trend_regime` `trend_direction` `trend_strength` `trend_persistence` `trend_confirmation` `trend_reason_codes` | `regime`とconfirmation/persistenceを正本とし、個別指標の多数決で上書きしない |
-| event | `event_risk_level` `event_has_upcoming_event` `event_days_to_earnings` | `unknown`、upcoming、highはentry・追加・paper注文をblockする |
-| event evidence | `event_evidence_state` `event_evidence_reason_codes` `event_evidence_source` `event_evidence_as_of` | `official_exact`以外は候補棚に残せてもeligibleにしない |
+| event | `event_risk_level` `event_has_upcoming_event` `event_days_to_earnings` | `unknown`、upcoming、highは注意情報として残し、決算情報だけでentry・追加・paper注文をblockしない |
+| event evidence | `event_evidence_state` `event_evidence_reason_codes` `event_evidence_source` `event_evidence_as_of` | `official_exact`は確認済みとして記録し、それ以外も未確認理由付きで残す。決算情報だけではeligibleを止めない |
 | consumer gate | `analysis_contract_status` `analysis_block_reason_codes` | `eligible`または`blocked`を機械判定できること |
 
 `analysis_reason_codes`と`trend_reason_codes`はAPIの値を保持し、`analysis_block_reason_codes`にはdecision側の固定block reasonを別に記録する。
@@ -42,11 +42,9 @@ auto2a / auto2bの短期判断は、候補ごとに次のendpointを取得した
 - `dataQuality=complete`かつ`readiness=ready`
 - `asOf`、必須field、reason code、provenanceが揃っている
 - `trendState.regime`がsetupと整合し、`confirmation.confirmed=true`、必要な`persistence`、利用可能な`strength`を満たす
-- `eventRiskLevel`が既知で、upcoming/highではない
-- `event_evidence_state=official_exact`で、exact ISO dateが判定時点以降である
 - 公式証跡、setup、risk、limit/stop/targetが揃っている
 
-それ以外は`analysis_contract_status=blocked`とし、欠落・unknown・partialを別値や推測値で補完しない。
+それ以外は、決算情報だけを理由に`analysis_contract_status=blocked`へしない。品質・trend・setup・riskなど他の停止条件は維持し、欠落・unknown・partialを別値や推測値で補完しない。
 
 ## Full
 
@@ -68,7 +66,7 @@ auto2a / auto2bの短期判断は、候補ごとに次のendpointを取得した
 
 - `selection_reason` `thesis_type` `catalyst` などの長文は chat へ全文展開せず、state / sidecar へ残す
 - `compact` では 1 行要約へ圧縮する
-- `auto2a` sidecar では `decision_date` `watchlist_as_of` `age_days` `freshness_rule` `classification_summary` `fetch_failures` `earnings_blackout_check` `lane_discipline` `contract_breach` `run_status` `no_run_reason` を固定 field として残す
+- `auto2a` sidecar では `decision_date` `watchlist_as_of` `age_days` `freshness_rule` `classification_summary` `fetch_failures` `earnings_blackout_check`（注意情報）`lane_discipline` `contract_breach` `run_status` `no_run_reason` を固定 field として残す
 - `auto2a` の `eligible` 候補では `outcome_trace` を固定 field として残す。`execution_status` `not_filled_reason`、`decision_reference_price`（`value` `as_of` `source`）、`next_1_3_business_days`（各日の `date`、`limit_status`、`stop_status`、`target_status`、`first_hit_type`、`first_hit_date`、`first_hit_price`、`observation_status`）、`signal_expiry_reason` を含める。auto2aは注文を送信しないため、約定証跡がない場合は `execution_status=not_submitted`、`not_filled_reason=auto2a_decision_only` とする
 - 全候補で `latest_close`、`latest_close_provenance`（`status=present|missing`、`field_path`、`source`、`as_of`、`fetched_at`、`input_reference`）、`price_reason_codes` を固定 field として残す。`source` は `trade-v2 recent analysis` に固定し、価格欠落時は `latest_close=null`、`status=missing`、`field_path=null` とする。reason codeは `TRADE_V2_UNAVAILABLE`、`PRICE_FIELD_MISSING`、`PRICE_FIELD_INVALID`、`EVENT_RISK_UNKNOWN`、`EVENT_EVIDENCE_MISSING` を使用する
 - eligible候補の`decision_reference_price`の`value`、`as_of`、`source`は、同一recordの`latest_close`およびprice provenanceと一致させる。trace観測日はdecision dateより後の1〜3営業日、昇順、重複なしとし、reach statusと`first_hit_type`が矛盾する場合は公開しない

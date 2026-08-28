@@ -62,7 +62,7 @@ skills側でAPIのフィールドやenumを再定義する場合は、上記の�
 | `feature.metrics` | ATR、EMA傾き、MACD、出来高倍率、高値安値距離、`breakoutCandidate`等 | nullと0を区別し、欠落を中立値へ変換しない |
 | `feature.eventRisk` | `daysToEarnings`, `hasUpcomingEvent`, `eventRiskLevel` | `unknown`を「イベントなし」と解釈しない |
 | `setup` | `setupType`, `setupScore`, `confidence`, `confidenceScore`, `confidenceSemantics`, `evidenceGroups`, `reasons`, `invalidations` | APIが返したsetupを別laneの採用条件へ自動昇格しない |
-| `risk` | entry、stop、target、R/R等 | 品質・イベント・ポートフォリオ制約を満たすまで注文値にしない |
+| `risk` | entry、stop、target、R/R等 | 品質・ポートフォリオ制約を満たすまで注文値にしない。決算情報は注意情報として別に記録する |
 
 ### confidenceの意味
 
@@ -71,11 +71,11 @@ skills側でAPIのフィールドやenumを再定義する場合は、上記の�
 - `evidenceGroups`は各グループ最大25点の方向付き証拠であり、合計点の大きさだけで採用しない。
 - `contradictory`、`partial`、`insufficient`の証拠が含まれる場合、reason codeとともに不確実性を保持する。
 
-### event riskのfail-close
+### event riskの注意情報
 
 - `eventRiskLevel=unknown`は、イベント情報を確認できていない状態である。
-- `unknown`、`hasUpcomingEvent=true`、または`eventRiskLevel=high`の場合、未保有銘柄のentry・追加・paper注文をブロックする。
-- 保有銘柄レビューでは「イベントリスク未確認」として警告を表示してよいが、イベントなし・安全とは断定しない。
+- `unknown`、`hasUpcomingEvent=true`、または`eventRiskLevel=high`の場合、未確認・注意情報として候補・manifestへ保存する。決算情報だけで未保有銘柄のentry・追加・paper注文をブロックしない。
+- 保有銘柄レビューでも「イベントリスク未確認」または「近日イベントあり」として警告を表示するが、イベントなし・安全とは断定しない。
 - `daysToEarnings=null`からイベントがない、または休日であるとは推測しない。
 
 ## インジケータのトレンド判定契約
@@ -128,8 +128,8 @@ skills側でAPIのフィールドやenumを再定義する場合は、上記の�
 | lane | この契約から利用できるもの | この契約だけでは行わないこと |
 | --- | --- | --- |
 | auto1b / breakout discovery | `chartSummary`、`metrics`、品質・provenance | `setup`のentry/RRを候補発見へ逆流させない |
-| auto2a / decision support | `trade-v2`の`trendState`、証拠、setup、risk | 品質・event unknownを無視した採用や注文計画を作らない |
-| auto2b / high-beta flow | `intraday-v1`のcoverageと`trade-v2`の品質・event gate | 日中足欠落を推測補完し、後段を成功扱いにしない |
+| auto2a / decision support | `trade-v2`の`trendState`、証拠、setup、risk | 品質不足を無視した採用や注文計画を作らない。event unknownは注意情報として残す |
+| auto2b / high-beta flow | `intraday-v1`のcoverageと`trade-v2`の品質・trend | 日中足欠落を推測補完し、後段を成功扱いにしない。event unknownだけでは停止しない |
 | auto3 / position review | `trade-v2`の短期advisoryと保有thesisの比較 | advisoryを自動売却・追加注文へ昇格させない |
 | auto4 / allocator | 前段でeligibleになった候補とportfolio state | signal品質やmarket regimeを独自再判定しない |
 

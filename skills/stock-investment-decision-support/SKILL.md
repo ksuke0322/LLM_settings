@@ -34,13 +34,13 @@ watchlistのactive候補だけを評価し、`signal_status`と単一`eligibilit
 2. `market_regime_snapshot.json`を読み、consumerの`regime_snapshot_ref`を同日`snapshot_id`へ固定する。snapshotがstale・unavailable・不一致の場合、regimeを推測せずconsumerをfail-closedする。
 3. `trade-v2`の品質エンベロープを検証する。`schemaVersion=trade-v2`、`dataQuality=complete`、`readiness=ready`、必須フィールド、`asOf`、`reasonCodes`が揃わない候補は、価格やsetupを推測せず`blocked`にする。
 4. `feature.trendState`をトレンドの正本として確認する。`regime`、`confirmation.confirmed`、`persistence`、`strength`を優先し、`indicatorState`の過半数や単一指標だけでtrendを再判定しない。`range`、`transition`、`direction|strength=unknown`、確認未成立は新規entryの根拠にしない。
-5. `feature.eventRisk`を確認する。`eventRiskLevel=unknown`、`hasUpcomingEvent=true`、`eventRiskLevel=high`は、イベントなしと補完せず候補を`blocked`にする。
-6. `earnings_event_evidence`を確認する。`verification_status=official_verified`、`time_precision=date`、ISO日付、`earnings_date>=asOf`を満たさない候補は、候補棚に残せても実行可能とは扱わない。`month_window`、`unverified`、過去日付、欠落は推測せず候補単位で`blocked`にする。
+5. `feature.eventRisk`を確認する。`unknown`、`hasUpcomingEvent=true`、`high`はイベントなしと補完せず、未確認・注意情報として候補へ記録する。決算情報だけで候補やrun全体を`blocked`にしない。trend、品質、setup、riskなど他の条件は通常どおり確認する。
+6. `earnings_event_evidence`を確認する。公式exact dateが取れた場合はその証拠を記録し、`month_window`、`unverified`、過去日付、欠落も未確認のreason code付きで残す。決算情報の状態だけでは実行可否を止めず、イベントなしとも補完しない。
 7. `confidenceScore`は`confidenceSemantics=qualitative`の定性的な証拠合成値として扱う。確率、勝率、期待収益率へ変換しない。`evidenceGroups`に`contradictory`、`partial`、`insufficient`があれば、reason codeとともに不確実性を残す。
-8. 公式証跡、setup、risk、品質・イベント・トレンドのゲートが揃い、limit/stop/targetが検証できる場合だけ`trade_state=eligible`にする。
+8. 公式証跡、setup、risk、品質・トレンドのゲートが揃い、limit/stop/targetが検証できる場合だけ`trade_state=eligible`にする。決算情報は注意情報として出力するが、eligibilityの停止条件にはしない。
 9. 取得失敗・欠落・staleはその候補だけ`blocked`にし、APIの全`reasonCodes`とconsumer側のblock reasonを残す。run全体を止めるのは、必要候補の大半を評価できず判断集合が信頼できない場合だけ。
 
-### 固定block reason
+### 固定reason code
 
 APIの`reasonCodes`とは別に、decision側では次の意味を安定したreason codeで残す。
 
@@ -59,7 +59,7 @@ APIの`reasonCodes`とは別に、decision側では次の意味を安定したre
 - `EVENT_EVIDENCE_MISSING`
 - `ANALYSIS_REQUIRED_FIELD_MISSING`
 
-同じ候補の複数理由は削らず、API由来とconsumer由来を区別して保存する。
+同じ候補の複数理由は削らず、API由来とconsumer由来を区別して保存する。`EVENT_`で始まる決算関連reason codeは、決算情報の未確認・注意を表す記録であり、決算情報だけのblock理由にはしない。
 
 ## 出力契約
 
@@ -134,4 +134,4 @@ sidecar metadataには `run_status`（`completed` / `not_run` / `incomplete` / `
 
 auto2a/auto2bのlane差は入力watchlistとprofileのみ。high-betaでは`high_beta_watchlist.json`から`high_beta_decisions.json`を更新する。
 
-`trade_state=eligible`はAPI取得成功の別名ではない。`dataQuality`、`readiness`、trend、API event risk、候補のexactな公式event evidence、setup、risk、portfolio前段の条件がすべて満たされた場合だけ付与し、どれか一つでも確認不能なら`blocked`を維持する。eventの候補証跡は`event_risk.evidence_state`、API由来の状態は`event_risk.api_state`へ分離して保存する。
+`trade_state=eligible`はAPI取得成功の別名ではない。`dataQuality`、`readiness`、trend、setup、risk、portfolio前段の条件がすべて満たされた場合だけ付与する。決算情報は`event_risk.evidence_state`、API由来の状態は`event_risk.api_state`へ分離して保存するが、決算情報だけでは`blocked`にしない。

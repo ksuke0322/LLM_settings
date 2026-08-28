@@ -5,7 +5,7 @@ stock skill共通で必要な最小契約だけを定める。lane固有の探�
 ## trend_viewer contract
 
 `analysis` / `intraday` のschema、品質status、trendState、eventRisk、coverage、provenanceの意味は [trend-viewer-analysis-contract.md](trend-viewer-analysis-contract.md) を正本とする。
-HTTP成功や値の存在だけで判断可能とはみなさず、`partial`、`insufficient`、`no_data`、`unknown`、`readiness=blocked|unknown`は執行へ進めない。
+HTTP成功や値の存在だけで判断可能とはみなさず、`partial`、`insufficient`、`no_data`、`unknown`、`readiness=blocked|unknown`は執行へ進めない。ただし、決算・イベント情報だけの`unknown`はこの停止条件に含めず、注意情報として扱う。
 lane固有の採用条件は各skillへ戻し、この共通referenceで重複定義しない。
 
 ## Freshness
@@ -28,8 +28,8 @@ lane固有の採用条件は各skillへ戻し、この共通referenceで重複�
 ## event evidence
 
 - 候補棚では、公式exact dateがないイベント情報を`unverified`として保持してよい。
-- 実行可能性では、`verification_status=official_verified`、`time_precision=date`、ISO形式の`earnings_date`、判定時点以降の日付を満たす`official_exact`だけを許可する。
-- `month_window`、`unverified`、過去日付、欠落は`EVENT_EVIDENCE_UNVERIFIED`、`EVENT_DATE_NOT_EXACT`、`EVENT_EVIDENCE_STALE`、`EVENT_EVIDENCE_MISSING`などの候補単位reason codeを残してfail-closeする。
+- 公式exact dateが取れた場合は、`verification_status=official_verified`、`time_precision=date`、ISO形式の`earnings_date`、判定時点以降の日付を満たす証拠として記録する。
+- `month_window`、`unverified`、過去日付、欠落は`EVENT_EVIDENCE_UNVERIFIED`、`EVENT_DATE_NOT_EXACT`、`EVENT_EVIDENCE_STALE`、`EVENT_EVIDENCE_MISSING`などの候補単位reason codeを残す。ただし、決算情報だけでfail-closeせず、他の品質・技術・整合性の停止条件とは分ける。
 - APIの`feature.eventRisk`と公式event evidenceは別証跡として保存し、どちらか一方の成功で他方を補完しない。
 
 ## holdings governance

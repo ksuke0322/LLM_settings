@@ -17,7 +17,7 @@ stock skillsがtrend_viewerの`analysis` / `intraday`をどのlaneで、どの�
 | --- | --- | --- | --- |
 | 正本不明 | APIフィールド・品質・trend・intraday | 共通契約がないとlaneごとに解釈が分かれる状態だった | `stock-shared/references/trend-viewer-analysis-contract.md`を正本化 |
 | 責務境界 | auto1b / auto2b / auto3 / auto4 | discovery、判断、保有レビュー、配分で利用可能な情報が混ざる余地があった | 各consumerへ利用フィールドと禁止事項を明記 |
-| fail-close | `dataQuality`、`readiness`、event unknown、coverage gap | API成功と判断可能を同一視し得る | quality・event・coverageを後段gateへ接続 |
+| fail-close | `dataQuality`、`readiness`、coverage gap | API成功と判断可能を同一視し得る | quality・coverageを後段gateへ接続し、event unknownは注意情報へ分離 |
 | Trigger重複 | large_cap / high_beta / market regime / decision | 候補生成と前段regimeが同じ依頼で発火し得る | bucket、lane、実行順序をdescriptionとmatrixで分離 |
 | 外部由来編集 | `.skill-lock.json`記録skill | stock skillsはlock記録なし | 自作skill候補として扱い、外部lock対象は直接編集しない |
 
@@ -34,7 +34,7 @@ stock skillsがtrend_viewerの`analysis` / `intraday`をどのlaneで、どの�
 | `feature.chartSummary` | trade-v2 | 直接利用なし | 価格・出来高・位置の観測 | setup / riskの補助 | 最新値・損益文脈 | stage証跡 | 直接再評価しない |
 | `feature.metrics` | trade-v2 | 直接利用なし | technical evidence | setup / riskの補助 | review観点 | stage証跡 | 直接再評価しない |
 | `feature.trendState` | trend契約 | 直接利用なし | 1bの採用hard gateへ使わない | trendの正本 | advisoryの正本 | entry gate | 直接再判定しない |
-| `feature.eventRisk` | trade-v2 / 共通契約 | 直接利用なし | 1bへ混在させない | unknown / upcoming / highをblock | unknownは警告、追加block | eligible / orderをblock | eligible結果を受け取る |
+| `feature.eventRisk` | trade-v2 / 共通契約 | 直接利用なし | 1bへ混在させない | 注意情報として記録しblockしない | 警告として記録しblockしない | eligible / orderを決算情報だけではblockしない | eligible結果を受け取る |
 | `setup` / `risk` / entry / RR | trade-v2 | 直接利用なし | 2b専用 | decision専用 | 保有advisoryの短期根拠 | decision stage | signal品質を再判定しない |
 | `GET .../intraday?...` (`intraday-v1`) | OpenAPI / route | 直接利用なし | 1bへ混在させない | 必要なら2bの入力へ渡す | 直接の執行根拠にしない | JST / coverageの主担当 | 直接利用なし |
 | `eligible` / paper state / rules | lane state contract | 生成しない | 生成しない | eligibilityを生成 | 直接変更しない | paper stateへ直列反映 | 採用可否・数量を決定 |
@@ -57,21 +57,21 @@ stock skillsがtrend_viewerの`analysis` / `intraday`をどのlaneで、どの�
 ### `stock-investment-decision-support` / auto2a・auto2b
 
 - `trade-v2`の品質、trendState、eventRisk、setup、riskを候補単位で検証する。
-- `dataQuality=complete`、`readiness=ready`、必要証跡、trend確認、既知のevent risk、setup/riskが揃わない候補は`blocked`。
+- `dataQuality=complete`、`readiness=ready`、必要証跡、trend確認、setup/riskが揃わない候補は`blocked`。event riskのunknown・upcoming・highは注意情報として残すが、それだけでは`blocked`にしない。
 - `analysis_contract_status`はdecision側の`eligible|blocked`を表し、position reviewのstatusとは共有しない。
 - allocatorやpaper約定を直接担当しない。
 
 ### `stock-investment-position-review` / auto3
 
 - `trade-v2`を短期advisoryに使う。
-- `eventRisk=unknown`は未確認警告、upcoming/highは追加blockであり、保有レビュー自体を自動売却へ変換しない。
+- `eventRisk=unknown|upcoming|high`は未確認・注意情報として記録する。決算情報だけで追加blockにせず、保有レビュー自体を自動売却へ変換しない。
 - `trendState`はadvisoryの根拠だが、長期保有thesis・ユーザー判断・execution stateとは分離する。
 - quality statusは`analysis_quality_status`、review側の状態は`review_status`とし、decision側の`analysis_contract_status`と衝突させない。
 
 ### `high-beta-daily-flow` / b daily orchestration
 
 - `intraday-v1`のJST日付、coverage、gap、OHLC欠落、qualityを日次stageのgateとmanifestへ保存する。
-- `trade-v2`のquality、trend、eventをauto2b・allocator・paper stateの前段で確認する。
+- `trade-v2`のqualityとtrendをauto2b・allocator・paper stateの前段で確認する。eventは取得状態と注意情報をmanifestへ残すが、決算情報だけでは後段を止めない。
 - `no_data` / `unknown`を休日・休場と推測せず、市場状態証跡がない場合は`incomplete`またはblockedで停止する。
 - 前段`failed|incomplete`から後段を推測実行しない。
 
