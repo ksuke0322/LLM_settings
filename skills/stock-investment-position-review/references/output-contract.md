@@ -26,15 +26,15 @@
 | 領域 | 固定field | 用途 |
 | --- | --- | --- |
 | provenance | `analysis_endpoint` `analysis_schema` `analysis_source` `analysis_as_of` `analysis_fetched_at` `analysis_timezone` | どの時点・schemaの分析かを再現する |
-| quality | `analysis_data_quality` `analysis_readiness` `analysis_reason_codes` | 品質不足を`advisory_only` / `確認不能`として表示する |
+| quality | `analysis_data_quality` `analysis_readiness` `analysis_reason_codes` | 品質不足を`advisory_only` / `確認不能`として表示する。ただし決算理由だけのraw停止はconsumerの追加投資判定を止めない |
 | trend | `trend_regime` `trend_direction` `trend_strength` `trend_persistence` `trend_confirmation` `trend_reason_codes` | `trendState`を正本にし、個別indicatorの多数決で上書きしない |
-| event | `event_risk_level` `event_has_upcoming_event` `event_days_to_earnings` | unknown/upcoming/highは未確認・注意情報として表示し、決算情報だけでは追加をブロックしない |
+| event | `event_risk_level` `event_has_upcoming_event` `event_days_to_earnings` `event_advisory` | unknown/upcoming/highは未確認・注意情報として表示し、決算情報だけでは追加をブロックしない |
 | review | `short_term_advisory` `analysis_quality_status` `review_status` `analysis_warning_codes` | 短期判断と長期保有ガバナンスを分離する |
 
 ### status / gate
 
 - `analysis_quality_status=complete`は、`schemaVersion=trade-v2`、`dataQuality=complete`、`readiness=ready`、必須field、`asOf`、provenanceが揃う場合だけ付与する。
-- 品質不足、`trendState`の確認不能は、`review_status=advisory_only`または`blocked`とし、追加・paper注文・自動執行を許可しない。`eventRiskLevel=unknown`、upcoming/highは注意情報として記録するが、決算情報だけでreviewを止めない。
+- 品質不足、`trendState`の確認不能は、`review_status=advisory_only`または`blocked`とし、追加・paper注文・自動執行を許可しない。ただし決算理由だけによるrawの品質停止は、`event_advisory`へ分けて追加投資のconsumer判定を続ける。`eventRiskLevel=unknown`、upcoming/highは注意情報として記録するが、決算情報だけでreviewを止めない。
 - `eventRiskLevel=unknown`はイベントなしと表示せず、`analysis_warning_codes`に`EVENT_RISK_UNKNOWN`を残す。
 - `trend_regime=range|transition`、confirmation未成立、persistence不足は短期advisoryの不確実性であり、保有継続や自動売却の根拠へ直結させない。
 - `short_term_advisory`の`hold` `trim` `defend` `exit`は保有レビューの提案ラベルで、長期4項目やユーザー操作を上書きしない。
@@ -68,3 +68,4 @@
 - `current_holdings.json` では各 holding の `last_user_action` `last_action_date` `last_review_decision` `decision_reason_note` を execution-aware field として優先する
 - reversal がある銘柄は sidecar でも `reversal` と切替理由を 1 行で残し、state の `decision_reason_note` と対応づける
 - `short_term_advisory`には、短期trade-v2のsetup/risk根拠、品質・event警告、trendStateの要約を保持する。`long_hold_rationale`などの長期項目へ短期advisoryをコピーしない
+- 新規の`short_term_advisory.event_advisory`は`policy=advisory_only`、`blocking=false`、状態、rawの取得結果、`reason_codes`、`source`を持つ。`additional_investment_decision`を必ず記録し、決算reason codeは`additional_investment_reason_codes`へ入れない

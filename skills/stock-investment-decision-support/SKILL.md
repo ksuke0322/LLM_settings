@@ -32,13 +32,13 @@ watchlistのactive候補だけを評価し、`signal_status`と単一`eligibilit
 
 1. watchlistの期限とinvalidationを確認する。
 2. `market_regime_snapshot.json`を読み、consumerの`regime_snapshot_ref`を同日`snapshot_id`へ固定する。snapshotがstale・unavailable・不一致の場合、regimeを推測せずconsumerをfail-closedする。
-3. `trade-v2`の品質エンベロープを検証する。`schemaVersion=trade-v2`、`dataQuality=complete`、`readiness=ready`、必須フィールド、`asOf`、`reasonCodes`が揃わない候補は、価格やsetupを推測せず`blocked`にする。
+3. `trade-v2`の品質エンベロープを検証する。`schemaVersion=trade-v2`、`dataQuality=complete`、`readiness=ready`、必須フィールド、`asOf`、`reasonCodes`を確認する。`readiness`が決算理由だけで`blocked`の場合は、rawの値を保存したうえで決算理由をconsumerのblockから外し、価格・trend・setup・riskなど残りの条件を評価する。決算以外の品質不足や必須フィールド欠落は、価格やsetupを推測せず`blocked`にする。
 4. `feature.trendState`をトレンドの正本として確認する。`regime`、`confirmation.confirmed`、`persistence`、`strength`を優先し、`indicatorState`の過半数や単一指標だけでtrendを再判定しない。`range`、`transition`、`direction|strength=unknown`、確認未成立は新規entryの根拠にしない。
-5. `feature.eventRisk`を確認する。`unknown`、`hasUpcomingEvent=true`、`high`はイベントなしと補完せず、未確認・注意情報として候補へ記録する。決算情報だけで候補やrun全体を`blocked`にしない。trend、品質、setup、riskなど他の条件は通常どおり確認する。
+5. `feature.eventRisk`を確認する。`unknown`、`hasUpcomingEvent=true`、`high`はイベントなしと補完せず、未確認・注意情報として`event_advisory`へ記録する。rawの`readiness`やAPIの決算reason codeがblockでも、決算理由だけならconsumerの`eligibility`やrun全体を`blocked`にしない。trend、品質、setup、riskなど他の条件は通常どおり確認する。
 6. `earnings_event_evidence`を確認する。公式exact dateが取れた場合はその証拠を記録し、`month_window`、`unverified`、過去日付、欠落も未確認のreason code付きで残す。決算情報の状態だけでは実行可否を止めず、イベントなしとも補完しない。
 7. `confidenceScore`は`confidenceSemantics=qualitative`の定性的な証拠合成値として扱う。確率、勝率、期待収益率へ変換しない。`evidenceGroups`に`contradictory`、`partial`、`insufficient`があれば、reason codeとともに不確実性を残す。
-8. 公式証跡、setup、risk、品質・トレンドのゲートが揃い、limit/stop/targetが検証できる場合だけ`trade_state=eligible`にする。決算情報は注意情報として出力するが、eligibilityの停止条件にはしない。
-9. 取得失敗・欠落・staleはその候補だけ`blocked`にし、APIの全`reasonCodes`とconsumer側のblock reasonを残す。run全体を止めるのは、必要候補の大半を評価できず判断集合が信頼できない場合だけ。
+8. 公式証跡、setup、risk、品質・トレンドのゲートが揃い、limit/stop/targetが検証できる場合だけ`trade_state=eligible`にする。決算情報は`event_advisory`へ出力し、`eligibility.reason_codes`や`consumer_blocking_reason_codes`の停止条件には入れない。
+9. 取得失敗・欠落・staleはその候補だけ`blocked`にし、raw APIの全`reasonCodes`とconsumer側のblock reasonを分けて残す。ただし決算reason codeだけの場合は、候補を`blocked`にせず他の条件を評価する。run全体を止めるのは、必要候補の大半を評価できず判断集合が信頼できない場合だけ。
 
 ### 固定reason code
 

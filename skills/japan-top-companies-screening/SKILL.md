@@ -42,6 +42,8 @@ description: "東証33業種を基準に、日本株の large_cap 候補を洗�
   - `event_risk`
   - `priority`
   - `status=watch`
+
+`event_risk` は確認できた決算・イベントの補助情報を保存する `event_advisory` であり、決算情報の未確認・欠落・取得失敗・形式不正だけで候補を除外したり処理を停止したりしない。公式の正確な日付がない場合は決算直前と推測しない。
 - 追記互換:
   - `macro_sensitivity`
   - `sector_cycle`

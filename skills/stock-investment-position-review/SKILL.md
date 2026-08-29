@@ -76,9 +76,9 @@ review_profile の既定値=auto
 
 ### 短期advisoryの品質ゲート
 
-- `schemaVersion`が`trade-v2`でない、`dataQuality`が`complete`でない、`readiness`が`ready`でない、必須fieldや`asOf`が欠ける場合は、レビューを`advisory_only` / `確認不能`として出す。
+- `schemaVersion`が`trade-v2`でない、`dataQuality`が`complete`でない、`readiness`が`ready`でない、必須fieldや`asOf`が欠ける場合は、レビューを`advisory_only` / `確認不能`として出す。ただし`readiness`の停止理由が決算理由だけなら、rawの停止状態を保存しつつ決算理由をconsumerの停止理由から外し、追加投資を含むレビュー判定を続ける。
 - 上記の品質不足は保有継続・利確・防衛の長期ガバナンスを自動変更する根拠にしない。追加投資・新規執行の可否は必ず見送る。
-- `eventRiskLevel=unknown`はイベントなしと解釈せず、「イベントリスク未確認」として警告する。保有レビューは続け、決算情報だけでレビューやrunを停止しない。
+- `eventRiskLevel=unknown`はイベントなしと解釈せず、「イベントリスク未確認」として`event_advisory`へ保存する。保有レビューは続け、決算情報だけでレビューやrunを停止しない。
 - `hasUpcomingEvent=true`または`eventRiskLevel=high`も注意情報として表示する。決算情報だけで追加・保有継続・防衛・縮小を止めず、レビュー結果を自動注文へ変換しない。
 - `confidenceScore`は`confidenceSemantics=qualitative`の定性的な証拠強度であり、確率・勝率・期待収益率として表示しない。
 
@@ -153,7 +153,7 @@ review_profile の既定値=auto
 - `買い` `売り` と断定しない
 - API 判定を保有前提へ翻訳する
 - `setupType=no_trade`、`minimumRR` 不足、強い `riskWarnings` では `追加見送り` を優先する
-- `dataQuality`不足、`readiness`不一致は追加見送りの根拠にする。`eventRiskLevel=unknown|high`、`hasUpcomingEvent=true`は注意情報として残すが、決算情報だけで追加見送りや保有判断を固定しない。unknownを安全・イベントなしへ変換しない。
+- `dataQuality`不足、`readiness`不一致は追加見送りの根拠にする。ただし決算reason codeだけによる`readiness`不一致は例外とし、rawの状態を残しても決算だけで追加見送りや保有判断を固定しない。`eventRiskLevel=unknown|high`、`hasUpcomingEvent=true`は`event_advisory`へ残し、unknownを安全・イベントなしへ変換しない。
 - `trendState.regime=range|transition`、confirmation未成立、persistence不足、direction/strength unknownは短期advisoryの不確実性として残し、新規の追加根拠にしない。
 - `target1` 接近や過熱が強く、含み益が大きい場合は `trim` を優先してよい
 - `high_beta` では `gapPercent` `volumeRatioVsMa20` `breakoutCandidate` `timeStopDays` を通常より重く扱う

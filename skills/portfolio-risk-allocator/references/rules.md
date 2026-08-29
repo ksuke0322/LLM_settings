@@ -10,6 +10,8 @@
 - `max_risk_per_trade_pct`
 - `max_position_value_jpy_high_beta`
 
+`earnings_blackout_days` は既存設定との互換性とreadbackのために残すが、これだけで配分を止めたり数量を下げたりする条件には使わない。決算・イベントの `known` `unknown` `fetch_failed` `malformed`、未確認、接近は `event_advisory` として記録する。決算情報だけで `block` や `hot` にせず、実際の配分停止は保有枠、テーマ集中、現金、損失上限などのポートフォリオ制約で判断する。
+
 ## Allocation Outputs
 
 - `full`
@@ -28,7 +30,7 @@
 - `elevated`
   - どちらかの bucket やテーマに偏り始めている
 - `hot`
-  - high-beta 過密、同テーマ集中、イベント接近が重なっている
+  - high-beta 過密、同テーマ集中、その他のポートフォリオ上の懸念が重なっている。イベント情報だけで `hot` にはしない
 
 ## Decision Discipline
 
