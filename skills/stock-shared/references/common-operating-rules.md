@@ -32,6 +32,13 @@ lane固有の採用条件は各skillへ戻し、この共通referenceで重複�
 - `complete`で閾値に届かない場合の「候補なし」と、入力不足による`incomplete`を区別する。snapshot、manifest、validator、登録台帳の対象日・revision・hash・statusは同じ値をread-backし、atomic保存、同一source identityの重複拒否、既存completeの保護を満たす。
 - この派生入力はpaper-only・read-onlyの境界にあり、auto-d〜gのstate、保有銘柄、注文、risk、regime、c-flow、b-flowを更新しない。fixture/manualの成功をscheduled runtimeの成功へ昇格させず、scheduled runtimeが未観測なら未観測のまま扱う。
 
+## c-flow comparison input
+
+- c-flowとauto-fの比較入力正本は`outputs/c-flow/c-flow-read-only-comparison-{target_date}.json`だけとし、c-flowのcandidate、candidate population、`c_flow/state`、注文、保有、評価stateをauto-fが直接読まない。snapshotのsource run key、revision、hash、as_of、対象日、signal status、read-only flagsを一緒にread-backする。
+- c-flow collection/evaluationが未実行、未完了、契約読取り不能、未来日付、invalidの場合はsnapshotを`incomplete`（failure reason付き）として扱い、signalsを空にして、auto-fのcomparison input・acceptance・eligible・promotionだけをfail-closeする。auto-f自身の技術signal generationと、c-flow比較の未確認を混ぜない。
+- `ticker + signal_date`でだけ突き合わせ、両方の完了した有限PnLだけを比較指標へ使う。完全な損益組が2件未満なら`CORRELATION_SAMPLE_INSUFFICIENT`を残し、相関成功や採用成功へ変換しない。0件のcompleteは全実行済みで実際に0件だった証跡がある場合だけ許可する。
+- canonical snapshotは対象日ごとにatomicに一度だけ保存し、同じ対象日の重複・上書きを拒否する。後日観測は別revision/hash/as_ofの証跡として保存し、既存のcompleteを変更しない。比較はpaper-only・read-onlyで、auto-d〜gの共有stateや後段laneへ結果を伝播させない。
+
 ## event evidence
 
 - 候補棚では、公式exact dateがないイベント情報を`unverified`として保持してよい。
