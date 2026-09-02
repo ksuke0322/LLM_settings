@@ -15,6 +15,7 @@ description: 日本株high-beta paper運用の日次処理を、intraday解決�
 - KPI: `paper_high_beta_metrics.json`
 - 配分: `paper_high_beta_allocator_snapshot.json`
 - 実行証跡: `outputs/b-daily-run-YYYY-MM-DD.json`
+- 継続watchlistの当日再評価証跡: `outputs/auto1b-watchlist-recheck-YYYY-MM-DD.json`
 - run品質時系列: `outputs/b-daily-quality-history.json`
 - 日次地合いcontext: `market_regime_snapshot.json`
 - 見送り候補の事後観測: `opportunity_shadow_ledger.json`
@@ -27,8 +28,8 @@ description: 日本株high-beta paper運用の日次処理を、intraday解決�
 1. 18:30 snapshotを優先し、既存pending orderとopen positionのfill/exitを先に解決する。
 2. `node b_daily_high_beta_pipeline.js --as-of YYYY-MM-DD`を実行する。orchestratorはAuto1b収集器で当日の市場breadth・Yahooランキング40銘柄・Yahoo/Kabutan/Minkabu・TDnet・trade-v2を取得し、`market_evidence.json`を生成して`node validate_market_evidence.mjs`を通す。
 3. market evidenceの成否にかかわらず`daily_market_regime_snapshot`を生成し、同一`as_of`のbreadthだけをcurrent contextへ採用する。`market_regime_snapshot.json`の`data_status`、各axisのstate、`reason_codes`、出力revisionをmanifestへ保存する。
-4. snapshotとvalidatorが通過した場合だけauto1b watchlist、auto2bのlive trade-v2判断、allocator、paper state更新を直列実行する。`approve`は必ず`pending_order`になる。
-5. orchestratorが全stageの入力revision、出力revision、reason_codesを単一manifestへ記録する。
+4. snapshotとvalidatorが通過した場合だけauto1b watchlistを更新し、`recheck_policy=next_trading_day`で継続する候補を`auto1b_watchlist_recheck`で当日再評価してからAuto2bへ渡す。当日再評価が完全な候補だけがtrade-v2判断へ進み、再評価未完了の候補はAuto2bで`watchlist_recheck_incomplete`としてfail-closeする（trade-v2、注文、allocator、paper state更新は行わない）。再評価stage自体の実行失敗・証跡欠落はAuto2b以降を停止する。`approve`は必ず`pending_order`になる。
+5. orchestratorが再評価を含む全stageの入力revision、出力revision、reason_codes、継続・再評価済み・未完了・trade-v2の件数を単一manifestへ記録する。
 6. auto2bの後、paper state更新前にread-onlyの`shadow_observations.json`を生成し、その観測だけで`opportunity_shadow_ledger`を更新する。screened、candidate evidence、watch、reserve、blockedをpaper stateと別sidecarへ記録する。`opportunity_id`、source manifest、candidate as_of、1/3/5/10営業日窓、block理由を必須にし、注文・ポジションstateへの参照を持たせない。観測source失敗、基準価格欠落、観測バー不足は候補単位で`incomplete`とし、paper stateを更新しない。
 7. Auto1bの `ranked → quote_available → evidence_current/evidence_stale → candidate_evidence → adopted → watchlist/reserve → eligible → orders` を当日 `as_of` の `period_funnel` としてmanifestへ保存し、`adopted`（候補棚採用）と`execution_blocked`（実行不可）を分離する。`adoption_block_reason_counts`と`execution_block_reason_counts`を候補別に集計し、過去履歴の約定・決済は `cumulative_funnel` に分離して当日候補数と混ぜない。`adopted`はeligibleやpaper注文を意味しない。
 8. manifestの`run_key=b-daily-YYYY-MM-DD`、`input_as_of`、`publish_scope`、`duplicate_guard`を検証する。同じas_ofのcompleted manifestが既にあれば、pipelineを再実行せず`duplicate_skipped`として終了する。
@@ -43,7 +44,7 @@ description: 日本株high-beta paper運用の日次処理を、intraday解決�
 - `technical/event`の候補品質不足やregimeのpartialは、運用異常と混同せず`monitoring_points`と`block_reason_counts`に残す。candidateのblockを理由にgateを緩和しない。
 - 受入れ・cadenceの確認は、日次点検に加えて行う深掘りレビューであり、削除しない。`b_flow_experiments/config.json`のsample policyを読み、real runだけを数え、fixtureや過去runの再構成だけで運用受入れ完了としない。設定値が読めない場合は`incomplete`または`observation_required`として記録する。
 
-前段が`failed`または`incomplete`なら後段は実行せず、manifestに停止理由を書く。休日・休場日はstateを進めず`market_closed`を記録する。
+market snapshot、Auto1b収集、再評価stage自体が`failed`または`incomplete`なら、該当する後段は実行せずmanifestに停止理由を書く。ただし候補単位の再評価未完了は、Auto2bが`watchlist_recheck_incomplete`として記録するために限り受け取り、trade-v2取得、注文、allocator、paper state更新へ進めない。休日・休場日はstateを進めず`market_closed`を記録する。
 
 ## 実行頻度の判断
 
