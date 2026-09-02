@@ -39,6 +39,16 @@ lane固有の採用条件は各skillへ戻し、この共通referenceで重複�
 - `ticker + signal_date`でだけ突き合わせ、両方の完了した有限PnLだけを比較指標へ使う。完全な損益組が2件未満なら`CORRELATION_SAMPLE_INSUFFICIENT`を残し、相関成功や採用成功へ変換しない。0件のcompleteは全実行済みで実際に0件だった証跡がある場合だけ許可する。
 - canonical snapshotは対象日ごとにatomicに一度だけ保存し、同じ対象日の重複・上書きを拒否する。後日観測は別revision/hash/as_ofの証跡として保存し、既存のcompleteを変更しない。比較はpaper-only・read-onlyで、auto-d〜gの共有stateや後段laneへ結果を伝播させない。
 
+## auto-g sector feature input
+
+- auto-gが読むセクター特徴量の正本は`experimental_flows/state/shared/snapshots/auto_dg_sector_feature_snapshot-{target_date}.json`だけとする。既存のuniverse/mapping snapshot、b-flow・c-flow・auto-e・auto-fの候補やstate、Task 08のregime値を特徴量の代用にしない。
+- producerはtarget_date時点で有効なTSE33全sectorを対象にし、mappingの有効期間、memberの所属、benchmark、member price、turnover、sector weightを一つのsnapshotへ固定する。sectorの欠落、重複、future、stale、unknown、source hash不正が一つでもあれば、partialな順位やtop 3を作らず`incomplete`または`blocked`にする。
+- 20日・60日returnは`simple_close_to_close`、breadthは同じas_ofのeligible memberを分母とする`advancing_count / eligible_count`、leaderは`average_turnover_jpy`降順の上位2件、concentrationは選定leaderのsector内weight合計を分母付きで記録する。各値とmapping、sectorにはas_of、source revision、source hash、必要な件数・除外理由を残す。
+- `auto_dg_input_collectors.js`の共有入力収集は、4つの共通入力に加えてこのauto-g専用派生snapshotを別artifactとして生成・検証・canonical pathへatomic保存する。入力不足、契約不一致、対象日違い、既存completeへの上書き、同一対象日の重複は理由付きで停止する。
+- auto-g consumerはsnapshotをread-onlyで検証し、全33 sectorから平均rank、breadth、top two leader、concentrationを計算する。snapshotの欠損、incomplete、stale、future、mapping不正、feature unknownは候補なしやneutral、0、部分ランキングへ変換せず、laneを`incomplete`または`blocked`にする。
+- signalは`Asia/Tokyo`のMondayだけを対象とし、約定モデルは`next-session-open`、保有上限は20取引日とする。これらの閾値はauto-g契約とlane configから読み、特徴量snapshotのstatus・failure reason・method version・source lineageをmanifestとvalidatorへread-backする。consumerはpaper-only・read-onlyで、注文、保有、portfolio、regime、他lane stateを変更しない。
+- fixture・単体テスト・手動実行の成功をscheduled runtimeの成功へ昇格させない。対象日のcanonical snapshot、入力bundle、auto-g artifact、manifest、validator、登録write setを個別に確認し、scheduled runtimeが未観測なら未観測のまま扱う。
+
 ## event evidence
 
 - 候補棚では、公式exact dateがないイベント情報を`unverified`として保持してよい。
