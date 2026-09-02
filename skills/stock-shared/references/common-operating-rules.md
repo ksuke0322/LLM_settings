@@ -25,6 +25,13 @@ lane固有の採用条件は各skillへ戻し、この共通referenceで重複�
 - 判断に使ったsource、as_of、入力revision、出力revisionを追跡可能にする。
 - state/JSON sidecarを正本とし、automation memoryやchat proseを機械再利用の正本にしない。
 
+## auto-e residual input
+
+- auto-eの派生入力正本は`experimental_flows/state/shared/snapshots/auto_dg_residual_input_snapshot-{target_date}.json`とし、`auto_e_residual_input_contract.json`の計算窓・source identity・保存方針を読む。consumerはこのsnapshotをread-onlyで使い、raw market dataや別laneの出力から残差・基準値・出来高を推測しない。
+- 共通入力bundleのstatusとauto-e派生入力のstatusを分けて保持する。派生入力の欠落、未来日付、effective mapping・TSE33構築業種ベンチマーク・基準値・出来高・source hashの不足は`incomplete`または`blocked`として理由を残し、`complete`や「候補なし」へ変換しない。
+- `complete`で閾値に届かない場合の「候補なし」と、入力不足による`incomplete`を区別する。snapshot、manifest、validator、登録台帳の対象日・revision・hash・statusは同じ値をread-backし、atomic保存、同一source identityの重複拒否、既存completeの保護を満たす。
+- この派生入力はpaper-only・read-onlyの境界にあり、auto-d〜gのstate、保有銘柄、注文、risk、regime、c-flow、b-flowを更新しない。fixture/manualの成功をscheduled runtimeの成功へ昇格させず、scheduled runtimeが未観測なら未観測のまま扱う。
+
 ## event evidence
 
 - 候補棚では、公式exact dateがないイベント情報を`unverified`として保持してよい。
