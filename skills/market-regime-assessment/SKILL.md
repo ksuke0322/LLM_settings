@@ -15,6 +15,13 @@ description: "日本株短期運用の market regime を整理し、large_cap �
 - favored / avoid は bucket 単位に留める
 - stale snapshot や古い regime メモを current 判定へ流用しない
 
+## 鮮度とreadiness契約
+
+- 日次の必須軸は `breadth` `index_trend` `volatility` `sector_rotation` の4つに固定する。各軸は要求した `as_of` と一致し、`status`、`source_kind`、`source_url`、`published_at`、`fetched_at`、`observations`、`reason_codes`、laneを持たなければならない
+- 必須軸の欠落、取得不能、stale、別lane、AS_OF不一致は `not_ready` とし、`neutral` や古い軸で補完しない。event情報は補助情報であり必須軸の代替にしない
+- `large_cap_watchlist.json` は週次更新を維持する。日次snapshotから0〜7暦日の `large_cap` contextだけを `observed` として利用し、前日・最新・別laneのファイルへ自動切替しない
+- `market_regime_snapshot.json` の `readiness` がregime入力の正本である。schema検証に成功しても、readinessが `ready` でなければsimulation実行可能とはみなさない
+
 ## 入力
 
 - 指定がなければ日本株短期運用全体の地合い判定として扱う

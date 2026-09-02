@@ -27,7 +27,9 @@ description: "東証33業種を基準に、日本株の large_cap 候補を洗�
 
 - この skill は `auto1a` 相当の watchlist producer として扱う
 - `large_cap_watchlist.json` は `as_of` `review_mode` `watchlist` が必須
-- automation run では `as_of` が 7 calendar days を超えたら stale とみなして停止する
+- `large_cap_watchlist.json` は週次更新を維持し、日次snapshotの要求AS_OFと同日であることは要求しない
+- automation run では、日次snapshotのAS_OFから `as_of` が0〜7暦日の範囲だけを週次contextとして利用し、7暦日を超えたら stale とみなして停止する
+- 週次watchlistが古い場合、前日・最新・別laneのstateへ自動切替しない
 - `current_holdings.json` を保有除外に使う場合、`holdings[].ticker` を正本に除外する
 
 ## state 出力契約
@@ -78,7 +80,7 @@ description: "東証33業種を基準に、日本株の large_cap 候補を洗�
 2. JPX の東証33業種を基準にする。
 3. [references/criteria.md](references/criteria.md) の定量条件で候補を絞る。
 4. `current_holdings.json` を検証し、確定保有銘柄を ticker ベースで除外する。
-5. `market_regime_snapshot.json`を読み、`snapshot_id`と`as_of`をstate/sidecarへ保存する。snapshotがstale・unavailable・不一致なら、regimeを推測せず、候補のregime overlayと実行判断を未確認として扱う。
+5. `market_regime_snapshot.json`を読み、`snapshot_id`と`as_of`をstate/sidecarへ保存する。root snapshotのreadinessが `ready` で、要求AS_OFと日次4軸が一致する場合だけregime overlayに使う。snapshotがstale・unavailable・不一致なら、watchlist内部の `market_regime` や別ファイルで補完せず、候補のregime overlayと実行判断を未確認として扱う。
 6. 財務安全性、収益力、業界地位、regime 適合を確認する。
 7. 母集団を作り、重点監視 `10〜15社` へ圧縮する。
 8. 継続レビュー時は残留理由と差し替え理由を明示する。
