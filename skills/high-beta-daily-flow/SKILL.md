@@ -46,6 +46,13 @@ description: 日本株high-beta paper運用の日次処理を、intraday解決�
 
 market snapshot、Auto1b収集、再評価stage自体が`failed`または`incomplete`なら、該当する後段は実行せずmanifestに停止理由を書く。ただし候補単位の再評価未完了は、Auto2bが`watchlist_recheck_incomplete`として記録するために限り受け取り、trade-v2取得、注文、allocator、paper state更新へ進めない。休日・休場日はstateを進めず`market_closed`を記録する。
 
+### b-flow実験のState分離証跡
+
+- `b_flow_experiment_orchestrator.js`は、canonical baseline（`b-flow`）と各実験lane（`b-flow-2a`、`b-flow-2b`、`b-flow-2c`）について、実際に使用したState root・ファイル・canonical rootをmanifestとquality historyへ保存する。証跡には`scope`、実体の存在、symlink、canonicalとのパス重複、lane間の共有、State hashの実行前後、canonical hashの実行前後、canonical write検出結果を含める。
+- 実験laneは専用State rootを使い、canonical rootを変更してはならない。4 laneすべての証跡が揃い、manifestとquality historyのlane別証跡が完全一致し、validatorが通過した場合だけ受入れ可能とする。欠落・scope違い・path重複・symlink・共有・hash不一致・canonical writeは`CONFIRMATION_UNAVAILABLE`へfail-closeし、成功や安全を推測しない。
+- canonical baselineの実行ではcanonical Stateへの通常のpublishを許可するが、`canonical_baseline`のroot一致を確認する。実験lane実行前後のcanonical State hashは不変でなければならず、baselineのwrite許可を実験laneのwrite許可へ拡張しない。
+- この証跡はpaper-onlyの実験境界を確認するものであり、戦略・risk・threshold・cadence・実取引を変更しない。fixture/manual runの成功をscheduled runtimeの証拠へ昇格させず、過去日の不完全な実行を後から`PASSED`へ変更しない。
+
 ## 実行頻度の判断
 
 - 品質履歴が`b_flow_experiments/config.json`のsample policyを満たすまで`current_cadence`を維持し、paused中の単独high-beta automationを再開しない。
