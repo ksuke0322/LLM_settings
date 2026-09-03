@@ -10,6 +10,11 @@
 - 変更は目的達成に必要な最小限に留める。
 - このAGENTS.mdは全体共通ルール、skillsは個別作業の具体ルールとする。競合時は、skillsに明示された範囲でskillsを優先する。
 
+## worktree 原則
+
+- branch を切って作業を分離することを禁止する。並行作業を見越して必ず worktree を切って作業する。
+- worktree 運用は `~/.agents/skills/branch-worktree-naming/SKILL.md` に従う。
+
 ## ntfy作業要約契約
 
 CodexとClaude CodeのStop/SubagentStop通知では、ユーザーの依頼ではなく、そのターンで実際に行った作業を本文に使います。
