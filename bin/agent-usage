@@ -1,0 +1,339 @@
+#!/usr/bin/env bash
+
+# Claude Code と Codex の使用量を1回取得して端末に表示する。
+#
+# 依存: bash 3.2+, jq, curl, codex
+# Claude の認証情報は既存の credentials.json または macOS Keychain から読む。
+# 認証トークンや取得したJSONは表示・保存しない。
+
+set -u
+set -o pipefail
+
+CLAUDE_USAGE_URL='https://api.anthropic.com/api/oauth/usage'
+CLAUDE_USAGE_BETA='oauth-2025-04-20'
+REQUEST_TIMEOUT_SECONDS="${AGENT_USAGE_TIMEOUT_SECONDS:-10}"
+CODEX_WAIT_SECONDS="${AGENT_USAGE_CODEX_WAIT_SECONDS:-6}"
+
+CLAUDE_STATUS=1
+CLAUDE_ERROR='取得されていません'
+CLAUDE_FIVE_PERCENT=''
+CLAUDE_FIVE_RESET=''
+CLAUDE_WEEK_PERCENT=''
+CLAUDE_WEEK_RESET=''
+
+CODEX_STATUS=1
+CODEX_ERROR='取得されていません'
+CODEX_FIVE_PERCENT=''
+CODEX_FIVE_RESET=''
+CODEX_WEEK_PERCENT=''
+CODEX_WEEK_RESET=''
+
+command_available() {
+  command -v "$1" >/dev/null 2>&1
+}
+
+claude_access_token() {
+  local credentials_path="$HOME/.claude/.credentials.json"
+  local token=''
+
+  if [[ -r "$credentials_path" ]] && command_available jq; then
+    token=$(jq -r '.claudeAiOauth.accessToken // empty' "$credentials_path" 2>/dev/null || true)
+  fi
+
+  if [[ -z "$token" ]] && command_available security && command_available jq; then
+    token=$(security find-generic-password -s 'Claude Code-credentials' -w 2>/dev/null \
+      | jq -r '.claudeAiOauth.accessToken // empty' 2>/dev/null || true)
+  fi
+
+  printf '%s' "$token"
+}
+
+claude_response_is_valid() {
+  jq -e '
+    (.five_hour.utilization | type == "number") and
+    (.seven_day.utilization | type == "number")
+  ' >/dev/null 2>&1 <<<"$1"
+}
+
+iso_to_epoch() {
+  local iso=$1
+  local base
+
+  [[ -z "$iso" ]] && return 0
+
+  # ClaudeはISO8601のUTC時刻を返す。小数秒と末尾のUTCオフセットを除いて読む。
+  base=${iso%%.*}
+  base=${base%%+*}
+  base=${base%Z}
+  date -j -u -f '%Y-%m-%dT%H:%M:%S' "$base" '+%s' 2>/dev/null
+}
+
+rounded_percent() {
+  jq -r 'round' <<<"$1" 2>/dev/null
+}
+
+fetch_claude() {
+  local token response status_marker http_status
+
+  CLAUDE_STATUS=1
+  CLAUDE_ERROR='取得失敗'
+  CLAUDE_FIVE_PERCENT=''
+  CLAUDE_FIVE_RESET=''
+  CLAUDE_WEEK_PERCENT=''
+  CLAUDE_WEEK_RESET=''
+
+  if ! command_available jq; then
+    CLAUDE_ERROR='jq コマンドが見つかりません'
+    return
+  fi
+  if ! command_available curl; then
+    CLAUDE_ERROR='curl コマンドが見つかりません'
+    return
+  fi
+
+  token=$(claude_access_token)
+  if [[ -z "$token" ]]; then
+    CLAUDE_ERROR='Claude Code の認証情報が見つかりません'
+    return
+  fi
+
+  # トークンをプロセス引数に出さないよう、curlの設定を標準入力から渡す。
+  if ! response=$(curl -sS --max-time "$REQUEST_TIMEOUT_SECONDS" \
+    --write-out '\n__AGENT_USAGE_HTTP_STATUS__%{http_code}' \
+    --config - 2>/dev/null <<EOF
+url = "$CLAUDE_USAGE_URL"
+header = "Authorization: Bearer $token"
+header = "anthropic-beta: $CLAUDE_USAGE_BETA"
+EOF
+  ); then
+    CLAUDE_ERROR='Claude Code の使用量取得に失敗しました'
+    return
+  fi
+
+  status_marker=$'\n__AGENT_USAGE_HTTP_STATUS__'
+  if [[ "$response" != *"$status_marker"* ]]; then
+    CLAUDE_ERROR='Claude Code のHTTP応答を確認できません'
+    return
+  fi
+
+  http_status=${response##*"$status_marker"}
+  response=${response%"$status_marker"*}
+  case "$http_status" in
+    2[0-9][0-9])
+      ;;
+    401|403)
+      CLAUDE_ERROR="Claude Code の認証が無効または期限切れです（HTTP ${http_status}）"
+      return
+      ;;
+    429)
+      CLAUDE_ERROR='Claude Code の使用量取得が制限されています（HTTP 429）'
+      return
+      ;;
+    ''|*[!0-9]*)
+      CLAUDE_ERROR='Claude Code のHTTP応答を確認できません'
+      return
+      ;;
+    *)
+      CLAUDE_ERROR="Claude Code の使用量取得に失敗しました（HTTP ${http_status}）"
+      return
+      ;;
+  esac
+
+  if ! claude_response_is_valid "$response"; then
+    CLAUDE_ERROR='Claude Code の応答形式を確認できません'
+    return
+  fi
+
+  CLAUDE_FIVE_PERCENT=$(rounded_percent "$(jq -r '.five_hour.utilization' <<<"$response")")
+  CLAUDE_WEEK_PERCENT=$(rounded_percent "$(jq -r '.seven_day.utilization' <<<"$response")")
+  CLAUDE_FIVE_RESET=$(iso_to_epoch "$(jq -r '.five_hour.resets_at // empty' <<<"$response")")
+  CLAUDE_WEEK_RESET=$(iso_to_epoch "$(jq -r '.seven_day.resets_at // empty' <<<"$response")")
+
+  if [[ -z "$CLAUDE_FIVE_PERCENT" || -z "$CLAUDE_WEEK_PERCENT" ]]; then
+    CLAUDE_ERROR='Claude Code の使用率を読み取れません'
+    CLAUDE_FIVE_PERCENT=''
+    CLAUDE_WEEK_PERCENT=''
+    return
+  fi
+
+  CLAUDE_STATUS=0
+  CLAUDE_ERROR=''
+}
+
+codex_response_limits() {
+  local response=$1
+
+  printf '%s\n' "$response" \
+    | jq -c 'select(.id == 2) | .result.rateLimits' 2>/dev/null \
+    | head -n 1
+}
+
+codex_limits_are_valid() {
+  jq -e '
+    (.primary.usedPercent | type == "number") and
+    (.secondary.usedPercent | type == "number")
+  ' >/dev/null 2>&1 <<<"$1"
+}
+
+fetch_codex() {
+  local response limits
+
+  CODEX_STATUS=1
+  CODEX_ERROR='取得失敗'
+  CODEX_FIVE_PERCENT=''
+  CODEX_FIVE_RESET=''
+  CODEX_WEEK_PERCENT=''
+  CODEX_WEEK_RESET=''
+
+  if ! command_available jq; then
+    CODEX_ERROR='jq コマンドが見つかりません'
+    return
+  fi
+  if ! command_available codex; then
+    CODEX_ERROR='codex コマンドが見つかりません'
+    return
+  fi
+
+  if ! response=$(
+    {
+      printf '%s\n' \
+        '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"clientInfo":{"name":"agent-usage","version":"1.0"}}}' \
+        '{"jsonrpc":"2.0","id":2,"method":"account/rateLimits/read","params":{}}'
+      sleep "$CODEX_WAIT_SECONDS"
+    } | codex app-server 2>/dev/null
+  ); then
+    CODEX_ERROR='Codex app-server の起動に失敗しました'
+    return
+  fi
+
+  limits=$(codex_response_limits "$response")
+  if [[ -z "$limits" ]] || ! codex_limits_are_valid "$limits"; then
+    CODEX_ERROR='Codex の使用量応答を確認できません'
+    return
+  fi
+
+  CODEX_FIVE_PERCENT=$(rounded_percent "$(jq -r '.primary.usedPercent' <<<"$limits")")
+  CODEX_WEEK_PERCENT=$(rounded_percent "$(jq -r '.secondary.usedPercent' <<<"$limits")")
+  CODEX_FIVE_RESET=$(jq -r '.primary.resetsAt // empty' <<<"$limits")
+  CODEX_WEEK_RESET=$(jq -r '.secondary.resetsAt // empty' <<<"$limits")
+
+  if [[ -z "$CODEX_FIVE_PERCENT" || -z "$CODEX_WEEK_PERCENT" ]]; then
+    CODEX_ERROR='Codex の使用率を読み取れません'
+    CODEX_FIVE_PERCENT=''
+    CODEX_WEEK_PERCENT=''
+    return
+  fi
+
+  CODEX_STATUS=0
+  CODEX_ERROR=''
+}
+
+format_remaining() {
+  local reset_epoch=$1
+  local now remaining days hours minutes
+
+  case "$reset_epoch" in
+    ''|*[!0-9]*)
+      printf '%s' '--'
+      return
+      ;;
+  esac
+
+  now=$(date '+%s')
+  remaining=$((reset_epoch - now))
+  if (( remaining <= 0 )); then
+    printf '%s' 'リセット済み'
+    return
+  fi
+
+  days=$((remaining / 86400))
+  hours=$(((remaining % 86400) / 3600))
+  minutes=$(((remaining % 3600) / 60))
+
+  if (( days > 0 )); then
+    printf '%sd%sh' "$days" "$hours"
+  elif (( hours > 0 )); then
+    printf '%sh%sm' "$hours" "$minutes"
+  else
+    printf '%sm' "$minutes"
+  fi
+}
+
+format_reset_at() {
+  local reset_epoch=$1
+
+  case "$reset_epoch" in
+    ''|*[!0-9]*)
+      printf '%s' '--'
+      ;;
+    *)
+      date -r "$reset_epoch" '+%Y-%m-%d %H:%M JST' 2>/dev/null || printf '%s' '--'
+      ;;
+  esac
+}
+
+render_window() {
+  local label=$1
+  local percent=$2
+  local reset_epoch=$3
+  local remaining
+
+  if [[ -z "$percent" ]]; then
+    printf '  %-4s 取得失敗\n' "$label"
+    return
+  fi
+
+  remaining=$((100 - percent))
+  (( remaining < 0 )) && remaining=0
+  (( remaining > 100 )) && remaining=100
+
+  printf '  %-4s 使用率 %d%%  残量 %d%%  リセット %s（あと %s）\n' \
+    "$label" "$percent" "$remaining" "$(format_reset_at "$reset_epoch")" \
+    "$(format_remaining "$reset_epoch")"
+}
+
+render_provider() {
+  local name=$1
+  local status=$2
+  local error=$3
+  local five_percent=$4
+  local five_reset=$5
+  local week_percent=$6
+  local week_reset=$7
+
+  printf '%s\n' "$name"
+  if (( status != 0 )); then
+    printf '  取得失敗: %s\n' "$error"
+  fi
+  render_window '5時間枠' "$five_percent" "$five_reset"
+  render_window '週間枠' "$week_percent" "$week_reset"
+  printf '\n'
+}
+
+agent_usage_main() {
+  local fetched_at
+
+  fetch_claude
+  fetch_codex
+
+  fetched_at=$(date '+%Y-%m-%d %H:%M:%S %Z')
+  printf 'Agent Usage\n'
+  printf '取得時刻: %s\n\n' "$fetched_at"
+  render_provider \
+    'Claude Code' "$CLAUDE_STATUS" "$CLAUDE_ERROR" \
+    "$CLAUDE_FIVE_PERCENT" "$CLAUDE_FIVE_RESET" \
+    "$CLAUDE_WEEK_PERCENT" "$CLAUDE_WEEK_RESET"
+  render_provider \
+    'Codex' "$CODEX_STATUS" "$CODEX_ERROR" \
+    "$CODEX_FIVE_PERCENT" "$CODEX_FIVE_RESET" \
+    "$CODEX_WEEK_PERCENT" "$CODEX_WEEK_RESET"
+
+  if (( CLAUDE_STATUS == 0 && CODEX_STATUS == 0 )); then
+    return 0
+  fi
+  return 1
+}
+
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+  agent_usage_main "$@"
+fi
