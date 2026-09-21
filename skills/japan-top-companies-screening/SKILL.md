@@ -24,7 +24,9 @@ description: "日本株の large_cap watchlist を、機械の順位表どおり
 
 ## 手順
 
-1. **対象日を決める**。直近の営業日（=前週金曜など、日足が確定している日）を `AS_OF` とする。
+1. **対象日を決める**。`node large_cap_as_of_resolver.mjs --root "$WORKTREE"` の `as_of` をそのまま使う。
+   この run は日曜に走るが、**日次カレンダーは平日しか作られない**。当日ぶんのカレンダーを直接読もうとすると毎回止まる。resolver は直近のスナップショットの `open_weekdays` と `holidays_by_year` から営業日を求める。
+   resolver が止まったら、その理由コードをそのまま報告して名簿を据え置く。曜日や前回値から推測しない。
 2. **母集団**。`outputs/large-cap-universe-<基準日>.json` が今月ぶん無ければ作る。
    `node large_cap_universe_producer.mjs --as-of <AS_OF> --root "$WORKTREE"`
    月が変わっていなければ作り直さない。所要はおよそ7分。
