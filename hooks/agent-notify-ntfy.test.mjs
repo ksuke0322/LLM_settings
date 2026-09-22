@@ -446,19 +446,17 @@ test("TTLを過ぎた孤立stateは掃除される", async () => {
   });
 });
 
-test("フック登録は製品別引数、subagent通知、MCP非依存を満たす", async () => {
+test("フック登録は製品別引数、subagent処理の保持、MCP非依存を満たす", async () => {
   const codex = await readJson(codexHooksPath);
   const claude = await readJson(claudeSettingsPath);
   const expected = {
     codex: {
       context: "node /Users/sawairikeisuke/.agents/hooks/agent-notify-context.mjs --product codex",
-      stop: "node /Users/sawairikeisuke/.agents/hooks/agent-notify-ntfy.mjs --product codex --event stop",
-      subagent: "node /Users/sawairikeisuke/.agents/hooks/agent-notify-ntfy.mjs --product codex --event subagent-stop",
+      stop: "/Users/sawairikeisuke/.volta/bin/node /Users/sawairikeisuke/.agents/hooks/agent-notify-ntfy.mjs --product codex --event stop",
     },
     claude: {
       context: "node /Users/sawairikeisuke/.agents/hooks/agent-notify-context.mjs --product claude-code",
       stop: "node /Users/sawairikeisuke/.agents/hooks/agent-notify-ntfy.mjs --product claude-code --event stop",
-      subagent: "node /Users/sawairikeisuke/.agents/hooks/agent-notify-ntfy.mjs --product claude-code --event subagent-stop",
     },
   };
 
@@ -468,7 +466,7 @@ test("フック登録は製品別引数、subagent通知、MCP非依存を満た
     const subagentCommands = commandList(config, "SubagentStop");
     assert.ok(userPromptCommands.includes(expected[name].context));
     assert.ok(stopCommands.includes(expected[name].stop));
-    assert.ok(subagentCommands.includes(expected[name].subagent));
+    assert.ok(!subagentCommands.some(command => command.includes("agent-notify-ntfy.mjs")));
     assert.ok(stopCommands.some(command => command.includes("notify-glass.mjs")));
     assert.ok(subagentCommands.some(command => command.includes("subagent-stop.mjs")));
     assert.ok(!userPromptCommands.some(command => command.includes("mcp")));

@@ -430,20 +430,6 @@
       "timeoutSource": "unverified"
     },
     {
-      "entryId": "claude.custom.subagent-stop.ntfy",
-      "registrationIndex": 0,
-      "sourcePaths": [
-        {
-          "path": "/Users/sawairikeisuke/.agents/hooks/agent-notify-ntfy.mjs",
-          "role": "hook-script",
-          "sha256": "09aebc253428bad026aed8b13ff4b085813a17b720366a44b6ea3c9b66a04ee9"
-        }
-      ],
-      "interpreterPath": "node",
-      "timeoutMs": null,
-      "timeoutSource": "unverified"
-    },
-    {
       "entryId": "codex.custom.pre-tool-use.bridge",
       "registrationIndex": 0,
       "sourcePaths": [
@@ -552,20 +538,6 @@
         }
       ],
       "interpreterPath": "node",
-      "timeoutMs": null,
-      "timeoutSource": "unverified"
-    },
-    {
-      "entryId": "codex.custom.subagent-stop.ntfy",
-      "registrationIndex": 0,
-      "sourcePaths": [
-        {
-          "path": "/Users/sawairikeisuke/.agents/hooks/agent-notify-ntfy.mjs",
-          "role": "hook-script",
-          "sha256": "09aebc253428bad026aed8b13ff4b085813a17b720366a44b6ea3c9b66a04ee9"
-        }
-      ],
-      "interpreterPath": "/Users/sawairikeisuke/.volta/bin/node",
       "timeoutMs": null,
       "timeoutSource": "unverified"
     },
@@ -1777,7 +1749,7 @@
       "product": "Claude",
       "event": "SubagentStop",
       "provider": "custom",
-      "status": "implemented",
+      "status": "absent",
       "responsibilities": [
         "custom.subagent-notification"
       ],
@@ -1800,17 +1772,7 @@
         "keychain-read": "custom",
         "external-network": "custom"
       },
-      "registrations": [
-        {
-          "registrationProvider": "custom",
-          "registrationPath": "/Users/sawairikeisuke/.claude/settings.json",
-          "matcher": "*",
-          "command": "node /Users/sawairikeisuke/.agents/hooks/agent-notify-ntfy.mjs --product claude-code --event subagent-stop",
-          "sourcePath": "/Users/sawairikeisuke/.agents/hooks/agent-notify-ntfy.mjs",
-          "sourceSha256": "09aebc253428bad026aed8b13ff4b085813a17b720366a44b6ea3c9b66a04ee9",
-          "managed": false
-        }
-      ]
+      "registrations": []
     },
     {
       "id": "codex.custom.pre-tool-use.bridge",
@@ -2098,7 +2060,7 @@
       "product": "Codex",
       "event": "SubagentStop",
       "provider": "custom",
-      "status": "implemented",
+      "status": "absent",
       "responsibilities": [
         "custom.subagent-notification"
       ],
@@ -2121,17 +2083,7 @@
         "keychain-read": "custom",
         "external-network": "custom"
       },
-      "registrations": [
-        {
-          "registrationProvider": "custom",
-          "registrationPath": "/Users/sawairikeisuke/.codex/hooks.json",
-          "matcher": "*",
-          "command": "/Users/sawairikeisuke/.volta/bin/node /Users/sawairikeisuke/.agents/hooks/agent-notify-ntfy.mjs --product codex --event subagent-stop",
-          "sourcePath": "/Users/sawairikeisuke/.agents/hooks/agent-notify-ntfy.mjs",
-          "sourceSha256": "09aebc253428bad026aed8b13ff4b085813a17b720366a44b6ea3c9b66a04ee9",
-          "managed": false
-        }
-      ]
+      "registrations": []
     },
     {
       "id": "codex.context-mode.pre-tool-use.direct",
