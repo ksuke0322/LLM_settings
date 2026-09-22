@@ -1,0 +1,7 @@
+interface:
+  display_name: "Codex / Claude hooks 同期"
+  short_description: "CodexとClaude Codeのhooksを目的ベースで同期"
+  default_prompt: "Use $sync-codex-claude-hooks to plan a safe hooks sync between Codex and Claude Code."
+
+policy:
+  allow_implicit_invocation: true
