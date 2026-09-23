@@ -36,7 +36,7 @@ const assertSharedPromptContext = async input => {
   );
   assert.equal(output.hookSpecificOutput.hookEventName, "UserPromptSubmit");
   assert.equal(typeof output.hookSpecificOutput.additionalContext, "string");
-  assert.ok(output.hookSpecificOutput.additionalContext.length < 700);
+  assert.ok(output.hookSpecificOutput.additionalContext.length < 1100);
 
   return output.hookSpecificOutput.additionalContext;
 };
@@ -66,6 +66,25 @@ test("Claude UserPromptSubmit receives the same valid shared exec-policy JSON", 
   assert.match(context, /Claude親はCodex委任にcodex execを使う/u);
   assert.match(context, /Codex親はnative subagentを使う/u);
   assert.match(context, /gpt-6-luna\s*\/\s*max/u);
+});
+
+test("both parents receive a concise positive delegation criterion and conditional references", async () => {
+  for (const session_id of ["codex-session", "claude-session"]) {
+    const context = await assertSharedPromptContext({
+      session_id,
+      hook_event_name: "UserPromptSubmit",
+      prompt: "独立した調査と実装を含む作業",
+    });
+
+    assert.match(context, /独立.*小単位/u);
+    assert.match(context, /入力.*出力.*受入条件/u);
+    assert.match(context, /読み取り.*探索.*実装.*レビュー.*保存後.*検証/u);
+    assert.match(context, /実行条件.*委任/u);
+    assert.match(context, /\/Users\/sawairikeisuke\/\.agents\/references\/delegate-policy\.md/u);
+    assert.match(context, /\/Users\/sawairikeisuke\/\.agents\/references\/delegate-flow\.md/u);
+    assert.match(context, /委任.*判断.*読む/u);
+    assert.match(context, /毎ターン.*全文.*不要/u);
+  }
 });
 
 test("Claude delegation names the canonical Codex exec wrapper", async () => {
