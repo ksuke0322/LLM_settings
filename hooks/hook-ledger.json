@@ -126,9 +126,9 @@
       "registrationIndex": 0,
       "sourcePaths": [
         {
-          "path": "/Users/sawairikeisuke/.codex/hooks/delegate_preflight.mjs",
+          "path": "/Users/sawairikeisuke/.agents/hooks/delegate-preflight.mjs",
           "role": "hook-script",
-          "sha256": "b8a99f90a85def3859651132fa21ec36007dde50ef4604e69136894f1e798aa9"
+          "sha256": "aa007cabfe84935760f9a0254ff38e5d3b90a99d2c2eb87b0629cde5ebb84137"
         }
       ],
       "interpreterPath": "node",
@@ -462,9 +462,9 @@
       "registrationIndex": 0,
       "sourcePaths": [
         {
-          "path": "/Users/sawairikeisuke/.codex/hooks/delegate_preflight.mjs",
+          "path": "/Users/sawairikeisuke/.agents/hooks/delegate-preflight.mjs",
           "role": "hook-script",
-          "sha256": "b8a99f90a85def3859651132fa21ec36007dde50ef4604e69136894f1e798aa9"
+          "sha256": "aa007cabfe84935760f9a0254ff38e5d3b90a99d2c2eb87b0629cde5ebb84137"
         }
       ],
       "interpreterPath": "node",
@@ -1199,9 +1199,9 @@
           "registrationProvider": "custom",
           "registrationPath": "/Users/sawairikeisuke/.claude/settings.json",
           "matcher": "*",
-          "command": "rtk proxy node /Users/sawairikeisuke/.codex/hooks/delegate_preflight.mjs",
-          "sourcePath": "/Users/sawairikeisuke/.codex/hooks/delegate_preflight.mjs",
-          "sourceSha256": "b8a99f90a85def3859651132fa21ec36007dde50ef4604e69136894f1e798aa9",
+          "command": "rtk proxy node /Users/sawairikeisuke/.agents/hooks/delegate-preflight.mjs",
+          "sourcePath": "/Users/sawairikeisuke/.agents/hooks/delegate-preflight.mjs",
+          "sourceSha256": "aa007cabfe84935760f9a0254ff38e5d3b90a99d2c2eb87b0629cde5ebb84137",
           "managed": false
         }
       ]
@@ -1870,9 +1870,9 @@
           "registrationProvider": "custom",
           "registrationPath": "/Users/sawairikeisuke/.codex/hooks.json",
           "matcher": "*",
-          "command": "rtk proxy node /Users/sawairikeisuke/.codex/hooks/delegate_preflight.mjs",
-          "sourcePath": "/Users/sawairikeisuke/.codex/hooks/delegate_preflight.mjs",
-          "sourceSha256": "b8a99f90a85def3859651132fa21ec36007dde50ef4604e69136894f1e798aa9",
+          "command": "rtk proxy node /Users/sawairikeisuke/.agents/hooks/delegate-preflight.mjs",
+          "sourcePath": "/Users/sawairikeisuke/.agents/hooks/delegate-preflight.mjs",
+          "sourceSha256": "aa007cabfe84935760f9a0254ff38e5d3b90a99d2c2eb87b0629cde5ebb84137",
           "managed": false
         }
       ]
