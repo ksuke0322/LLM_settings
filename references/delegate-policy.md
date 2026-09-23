@@ -4,10 +4,10 @@
 
 ## 委任経路と可用性
 
-- 標準モデルは`gpt-5.6-luna`、reasoning effortは`max`とする。
+- 標準モデルは`gpt-6-luna`、reasoning effortは`max`とする。
 - Claude親はシェル規約に従い、通常は`rtk proxy node ~/.agents/bin/codex-delegate.mjs`でラッパーを起動し、そのNodeプロセスから`codex exec`を使う。rtk proxyを使わない環境では`node ~/.agents/bin/codex-delegate.mjs`を使う。Node経由で実行するため、`.mjs`ファイルに実行ビットは必要ない。ファイルを読み取れること、NodeとCodex CLI、指定モデル、reasoning effortが利用できることを確認した場合だけ委任する。
 - ラッパーはユーザー設定を読み込まず、モデル・effort・sandboxを明示する。Codex CLIは`--codex-bin`、`CODEX_CLI_BIN`、macOSのHomebrew版、PATHの順で解決し、利用不能なら`BLOCKED`にする。
-- Codex親はnative subagentを使い、`gpt-5.6-luna` / `max`を明示する。native subagentまたは指定が利用可能と確認できない場合は委任しない。
+- Codex親はnative subagentを使い、`gpt-6-luna` / `max`を明示する。native subagentまたは指定が利用可能と確認できない場合は委任しない。
 - 経路、モデル、reasoning effortのいずれかが`false`または`unknown`なら、理由を親へ返して親が担当する。旧Codex MCPや別モデル・経路へ自動で切り替えない。
 - Claude親のラッパー経路が起動できない場合も、Codex MCP、別の外部ラッパー、tmux paneへ黙って切り替えない。
 - 委任先からの再委任は禁止する。
@@ -19,9 +19,9 @@
 | 作業 | 担当 | 条件 |
 |---|---|---|
 | 分解、優先順位付け、横断的な因果統合、設計判断、最終品質判定 | 親 | 常に親が担う |
-| 読み取り、抽出、探索、レビュー | `gpt-5.6-luna` / `max` | 対象、出力、受入れ条件を固定し、親が検証できる |
-| 実装、保存後の再確認、指定検証 | `gpt-5.6-luna` / `max` | 許可パスと操作が明示され、親が実差分を検証できる |
-| 依存関係のない作業 | `gpt-5.6-luna` / `max` | 入出力・許可パスが独立している場合は並列化する |
+| 読み取り、抽出、探索、レビュー | `gpt-6-luna` / `max` | 対象、出力、受入れ条件を固定し、親が検証できる |
+| 実装、保存後の再確認、指定検証 | `gpt-6-luna` / `max` | 許可パスと操作が明示され、親が実差分を検証できる |
+| 依存関係のない作業 | `gpt-6-luna` / `max` | 入出力・許可パスが独立している場合は並列化する |
 
 入力が曖昧、許可範囲を固定できない、受入れ条件を親が検証できない場合は、親が作業する。依存する後続タスクは、親が前段の成果を確認してから始める。同じファイル、state、manifestに触れる作業は並列にしない。
 

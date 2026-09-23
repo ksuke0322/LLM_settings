@@ -52,7 +52,7 @@ test("Codex UserPromptSubmit receives valid shared exec-policy JSON", async () =
 
   assert.match(context, /Claude親はCodex委任にcodex execを使う/u);
   assert.match(context, /Codex親はnative subagentを使う/u);
-  assert.match(context, /gpt-5\.6-luna\s*\/\s*max/u);
+  assert.match(context, /gpt-6-luna\s*\/\s*max/u);
 });
 
 test("Claude UserPromptSubmit receives the same valid shared exec-policy JSON", async () => {
@@ -65,7 +65,7 @@ test("Claude UserPromptSubmit receives the same valid shared exec-policy JSON", 
 
   assert.match(context, /Claude親はCodex委任にcodex execを使う/u);
   assert.match(context, /Codex親はnative subagentを使う/u);
-  assert.match(context, /gpt-5\.6-luna\s*\/\s*max/u);
+  assert.match(context, /gpt-6-luna\s*\/\s*max/u);
 });
 
 test("Claude delegation names the canonical Codex exec wrapper", async () => {

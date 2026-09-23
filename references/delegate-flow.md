@@ -62,8 +62,8 @@ flowchart TD
 
 | 親エージェント | 標準経路 | モデル・effort | 権限と利用不能時 |
 |---|---|---|---|
-| Claude | `rtk proxy node ~/.agents/bin/codex-delegate.mjs`経由で`codex exec` | `gpt-5.6-luna` / `max` | 読み取り専用を既定にする。利用不能・不明なら親が担当 |
-| Codex | native subagent | `gpt-5.6-luna` / `max` | 読み取り専用を既定にする。指定不可・不明なら親が担当 |
+| Claude | `rtk proxy node ~/.agents/bin/codex-delegate.mjs`経由で`codex exec` | `gpt-6-luna` / `max` | 読み取り専用を既定にする。利用不能・不明なら親が担当 |
+| Codex | native subagent | `gpt-6-luna` / `max` | 読み取り専用を既定にする。指定不可・不明なら親が担当 |
 
 書き込みはユーザーが承認した作業だけに限る。親が変更内容、許可パス、禁止操作、検証条件を指定し、Codex CLIでは`workspace-write`を使う。`danger-full-access`や承認回避は使わない。承認状態または許可範囲が不明なら`BLOCKED`で親へ戻す。
 

@@ -220,7 +220,7 @@ test("spawns codex directly with a fixed model, max effort, and prompt on stdin"
     assert.equal(result.status, "DONE");
     assert.equal(capture.prompt.includes("PROMPT_SENTINEL"), true);
     assert.equal(capture.args.includes("PROMPT_SENTINEL: inspect only the supplied task"), false);
-    assert.equal(capture.args.includes("--model") && capture.args[capture.args.indexOf("--model") + 1] === "gpt-5.6-luna", true);
+    assert.equal(capture.args.includes("--model") && capture.args[capture.args.indexOf("--model") + 1] === "gpt-6-luna", true);
     assert.equal(capture.args.includes('model_reasoning_effort="max"'), true);
     assert.equal(capture.args.includes("--sandbox") && capture.args[capture.args.indexOf("--sandbox") + 1] === "read-only", true);
     assert.equal(capture.args.includes("--cd") && capture.args[capture.args.indexOf("--cd") + 1] === canonicalCwd, true);

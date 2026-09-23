@@ -128,7 +128,7 @@
         {
           "path": "/Users/sawairikeisuke/.agents/hooks/delegate-preflight.mjs",
           "role": "hook-script",
-          "sha256": "aa007cabfe84935760f9a0254ff38e5d3b90a99d2c2eb87b0629cde5ebb84137"
+          "sha256": "1598f23d58b44acd7c3d141aa132eaa00138e9796823860c0c509caa8598de69"
         }
       ],
       "interpreterPath": "node",
@@ -464,7 +464,7 @@
         {
           "path": "/Users/sawairikeisuke/.agents/hooks/delegate-preflight.mjs",
           "role": "hook-script",
-          "sha256": "aa007cabfe84935760f9a0254ff38e5d3b90a99d2c2eb87b0629cde5ebb84137"
+          "sha256": "1598f23d58b44acd7c3d141aa132eaa00138e9796823860c0c509caa8598de69"
         }
       ],
       "interpreterPath": "node",
@@ -1201,7 +1201,7 @@
           "matcher": "*",
           "command": "rtk proxy node /Users/sawairikeisuke/.agents/hooks/delegate-preflight.mjs",
           "sourcePath": "/Users/sawairikeisuke/.agents/hooks/delegate-preflight.mjs",
-          "sourceSha256": "aa007cabfe84935760f9a0254ff38e5d3b90a99d2c2eb87b0629cde5ebb84137",
+          "sourceSha256": "1598f23d58b44acd7c3d141aa132eaa00138e9796823860c0c509caa8598de69",
           "managed": false
         }
       ]
@@ -1872,7 +1872,7 @@
           "matcher": "*",
           "command": "rtk proxy node /Users/sawairikeisuke/.agents/hooks/delegate-preflight.mjs",
           "sourcePath": "/Users/sawairikeisuke/.agents/hooks/delegate-preflight.mjs",
-          "sourceSha256": "aa007cabfe84935760f9a0254ff38e5d3b90a99d2c2eb87b0629cde5ebb84137",
+          "sourceSha256": "1598f23d58b44acd7c3d141aa132eaa00138e9796823860c0c509caa8598de69",
           "managed": false
         }
       ]

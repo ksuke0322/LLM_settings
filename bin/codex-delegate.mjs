@@ -19,7 +19,7 @@ import { homedir, tmpdir } from "node:os";
 import { basename, delimiter, dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const MODEL = "gpt-5.6-luna";
+const MODEL = "gpt-6-luna";
 const REASONING_EFFORT = "max";
 const DEFAULT_TIMEOUT_MS = 5 * 60 * 1000;
 const MAX_REQUEST_BYTES = 10 * 1024 * 1024;
