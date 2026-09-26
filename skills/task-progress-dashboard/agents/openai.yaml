@@ -1,0 +1,7 @@
+interface:
+  display_name: "Task Progress Dashboard"
+  short_description: "長時間の複数工程タスク向け進捗HTMLを自動作成・更新"
+  default_prompt: "Use $task-progress-dashboard to create a concise progress dashboard for this multi-step task."
+
+policy:
+  allow_implicit_invocation: true
