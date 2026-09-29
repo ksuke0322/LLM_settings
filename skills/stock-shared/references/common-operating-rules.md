@@ -66,5 +66,5 @@ lane固有の採用条件は各skillへ戻し、この共通referenceで重複�
 ## Publish
 
 - publish前にJSON parse、必須field、件数、lane境界をreadbackする。
-- 日次b-flowは`outputs/b-daily-run-YYYY-MM-DD.json`一つにstage status、件数、reason codesをまとめる。
+- 日次b-flowは`outputs/b-flow-experiment-YYYY-MM-DD.json`に集約manifestを、`outputs/b-flow-experiment-quality-history.json`に品質履歴を記録する。
 - 同じrunの重複Markdownやstate由来のコピーsidecarを作らない。

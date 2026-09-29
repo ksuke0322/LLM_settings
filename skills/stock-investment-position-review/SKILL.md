@@ -23,7 +23,7 @@ trend_viewerの品質、trend、event、provenanceの意味は [../stock-shared/
 ## 固定設定
 
 ```text
-API_BASE_URL=https://bfdkvlo2zi752fp5mhaq4koreq0ezvbd.lambda-url.ap-northeast-1.on.aws
+MARKET_DATA_BASE_URL=http://127.0.0.1:3000（手元の Trend Viewer。平日17:25〜22:10 に動く。AWS Lambda は使わない）
 ENDPOINT=/stock/{ticker}/analysis?range=recent&schema=trade-v2
 投資スタイル=短期（1ヶ月以内程度）
 review_profile の既定値=auto

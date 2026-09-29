@@ -14,9 +14,9 @@ description: 日本株high-beta paper運用の日次処理を、intraday解決�
 - paper state: `paper_high_beta_positions.json`、`paper_high_beta_orders.json`、`paper_high_beta_history.json`
 - KPI: `paper_high_beta_metrics.json`
 - 配分: `paper_high_beta_allocator_snapshot.json`
-- 実行証跡: `outputs/b-daily-run-YYYY-MM-DD.json`
+- 実行証跡: `outputs/b-flow-experiment-YYYY-MM-DD.json`
 - 継続watchlistの当日再評価証跡: `outputs/auto1b-watchlist-recheck-YYYY-MM-DD.json`
-- run品質時系列: `outputs/b-daily-quality-history.json`
+- run品質時系列: `outputs/b-flow-experiment-quality-history.json`
 - 日次地合いcontext: `market_regime_snapshot.json`
 - 見送り候補の事後観測: `opportunity_shadow_ledger.json`
 - 観測入力（任意、caller-supplied dated observations）: `shadow_observations.json`
@@ -24,7 +24,7 @@ description: 日本株high-beta paper運用の日次処理を、intraday解決�
 
 ## 実行順序
 
-0. deployment preflightとして、`b_daily_high_beta_pipeline.js`、`verify_b_daily_run.mjs`、`record_b_daily_quality.mjs`、`b_daily_quality.js`、`opportunity_shadow_ledger.js`、`market_regime_snapshot.js`、`holdings_governance.json`の存在、構文、新manifest契約（`run_key`、`input_as_of`、`publish_scope`、`duplicate_guard`）を読み取り専用で確認する。1つでも欠ける場合は`IMPLEMENTATION_NOT_DEPLOYED`として停止し、pipeline・state・manifest・quality history・gitを変更しない。旧形式4-stage manifestを新品質runへ加算しない。
+0. deployment preflightとして、`b_daily_high_beta_pipeline.js`、`verify_b_daily_run.mjs`、`b_daily_quality.js`、`opportunity_shadow_ledger.js`、`market_regime_snapshot.js`、`holdings_governance.json`の存在、構文、新manifest契約（`run_key`、`input_as_of`、`publish_scope`、`duplicate_guard`）を読み取り専用で確認する。1つでも欠ける場合は`IMPLEMENTATION_NOT_DEPLOYED`として停止し、pipeline・state・manifest・quality history・gitを変更しない。旧形式4-stage manifestを新品質runへ加算しない。
 1. 18:30 snapshotを優先し、既存pending orderとopen positionのfill/exitを先に解決する。
 2. `node b_daily_high_beta_pipeline.js --as-of YYYY-MM-DD`を実行する。orchestratorはAuto1b収集器で当日の市場breadth・Yahooランキング40銘柄・Yahoo/Kabutan/Minkabu・TDnet・trade-v2を取得し、`market_evidence.json`を生成して`node validate_market_evidence.mjs`を通す。
 3. market evidenceの成否にかかわらず`daily_market_regime_snapshot`を生成し、同一`as_of`のbreadthだけをcurrent contextへ採用する。`market_regime_snapshot.json`の`data_status`、各axisのstate、`reason_codes`、出力revisionをmanifestへ保存する。
@@ -33,8 +33,8 @@ description: 日本株high-beta paper運用の日次処理を、intraday解決�
 6. auto2bの後、paper state更新前にread-onlyの`shadow_observations.json`を生成し、その観測だけで`opportunity_shadow_ledger`を更新する。screened、candidate evidence、watch、reserve、blockedをpaper stateと別sidecarへ記録する。`opportunity_id`、source manifest、candidate as_of、1/3/5/10営業日窓、block理由を必須にし、注文・ポジションstateへの参照を持たせない。観測source失敗、基準価格欠落、観測バー不足は候補単位で`incomplete`とし、paper stateを更新しない。
 7. Auto1bの `ranked → quote_available → evidence_current/evidence_stale → candidate_evidence → adopted → watchlist/reserve → eligible → orders` を当日 `as_of` の `period_funnel` としてmanifestへ保存し、`adopted`（候補棚採用）と`execution_blocked`（実行不可）を分離する。`adoption_block_reason_counts`と`execution_block_reason_counts`を候補別に集計し、過去履歴の約定・決済は `cumulative_funnel` に分離して当日候補数と混ぜない。`adopted`はeligibleやpaper注文を意味しない。
 8. manifestの`run_key=b-daily-YYYY-MM-DD`、`input_as_of`、`publish_scope`、`duplicate_guard`を検証する。同じas_ofのcompleted manifestが既にあれば、pipelineを再実行せず`duplicate_skipped`として終了する。
-9. runnerと`verify_b_daily_run.mjs`の後に`node record_b_daily_quality.mjs --as-of YYYY-MM-DD`を実行し、stage status、verifier valid、input freshness、retry、technical/event/regime品質、候補単位block理由を`outputs/b-daily-quality-history.json`へ追加する。同じrun_keyの追加は拒否する。
-10. quality historyへの追加後、今回の`as_of`と`run_key`に一致する最新entryを再読込し、`daily_check`を日次運用点検として通知する。`passed`は正常、`market_closed`は明示された休場、`attention_required`は運用異常として扱い、`reason_codes`と`monitoring_points`を併記する。
+9. `b_flow_experiment_orchestrator.js`の実行で、日付別manifestを`outputs/b-flow-experiment-YYYY-MM-DD.json`へ、品質entryを`outputs/b-flow-experiment-quality-history.json`へ記録する。両方をreadbackし、対象`as_of`と`run_key=b-flow-experiment-YYYY-MM-DD`が一致することを確認する。
+10. 品質entryの追加後、今回の`as_of`と`run_key`に一致する最新entryを再読込し、`status`と各laneの状態を通知する。`daily_check`の判定は19:00のsummary automation（`b_flow_experiment_summary.js`）が行うので、この処理では実行しない。
 
 ## 日次運用点検
 
