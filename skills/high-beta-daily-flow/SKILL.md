@@ -125,6 +125,7 @@ API取得成功だけではstage成功としない。品質、coverage、trend�
 - paper capital、lot、position cap、risk、daily entry limitは`portfolio_rules.json`から読み、固定値をskillに複製しない。
 - fill/exitはslippageと`portfolio_rules.json`の`paper_transaction_cost_bps_high_beta`を反映する。取得不能なcostはunknownのままfail-closeする。
 - 新しくpaper orderまたはhistory recordを生成するときは、同一runで参照した`rule_version`、`rules_source`、`max_position_value_jpy`、`paper_lot_size`をrecord単位に保存する。これらが取得できない場合は、推測で補完せず`legacy_rule_unconfirmed`としてfail-closeし、現行ルール準拠の成功例として扱わない
+- 上の4項目を求めるのは、その run で新しく作った order・history record だけ。2026-09-29 以前に作られ4項目を持たない record（09-29 の pending 注文を含む）は `legacy_rule_unconfirmed` として扱い、書き換えず、それを理由に commit・push・公開を止めない（2026-09-29 ユーザー決定）
 - 既存履歴にrule provenanceがない場合は`legacy_risk_sizing_reconstruction.mjs`で観測notionalだけを再構成する。現行`max_position_value_jpy`を過去取引へ遡及適用してstateや判断を変更してはならない
 
 実資金への移行は対象外。証券会社の単元未満株の注文・手数料・約定モデルが確定するまでpaper専用とする。
