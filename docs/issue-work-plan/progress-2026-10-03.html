@@ -35,17 +35,16 @@
 <body>
   <header>
     <h1>LLM_settings Issue 着手計画</h1>
-    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34（#24は対象外）／ 最終更新: 2026年10月3日 21:57 JST</p>
+    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34（#24は対象外）／ 最終更新: 2026年10月3日 22:11 JST</p>
     <div class="summary" aria-label="進捗の要約">
       <div><strong>0 / 18</strong><span>完了 / 対象タスク</span></div>
-      <div><strong>#18 着手前</strong><span>現在位置（作業中 0件）</span></div>
+      <div><strong>#23 着手前</strong><span>現在位置（作業中 0件）</span></div>
     </div>
-    <p class="note">全体の開始指示を受け、1件ずつ進行中です。15件は順番待ち（表では開始待ち）、#16・#17・#20 は検証待ち、#24 は対象外です。#17 は非株式Skill39件の台帳と関連テスト4件を専用ブランチに保存しました。全件テストは作業・基準worktreeの双方で76件失敗したためマージを保留しています。株式系Skillと共有参照は、全Skillを扱う台帳・監査・検査からも除外します。</p>
+    <p class="note">全体の開始指示を受け、1件ずつ進行中です。14件は順番待ち、#18 は判断待ち、#16・#17・#20 は検証待ち、#24 は対象外です。#18 の参照検査で欠落時に失敗させる gate は朝の相談に回し、次の #23 へ進みます。株式系Skillと共有参照は、全Skillを扱う台帳・監査・検査からも除外します。</p>
   </header>
   <main>
     <section aria-labelledby="decided">
       <h2 id="decided">方針決定・開始待ち</h2>
-      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/18">#18</a> repo内の欠落だけを参照切れとし、外部参照は確認済み／未確認に分ける。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/23">#23</a> 上流のtree SHAとローカルファイルの改変検知を分け、対象と基準値の更新手順を定める。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/19">#19</a> 依頼の種類ごとに標準・補助・非適用を定め、判断理由を #17 の台帳へ記録する。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/21">#21</a> SwiftUI・Playwright・Testing系を実装、レビュー、E2E、テスト設計の役割で分ける。</p>
@@ -60,6 +59,10 @@
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/32">#32</a> 対象packageの実行方式を優先し、その範囲でJS/TS記法Skillを適用する。概念例はその旨を明示する。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/33">#33</a> lockが指すルート版1.1を標準候補とし、入れ子版はまず探索対象から除外する。削除は個別承認事項として残す。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/34">#34</a> 内容のない「本章では〜」だけを禁止し、具体的な説明は許す。外部参照は未確認として残す。</p>
+    </section>
+    <section aria-labelledby="decision">
+      <h2 id="decision">判断待ち</h2>
+      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/18">#18</a> 読み取り専用調査で既存の参照検査は未確認。明確なリポジトリ内欠落だけを失敗対象にする案ですが、新しい fail gate を導入する判断は朝の相談に回します。外部パスは存在を推測せず warning に留める案です。再開条件は、fail gate を導入するか計測のみとするかの決定です。</p>
     </section>
     <section aria-labelledby="validation">
       <h2 id="validation">検証待ち</h2>
@@ -83,7 +86,7 @@
     <section aria-labelledby="phase-2">
       <h2 id="phase-2">2. 基盤</h2>
       <div class="table-wrap"><table><caption>参照検査・更新検知</caption><thead><tr><th scope="col">ID</th><th scope="col">状態</th><th scope="col">タスク名</th></tr></thead><tbody>
-        <tr data-issue="18" data-status="開始待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/18">#18</a></td><td><span class="status">開始待ち</span></td><td>Skill 参照を検査し、リポジトリ内欠落と外部未確認を区別</td></tr>
+        <tr data-issue="18" data-status="判断待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/18">#18</a></td><td><span class="status">判断待ち</span></td><td>Skill 参照を検査し、リポジトリ内欠落と外部未確認を区別</td></tr>
         <tr data-issue="23" data-status="開始待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/23">#23</a></td><td><span class="status">開始待ち</span></td><td>installer のハッシュ仕様を確認してからドリフト検知を設計</td></tr>
       </tbody></table></div>
     </section>
