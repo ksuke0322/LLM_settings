@@ -35,23 +35,22 @@
 <body>
   <header>
     <h1>LLM_settings Issue 着手計画</h1>
-    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34 ／ 最終更新: 2026年10月3日 15:31 JST</p>
+    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34（#24は対象外）／ 最終更新: 2026年10月3日 19:38 JST</p>
     <div class="summary" aria-label="進捗の要約">
-      <div><strong>0 / 19</strong><span>完了 / 対象タスク</span></div>
-      <div><strong>全19件を確認済み</strong><span>現在位置（作業中 0件）</span></div>
+      <div><strong>0 / 18</strong><span>完了 / 対象タスク</span></div>
+      <div><strong>対象18件を確認済み</strong><span>現在位置（作業中 0件）</span></div>
     </div>
-    <p class="note">18件はユーザー待ち、#20 は検証待ち、未着手は0件です。下の状態はこの計画の進捗であり、GitHub Issue の OPEN/CLOSED や実装・検証の結果とは別です。</p>
+    <p class="note">17件はユーザー待ち、#20 は検証待ち、#24 は対象外、未着手は0件です。株式系Skillと共有参照は、全Skillを扱う台帳・監査・検査からも除外します。下の状態はこの計画の進捗であり、GitHub Issue の OPEN/CLOSED や実装・検証の結果とは別です。</p>
   </header>
   <main>
     <section aria-labelledby="pending">
       <h2 id="pending">判断・保留</h2>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/16">#16</a> ユーザー待ち：repo全体のworktree必須範囲、PRを取り込む担当、着手・完了・main更新の承認の分け方が未決定です。方針決定後に再開します。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/17">#17</a> ユーザー待ち：台帳の分類・状態・更新方針の決定基準が未定です。lock外の由来は推測せず、管理方針決定後に再開します。</p>
-      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/24">#24</a> ユーザー待ち：決算だけと認定するreason code、品質条件との例外順序、lane別出力を共通正本に定める必要があります。runtime影響は未確認です。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/18">#18</a> ユーザー待ち：repo内参照と外部依存の分類、known外部参照の登録基準が未決定です。外部の未確認参照をbrokenと断定しない条件を決めて再開します。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/23">#23</a> ユーザー待ち：上流のskillFolderHashはGitHub tree SHAと確認。ローカル配置の改変検知には別の基準が必要で、対象ファイル・基準値の更新時点・local customizationの扱いが未決定です。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/19">#19</a> ユーザー待ち：Playwrightとweb E2E・JS規則、SwiftUIの二つのSkillの使い分け、判断理由を残す台帳の正本が未決定です。#17 の台帳方針決定後に再開します。</p>
-      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/20">#20</a> 検証待ち：候補抽出CLIとテストは<a href="https://github.com/ksuke0322/LLM_settings/tree/feature/skill-consistency-candidates">専用ブランチ</a>に保存。関連テスト5件は通過、全件再実行は987件中72件失敗。基準worktreeでもhook2件が同様に失敗し、archifyの参照資産とJev依存も欠けています。全件テストが通るまでマージしません。</p>
+      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/20">#20</a> 検証待ち：候補抽出CLIとテストは<a href="https://github.com/ksuke0322/LLM_settings/tree/feature/skill-consistency-candidates">専用ブランチ</a>に保存。関連テスト5件は通過、全件再実行は987件中72件失敗。加えて株式系Skillの除外は未反映であり、適用・検証が必要です。全件テストと除外確認が通るまでマージしません。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/21">#21</a> ユーザー待ち：SwiftUIの標準・補助・非適用条件、Playwright系の正式な境界と廃止要否、Testing系のrouting tableが未決定です。既存文書の役割説明は確認済みです。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/25">#25</a> ユーザー待ち：task-flowは未着手/doneの二状態で、doneに承認・commit・PR・worktree削除を含みます。状態遷移とGit操作の個別ゲートは#16の正本決定後に定めます。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/22">#22</a> ユーザー待ち：isometric-story-workflowは433行、reference10件、script17件です。品質・委任境界を保つ分割単位と定期監査のしきい値が未決定で、#18 の参照検査にも依存します。</p>
@@ -65,12 +64,17 @@
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/33">#33</a> ユーザー待ち：swiftui-pro のルートは1.1、入れ子は1.0で、lockはルートだけを指します。実行時のactive版は未確認です。唯一の正本、入れ子版の探索除外・整理、swiftui-expert-skillとの役割を決める必要があります。削除には個別承認が必要です。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/34">#34</a> ユーザー待ち：拍の点検は手順4なのに手順3を参照し、日本語技術文書には未完文と禁止例・良い例の矛盾があります。文意を決める必要があり、/grilling と pr-create はリポジトリ外の実在未確認参照として保持します。AGENTS.mdの「7つの原則」は現ツリーで再現しませんでした。</p>
     </section>
+    <section aria-labelledby="excluded">
+      <h2 id="excluded">対象外</h2>
+      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/24">#24</a> は別途改善中の株式系Skillに関わるため、この計画から除外します。既存の調査記録は残し、ここから実装や判断を進めません。</p>
+      <p>横断的な #17・#18・#19・#20・#21・#23・#22・#31・#34 などでも、株式系Skillおよび共有参照は対象に含めません。現時点の除外ディレクトリは <code>skills/high-beta-daily-flow</code>、<code>skills/japan-high-beta-breakout-screening</code>、<code>skills/japan-top-companies-screening</code>、<code>skills/market-regime-assessment</code>、<code>skills/portfolio-risk-allocator</code>、<code>skills/stock-investment-decision-support</code>、<code>skills/stock-investment-position-review</code>、<code>skills/stock-shared</code> です。関連する新しい配置が見つかった場合も除外します。</p>
+    </section>
     <section aria-labelledby="phase-1">
       <h2 id="phase-1">1. 先行</h2>
       <div class="table-wrap"><table><caption>正本・台帳・安全境界</caption><thead><tr><th scope="col">ID</th><th scope="col">状態</th><th scope="col">タスク名</th></tr></thead><tbody>
         <tr data-issue="16" data-status="ユーザー待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/16">#16</a></td><td><span class="status">ユーザー待ち</span></td><td>Git・worktree・承認規則の正本と優先順位を整理</td></tr>
-        <tr data-issue="17" data-status="ユーザー待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/17">#17</a></td><td><span class="status">ユーザー待ち</span></td><td>全 Skill の台帳を作り、外部由来と unknown を区別</td></tr>
-        <tr data-issue="24" data-status="ユーザー待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/24">#24</a></td><td><span class="status">ユーザー待ち</span></td><td>株式判断の状態・例外順序を定義し、fail-close を契約テストで確認</td></tr>
+        <tr data-issue="17" data-status="ユーザー待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/17">#17</a></td><td><span class="status">ユーザー待ち</span></td><td>非株式 Skill の台帳を作り、外部由来と unknown を区別</td></tr>
+        <tr data-issue="24" data-status="対象外"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/24">#24</a></td><td><span class="status">対象外</span></td><td>株式判断の状態・例外順序を定義し、fail-close を契約テストで確認</td></tr>
       </tbody></table></div>
     </section>
     <section aria-labelledby="phase-2">
@@ -107,7 +111,7 @@
   </main>
   <footer>
     <p>同期元: Codex memory の「LLM_settings Issue やることリスト」。状態が変わったときは新しい memory 追記メモとこのページを同時に更新します。</p>
-    <p>着手時には GitHub Issue と現行ファイルを再確認します。#16 の指摘には時点差があり、#24 の scheduled runtime 影響は未確認です。</p>
+    <p>着手時には GitHub Issue と現行ファイルを再確認します。#16 の指摘には時点差があります。株式系Skillはこの計画から除外し、#24 の過去の調査結果を実装判断には使いません。</p>
   </footer>
 </body>
 </html>
