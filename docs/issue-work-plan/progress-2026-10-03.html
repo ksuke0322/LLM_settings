@@ -35,17 +35,16 @@
 <body>
   <header>
     <h1>LLM_settings Issue 着手計画</h1>
-    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34（#24は対象外）／ 最終更新: 2026年10月3日 21:24 JST</p>
+    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34（#24は対象外）／ 最終更新: 2026年10月3日 21:57 JST</p>
     <div class="summary" aria-label="進捗の要約">
       <div><strong>0 / 18</strong><span>完了 / 対象タスク</span></div>
-      <div><strong>#17 着手前</strong><span>現在位置（作業中 0件）</span></div>
+      <div><strong>#18 着手前</strong><span>現在位置（作業中 0件）</span></div>
     </div>
-    <p class="note">全体の開始指示を受け、1件ずつ進行中です。16件は順番待ち（表では開始待ち）、#16・#20 は検証待ち、#24 は対象外です。#16 は関連テスト5件とミューテーション4件が通過しましたが、全件テストは基準worktreeでも72件が失敗したためマージを保留しています。株式系Skillと共有参照は、全Skillを扱う台帳・監査・検査からも除外します。</p>
+    <p class="note">全体の開始指示を受け、1件ずつ進行中です。15件は順番待ち（表では開始待ち）、#16・#17・#20 は検証待ち、#24 は対象外です。#17 は非株式Skill39件の台帳と関連テスト4件を専用ブランチに保存しました。全件テストは作業・基準worktreeの双方で76件失敗したためマージを保留しています。株式系Skillと共有参照は、全Skillを扱う台帳・監査・検査からも除外します。</p>
   </header>
   <main>
     <section aria-labelledby="decided">
       <h2 id="decided">方針決定・開始待ち</h2>
-      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/17">#17</a> 非株式Skillの出所・配置・版・確認状態を最小限の台帳で管理し、不明は <code>unknown</code> とする。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/18">#18</a> repo内の欠落だけを参照切れとし、外部参照は確認済み／未確認に分ける。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/23">#23</a> 上流のtree SHAとローカルファイルの改変検知を分け、対象と基準値の更新手順を定める。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/19">#19</a> 依頼の種類ごとに標準・補助・非適用を定め、判断理由を #17 の台帳へ記録する。</p>
@@ -65,6 +64,7 @@
     <section aria-labelledby="validation">
       <h2 id="validation">検証待ち</h2>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/16">#16</a> 正本表と参照整理、回帰テストを<a href="https://github.com/ksuke0322/LLM_settings/tree/docs/clarify-git-worktree-authority">専用ブランチ</a>に保存。関連テスト5件とミューテーション4件は通過。全件テストは987件中72件失敗し、同revisionの基準worktreeでも982件中72件失敗しました。全件テストの阻害が解消するまでマージしません。</p>
+      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/17">#17</a> 非株式Skill39件の台帳・運用ガイド・回帰テストを<a href="https://github.com/ksuke0322/LLM_settings/tree/docs/catalog-nonstock-skill-ownership">専用ブランチ</a>に保存。lock掲載18件、由来unknown21件を明示。関連テスト4件とミューテーション4件は通過。全件テストは作業worktreeで991件中76件、同revisionの基準worktreeで987件中76件失敗したため、マージを保留しています。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/20">#20</a> 候補抽出CLIとテストは<a href="https://github.com/ksuke0322/LLM_settings/tree/feature/skill-consistency-candidates">専用ブランチ</a>に保存。関連テスト5件は通過、全件再実行は987件中72件失敗。株式系Skillの除外も未反映です。全件テストと除外確認が通るまでマージしません。</p>
     </section>
     <section aria-labelledby="excluded">
@@ -76,7 +76,7 @@
       <h2 id="phase-1">1. 先行</h2>
       <div class="table-wrap"><table><caption>正本・台帳・安全境界</caption><thead><tr><th scope="col">ID</th><th scope="col">状態</th><th scope="col">タスク名</th></tr></thead><tbody>
         <tr data-issue="16" data-status="検証待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/16">#16</a></td><td><span class="status">検証待ち</span></td><td>Git・worktree・承認規則の正本と優先順位を整理</td></tr>
-        <tr data-issue="17" data-status="開始待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/17">#17</a></td><td><span class="status">開始待ち</span></td><td>非株式 Skill の台帳を作り、外部由来と unknown を区別</td></tr>
+        <tr data-issue="17" data-status="検証待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/17">#17</a></td><td><span class="status">検証待ち</span></td><td>非株式 Skill の台帳を作り、外部由来と unknown を区別</td></tr>
         <tr data-issue="24" data-status="対象外"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/24">#24</a></td><td><span class="status">対象外</span></td><td>株式判断の状態・例外順序を定義し、fail-close を契約テストで確認</td></tr>
       </tbody></table></div>
     </section>
