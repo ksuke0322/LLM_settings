@@ -35,12 +35,12 @@
 <body>
   <header>
     <h1>LLM_settings Issue 着手計画</h1>
-    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34 ／ 最終更新: 2026年10月3日 13:42 JST</p>
+    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34 ／ 最終更新: 2026年10月3日 14:22 JST</p>
     <div class="summary" aria-label="進捗の要約">
       <div><strong>0 / 19</strong><span>完了 / 対象タスク</span></div>
-      <div><strong>#20 着手前</strong><span>現在位置（作業中 0件）</span></div>
+      <div><strong>#21 着手前</strong><span>現在位置（作業中 0件）</span></div>
     </div>
-    <p class="note">#16・#17・#24・#18・#23・#19 はユーザー待ち、残る13件は未着手です。下の状態はこの計画の進捗であり、GitHub Issue の OPEN/CLOSED や実装・検証の結果とは別です。</p>
+    <p class="note">6件はユーザー待ち、#20 は検証待ち、残る12件は未着手です。下の状態はこの計画の進捗であり、GitHub Issue の OPEN/CLOSED や実装・検証の結果とは別です。</p>
   </header>
   <main>
     <section aria-labelledby="pending">
@@ -51,6 +51,7 @@
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/18">#18</a> ユーザー待ち：repo内参照と外部依存の分類、known外部参照の登録基準が未決定です。外部の未確認参照をbrokenと断定しない条件を決めて再開します。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/23">#23</a> ユーザー待ち：上流のskillFolderHashはGitHub tree SHAと確認。ローカル配置の改変検知には別の基準が必要で、対象ファイル・基準値の更新時点・local customizationの扱いが未決定です。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/19">#19</a> ユーザー待ち：Playwrightとweb E2E・JS規則、SwiftUIの二つのSkillの使い分け、判断理由を残す台帳の正本が未決定です。#17 の台帳方針決定後に再開します。</p>
+      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/20">#20</a> 検証待ち：候補抽出CLIとテストは<a href="https://github.com/ksuke0322/LLM_settings/tree/feature/skill-consistency-candidates">専用ブランチ</a>に保存。関連テスト5件は通過、全件再実行は987件中72件失敗。基準worktreeでもhook2件が同様に失敗し、archifyの参照資産とJev依存も欠けています。全件テストが通るまでマージしません。</p>
     </section>
     <section aria-labelledby="phase-1">
       <h2 id="phase-1">1. 先行</h2>
@@ -71,7 +72,7 @@
       <h2 id="phase-3">3. 次段</h2>
       <div class="table-wrap"><table><caption>台帳を使う監査と運用</caption><thead><tr><th scope="col">ID</th><th scope="col">状態</th><th scope="col">タスク名</th></tr></thead><tbody>
         <tr data-issue="19" data-status="ユーザー待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/19">#19</a></td><td><span class="status">ユーザー待ち</span></td><td>外部 Skill 導入・更新時の競合レビューを標準化</td></tr>
-        <tr data-issue="20" data-status="未着手"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/20">#20</a></td><td><span class="status">未着手</span></td><td>根拠付き候補を出す Skill 整合性監査を自動化</td></tr>
+        <tr data-issue="20" data-status="検証待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/20">#20</a></td><td><span class="status">検証待ち</span></td><td>根拠付き候補を出す Skill 整合性監査を自動化</td></tr>
         <tr data-issue="21" data-status="未着手"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/21">#21</a></td><td><span class="status">未着手</span></td><td>重複 Skill の標準・補助・非適用条件を定義</td></tr>
         <tr data-issue="25" data-status="未着手"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/25">#25</a></td><td><span class="status">未着手</span></td><td>#16 を前提にタスク状態と承認・後始末を分離</td></tr>
       </tbody></table></div>
