@@ -35,17 +35,16 @@
 <body>
   <header>
     <h1>LLM_settings Issue 着手計画</h1>
-    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34（#24は対象外）／ 最終更新: 2026年10月3日 22:54 JST</p>
+    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34（#24は対象外）／ 最終更新: 2026年10月3日 23:01 JST</p>
     <div class="summary" aria-label="進捗の要約">
       <div><strong>0 / 18</strong><span>完了 / 対象タスク</span></div>
-      <div><strong>#27 着手前</strong><span>現在位置（作業中 0件）</span></div>
+      <div><strong>#28 着手前</strong><span>現在位置（作業中 0件）</span></div>
     </div>
-    <p class="note">全体の開始指示を受け、1件ずつ進行中です。8件は順番待ち、#18・#23・#19・#21・#25・#22・#26 は判断待ち、#16・#17・#20 は検証待ち、#24 は対象外です。#26 のTDD適用・承認・検証コマンド選択は朝の相談に回し、次の #27 へ進みます。株式系Skillと共有参照は、全Skillを扱う台帳・監査・検査からも除外します。</p>
+    <p class="note">全体の開始指示を受け、1件ずつ進行中です。7件は順番待ち、#18・#23・#19・#21・#25・#22・#26・#27 は判断待ち、#16・#17・#20 は検証待ち、#24 は対象外です。#27 は外部runnerの副作用を確認しましたが、準備工程と削除対象は朝の相談に回し、次の #28 へ進みます。株式系Skillと共有参照は、全Skillを扱う台帳・監査・検査からも除外します。</p>
   </header>
   <main>
     <section aria-labelledby="decided">
       <h2 id="decided">方針決定・開始待ち</h2>
-      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/27">#27</a> 依存導入を明示的な準備工程にし、一時ファイルは実行単位で管理する。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/28">#28</a> 実際に使えるツール経路を確認し、実施不能な検査は未確認と記録する。成果物の保存先を先に指定する。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/29">#29</a> 自動補正の対象と許容幅を限定し、最終フレームの人手確認を維持する。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/30">#30</a> 各操作後に画面を確認し、報酬は1箇所ずつ試す。待機上限を5分に統一する。</p>
@@ -63,6 +62,7 @@
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/25">#25</a> 現行の <code>specs/flow</code> 用規則は <code>done</code> にPR・worktree削除まで含めますが、削除は個別承認事項です。#16の正本整理が検証待ちのため、完了の意味、Git操作ごとの承認、blocked・失敗・確認不能からの再開条件を朝の相談へ保留します。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/22">#22</a> 非株式Skill39件を計測し、<code>isometric-story-workflow</code> は本文429行・references10件・scripts17件、<code>archify</code> は本文126行・references4件・scripts6件でした。行数だけでは分割対象を決められません。分割範囲、常時必須ルールの保持、責務・参照数を含む監査基準を朝の相談へ保留します。#18 の参照検査も判断待ちです。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/26">#26</a> rootに全repo共通のテストコマンド定義は見つからず、サブプロジェクトごとに設定が異なります。workflow・外部TDD・test-fixingの適用範囲と固定コマンドにも差があります。変更種別ごとのTDD適用、テスト追加の承認条件、複数候補や未定義時のコマンド選択は新しいルールとして朝の相談へ保留します。</p>
+      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/27">#27</a> 外部Playwright runnerは依存不足時に <code>npm install</code> とChromium導入を行い、一時スクリプトをSkillディレクトリに作って次回起動時にパターン削除します。削除対象に一致する追跡済みファイルもあるため実行していません。導入の承認範囲、実行単位の保存先・削除対象、未準備状態の扱いを朝の相談へ保留します。</p>
     </section>
     <section aria-labelledby="validation">
       <h2 id="validation">検証待ち</h2>
@@ -104,7 +104,7 @@
       <div class="table-wrap"><table><caption>個別 Skill と文書の整合</caption><thead><tr><th scope="col">ID</th><th scope="col">状態</th><th scope="col">タスク名</th></tr></thead><tbody>
         <tr data-issue="22" data-status="判断待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/22">#22</a></td><td><span class="status">判断待ち</span></td><td>巨大 Skill を責務別に分割し、#18 で参照を確認</td></tr>
         <tr data-issue="26" data-status="判断待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/26">#26</a></td><td><span class="status">判断待ち</span></td><td>TDD とテスト修正の適用範囲を整理</td></tr>
-        <tr data-issue="27" data-status="開始待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/27">#27</a></td><td><span class="status">開始待ち</span></td><td>Playwright の導入準備と一時ファイル処理を分離</td></tr>
+        <tr data-issue="27" data-status="判断待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/27">#27</a></td><td><span class="status">判断待ち</span></td><td>Playwright の導入準備と一時ファイル処理を分離</td></tr>
         <tr data-issue="28" data-status="開始待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/28">#28</a></td><td><span class="status">開始待ち</span></td><td>A11y・学習計画 Skill のツール記述を照合</td></tr>
         <tr data-issue="29" data-status="開始待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/29">#29</a></td><td><span class="status">開始待ち</span></td><td>Blender 自動修正と人手レビューの境界を統一</td></tr>
         <tr data-issue="30" data-status="開始待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/30">#30</a></td><td><span class="status">開始待ち</span></td><td>モンスト周回手順の正本と停止条件を統一</td></tr>
