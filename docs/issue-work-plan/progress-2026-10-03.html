@@ -35,12 +35,12 @@
 <body>
   <header>
     <h1>LLM_settings Issue 着手計画</h1>
-    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34 ／ 最終更新: 2026年10月3日 15:18 JST</p>
+    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34 ／ 最終更新: 2026年10月3日 15:22 JST</p>
     <div class="summary" aria-label="進捗の要約">
       <div><strong>0 / 19</strong><span>完了 / 対象タスク</span></div>
-      <div><strong>#32 着手前</strong><span>現在位置（作業中 0件）</span></div>
+      <div><strong>#33 着手前</strong><span>現在位置（作業中 0件）</span></div>
     </div>
-    <p class="note">15件はユーザー待ち、#20 は検証待ち、残る3件は未着手です。下の状態はこの計画の進捗であり、GitHub Issue の OPEN/CLOSED や実装・検証の結果とは別です。</p>
+    <p class="note">16件はユーザー待ち、#20 は検証待ち、残る2件は未着手です。下の状態はこの計画の進捗であり、GitHub Issue の OPEN/CLOSED や実装・検証の結果とは別です。</p>
   </header>
   <main>
     <section aria-labelledby="pending">
@@ -61,6 +61,7 @@
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/29">#29</a> ユーザー待ち：Blender側の人間レビューに頼らない自動修正と、最終frameの人間レビュー必須が衝突します。自動補正のallowlist・許容幅・waiverと人間gateの関係が未決定です。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/30">#30</a> ユーザー待ち：再取得が各操作後と3回弾いた後、報酬待機が最大5分と10分で衝突します。現行UIとツール経路を確認し、回数・時間・停止条件を一意に決める必要があります。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/31">#31</a> ユーザー待ち：context-engineering と prompt-engineering の発動条件はコマンド・Skill・サブエージェント用プロンプトで重複します。成果物で選ぶか課題の種類で選ぶか、併用条件も含めた責務境界の決定が必要です。#20–#22 の整理後に再開します。</p>
+      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/32">#32</a> ユーザー待ち：JS/TS規則は関数宣言・CommonJSを原則禁止しますが、Playwright・TDDの実行例に残っています。対象packageの宣言や必要な実行方式を優先する局所例外と、概念例の適用範囲を決める必要があります。repoルートにpackage.json・tsconfigはありません。</p>
     </section>
     <section aria-labelledby="phase-1">
       <h2 id="phase-1">1. 先行</h2>
@@ -96,7 +97,7 @@
         <tr data-issue="29" data-status="ユーザー待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/29">#29</a></td><td><span class="status">ユーザー待ち</span></td><td>Blender 自動修正と人手レビューの境界を統一</td></tr>
         <tr data-issue="30" data-status="ユーザー待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/30">#30</a></td><td><span class="status">ユーザー待ち</span></td><td>モンスト周回手順の正本と停止条件を統一</td></tr>
         <tr data-issue="31" data-status="ユーザー待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/31">#31</a></td><td><span class="status">ユーザー待ち</span></td><td>Skill 発動条件と説明文を整理</td></tr>
-        <tr data-issue="32" data-status="未着手"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/32">#32</a></td><td><span class="status">未着手</span></td><td>JS/TS 規則を実行環境と整合</td></tr>
+        <tr data-issue="32" data-status="ユーザー待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/32">#32</a></td><td><span class="status">ユーザー待ち</span></td><td>JS/TS 規則を実行環境と整合</td></tr>
         <tr data-issue="33" data-status="未着手"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/33">#33</a></td><td><span class="status">未着手</span></td><td><code>swiftui-pro</code> の版・配置・lock を照合</td></tr>
         <tr data-issue="34" data-status="未着手"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/34">#34</a></td><td><span class="status">未着手</span></td><td>Skill 文書の誤参照・矛盾等を整理</td></tr>
       </tbody></table></div>
