@@ -35,17 +35,16 @@
 <body>
   <header>
     <h1>LLM_settings Issue 着手計画</h1>
-    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34（#24は対象外）／ 最終更新: 2026年10月3日 22:11 JST</p>
+    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34（#24は対象外）／ 最終更新: 2026年10月3日 22:20 JST</p>
     <div class="summary" aria-label="進捗の要約">
       <div><strong>0 / 18</strong><span>完了 / 対象タスク</span></div>
-      <div><strong>#23 着手前</strong><span>現在位置（作業中 0件）</span></div>
+      <div><strong>#19 着手前</strong><span>現在位置（作業中 0件）</span></div>
     </div>
-    <p class="note">全体の開始指示を受け、1件ずつ進行中です。14件は順番待ち、#18 は判断待ち、#16・#17・#20 は検証待ち、#24 は対象外です。#18 の参照検査で欠落時に失敗させる gate は朝の相談に回し、次の #23 へ進みます。株式系Skillと共有参照は、全Skillを扱う台帳・監査・検査からも除外します。</p>
+    <p class="note">全体の開始指示を受け、1件ずつ進行中です。13件は順番待ち、#18・#23 は判断待ち、#16・#17・#20 は検証待ち、#24 は対象外です。#23 はlock18件の被覆を計測しましたが、ローカル改変の比較基準と状態分類は朝の相談に回し、次の #19 へ進みます。株式系Skillと共有参照は、全Skillを扱う台帳・監査・検査からも除外します。</p>
   </header>
   <main>
     <section aria-labelledby="decided">
       <h2 id="decided">方針決定・開始待ち</h2>
-      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/23">#23</a> 上流のtree SHAとローカルファイルの改変検知を分け、対象と基準値の更新手順を定める。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/19">#19</a> 依頼の種類ごとに標準・補助・非適用を定め、判断理由を #17 の台帳へ記録する。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/21">#21</a> SwiftUI・Playwright・Testing系を実装、レビュー、E2E、テスト設計の役割で分ける。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/25">#25</a> タスクの状態遷移から承認、PR、worktree後始末を分離する。</p>
@@ -63,6 +62,7 @@
     <section aria-labelledby="decision">
       <h2 id="decision">判断待ち</h2>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/18">#18</a> 読み取り専用調査で既存の参照検査は未確認。明確なリポジトリ内欠落だけを失敗対象にする案ですが、新しい fail gate を導入する判断は朝の相談に回します。外部パスは存在を推測せず warning に留める案です。再開条件は、fail gate を導入するか計測のみとするかの決定です。</p>
+      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/23">#23</a> lock掲載の非株式Skill18件は全て直下Skillに対応。現行installerの実装では <code>skillFolderHash</code> は上流Skillフォルダーのtree SHAですが、既存lockの各値を作成したCLI版・経路は不明です。上流更新とローカル改変を混同しないため、ローカル比較基準、更新手順、状態分類の決定を朝の相談へ保留。再開条件はこれらの決定です。</p>
     </section>
     <section aria-labelledby="validation">
       <h2 id="validation">検証待ち</h2>
@@ -87,7 +87,7 @@
       <h2 id="phase-2">2. 基盤</h2>
       <div class="table-wrap"><table><caption>参照検査・更新検知</caption><thead><tr><th scope="col">ID</th><th scope="col">状態</th><th scope="col">タスク名</th></tr></thead><tbody>
         <tr data-issue="18" data-status="判断待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/18">#18</a></td><td><span class="status">判断待ち</span></td><td>Skill 参照を検査し、リポジトリ内欠落と外部未確認を区別</td></tr>
-        <tr data-issue="23" data-status="開始待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/23">#23</a></td><td><span class="status">開始待ち</span></td><td>installer のハッシュ仕様を確認してからドリフト検知を設計</td></tr>
+        <tr data-issue="23" data-status="判断待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/23">#23</a></td><td><span class="status">判断待ち</span></td><td>installer のハッシュ仕様を確認してからドリフト検知を設計</td></tr>
       </tbody></table></div>
     </section>
     <section aria-labelledby="phase-3">
