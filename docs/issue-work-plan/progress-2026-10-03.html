@@ -35,17 +35,16 @@
 <body>
   <header>
     <h1>LLM_settings Issue 着手計画</h1>
-    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34（#24は対象外）／ 最終更新: 2026年10月3日 23:27 JST</p>
+    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34（#24は対象外）／ 最終更新: 2026年10月3日 23:38 JST</p>
     <div class="summary" aria-label="進捗の要約">
       <div><strong>0 / 18</strong><span>完了 / 対象タスク</span></div>
-      <div><strong>#31 着手前</strong><span>現在位置（作業中 0件）</span></div>
+      <div><strong>#32 着手前</strong><span>現在位置（作業中 0件）</span></div>
     </div>
-    <p class="note">全体の開始指示を受け、1件ずつ進行中です。4件は順番待ち、#18・#23・#19・#21・#25・#22・#26・#27・#28・#29・#30 は判断待ち、#16・#17・#20 は検証待ち、#24 は対象外です。#30 は5分上限の合意を維持しつつ画面状態遷移を朝の相談に回し、次の #31 へ進みます。株式系Skillと共有参照は、全Skillを扱う台帳・監査・検査からも除外します。</p>
+    <p class="note">全体の開始指示を受け、1件ずつ進行中です。3件は順番待ち、#18・#23・#19・#21・#25・#22・#26・#27・#28・#29・#30・#31 は判断待ち、#16・#17・#20 は検証待ち、#24 は対象外です。#31 は説明文の上限と発動条件の判断を朝の相談に回し、次の #32 へ進みます。株式系Skillと共有参照は、全Skillを扱う台帳・監査・検査からも除外します。</p>
   </header>
   <main>
     <section aria-labelledby="decided">
       <h2 id="decided">方針決定・開始待ち</h2>
-      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/31">#31</a> 情報の選択・容量管理はcontext、指示文の表現・構成はpromptに分け、両方必要な場合のみ併用する。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/32">#32</a> 対象packageの実行方式を優先し、その範囲でJS/TS記法Skillを適用する。概念例はその旨を明示する。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/33">#33</a> lockが指すルート版1.1を標準候補とし、入れ子版はまず探索対象から除外する。削除は個別承認事項として残す。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/34">#34</a> 内容のない「本章では〜」だけを禁止し、具体的な説明は許す。外部参照は未確認として残す。</p>
@@ -63,6 +62,7 @@
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/28">#28</a> A11y監査はPlaywright操作の宣言に対しnpm導入・ファイル保存も手順にあり、通常レビューはキー入力の宣言が不足します。学習計画は常時保存を要求する一方、保存先が未定義です。導入・外部アクセスの承認条件、実施不能時のNT/引き継ぎ、保存先未指定時の扱いを朝の相談へ保留します。CLIのPATH確認だけではブラウザ実行可否を断定しません。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/29">#29</a> 最終の人間レビューgateは既存手順にありますが、Blender規則の自動修正指示には対象allowlistと変更幅がありません。定量QAの理由のみのWARN waiverと、Step 8の承認付きwaiverも異なります。補正対象・上限・再検証、waiver整合、反復停止を朝の相談へ保留し、人間レビューを省略しません。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/30">#30</a> 既決方針は各操作後の画面再取得、報酬の1箇所ずつの試行、待機上限5分です。本文には3回弾いた後の再取得や最大10分も残っています。未知画面・接続断・ローディング時の状態遷移、stopped/blockedの使い分け、画面証跡の保存先を朝の相談へ保留します。実機操作はしていません。</p>
+      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/31">#31</a> 非株式Skill39件のうち説明文が300文字を超えるものは9件でした。ただし300文字は正式な上限ではありません。外部由来のcontext・prompt Skillには発動条件の重なりがあり、実際の選択動作は未確認です。説明文の長さを上限か目安か、ローカルの補助記述と発動条件をどう扱うか、説得技法の参照を明示選択にするかを朝の相談へ保留します。#17・#20・#21・#22 の判断・検証にも依存します。</p>
     </section>
     <section aria-labelledby="validation">
       <h2 id="validation">検証待ち</h2>
@@ -108,7 +108,7 @@
         <tr data-issue="28" data-status="判断待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/28">#28</a></td><td><span class="status">判断待ち</span></td><td>A11y・学習計画 Skill のツール記述を照合</td></tr>
         <tr data-issue="29" data-status="判断待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/29">#29</a></td><td><span class="status">判断待ち</span></td><td>Blender 自動修正と人手レビューの境界を統一</td></tr>
         <tr data-issue="30" data-status="判断待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/30">#30</a></td><td><span class="status">判断待ち</span></td><td>モンスト周回手順の正本と停止条件を統一</td></tr>
-        <tr data-issue="31" data-status="開始待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/31">#31</a></td><td><span class="status">開始待ち</span></td><td>Skill 発動条件と説明文を整理</td></tr>
+        <tr data-issue="31" data-status="判断待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/31">#31</a></td><td><span class="status">判断待ち</span></td><td>Skill 発動条件と説明文を整理</td></tr>
         <tr data-issue="32" data-status="開始待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/32">#32</a></td><td><span class="status">開始待ち</span></td><td>JS/TS 規則を実行環境と整合</td></tr>
         <tr data-issue="33" data-status="開始待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/33">#33</a></td><td><span class="status">開始待ち</span></td><td><code>swiftui-pro</code> の版・配置・lock を照合</td></tr>
         <tr data-issue="34" data-status="開始待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/34">#34</a></td><td><span class="status">開始待ち</span></td><td>Skill 文書の誤参照・矛盾等を整理</td></tr>
