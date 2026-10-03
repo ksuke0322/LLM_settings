@@ -35,12 +35,12 @@
 <body>
   <header>
     <h1>LLM_settings Issue 着手計画</h1>
-    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34（#24は対象外）／ 最終更新: 2026年10月4日 07:42 JST</p>
+    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34（#24は対象外）／ 最終更新: 2026年10月4日 08:13 JST</p>
     <div class="summary" aria-label="進捗の要約">
       <div><strong>0 / 18</strong><span>完了 / 対象タスク</span></div>
-      <div><strong>方針決定・開始待ち</strong><span>15件・作業中 0件</span></div>
+      <div><strong>方針決定・開始待ち</strong><span>15件・検証待ち 2件・阻害 1件</span></div>
     </div>
-    <p class="note">対象19件の一次確認を1件ずつ終え、判断待ち15件の方針をユーザーが承認しました。現在は #18・#23・#19・#21・#25・#22・#26・#27・#28・#29・#30・#31・#32・#33・#34 が方針決定・開始待ち、#16・#17・#20 が検証待ち、#24 が対象外です。「方針決定」は作業開始を意味しません。#25には、mainへのマージ後の専用worktree削除を必須にする追加方針を反映します。株式系Skillと共有参照は原則として除外し、全Skill共通のworktree後片付け方針のみ適用対象に含めます。</p>
+    <p class="note">対象19件を順番に進めています。現在は #16 が阻害、#17・#20 が検証待ち、#18・#23・#19・#21・#25・#22・#26・#27・#28・#29・#30・#31・#32・#33・#34 が方針決定済み、#24 が対象外です。次は #17 を確認します。#25にはmainへのマージ後の専用worktree削除を必須にする追加方針を反映します。株式系Skillと共有参照は原則として除外し、全Skill共通のworktree後片付け方針のみ適用対象に含めます。</p>
   </header>
   <main>
     <section aria-labelledby="decided">
@@ -61,9 +61,12 @@
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/33">#33</a> lockが指すルート版1.1を標準候補とし、入れ子版1.0を探索対象から外す。入れ子Skill自体の削除はworktree後片付けと別で、個別承認を要する。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/34">#34</a> 確認済みの文書誤記3件だけを修正する。<code>/grilling</code> は外部未確認として残し、参照の失敗判定は #18 と合わせて決める。現ツリーにないAGENTS.mdの数え間違いは修正対象にしない。</p>
     </section>
+    <section aria-labelledby="blocked">
+      <h2 id="blocked">阻害</h2>
+      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/16">#16</a> 現行mainと<a href="https://github.com/ksuke0322/LLM_settings/tree/docs/clarify-git-worktree-authority">専用ブランチ</a>の全件テストは同じ72件が失敗。マージ後worktree削除方針の追加回帰テストで、<code>task-flow-non-speckit</code> のdone更新手順と後片付け後のdone条件の矛盾も検出しました（関連テスト5件通過・1件失敗）。4ファイルの未コミット差分は専用worktreeに保持し、PR・マージは行っていません。#25の状態設計と全件テスト基準の解消後に再開します。</p>
+    </section>
     <section aria-labelledby="validation">
       <h2 id="validation">検証待ち</h2>
-      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/16">#16</a> 正本表と参照整理、回帰テストを<a href="https://github.com/ksuke0322/LLM_settings/tree/docs/clarify-git-worktree-authority">専用ブランチ</a>に保存。関連テスト5件とミューテーション4件は通過。全件テストは987件中72件失敗し、同revisionの基準worktreeでも982件中72件失敗しました。新たに決まったマージ後worktree削除方針との整合も確認し、全件テストの阻害が解消するまでマージしません。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/17">#17</a> 非株式Skill39件の台帳・運用ガイド・回帰テストを<a href="https://github.com/ksuke0322/LLM_settings/tree/docs/catalog-nonstock-skill-ownership">専用ブランチ</a>に保存。lock掲載18件、由来unknown21件を明示。関連テスト4件とミューテーション4件は通過。全件テストは作業worktreeで991件中76件、同revisionの基準worktreeで987件中76件失敗したため、マージを保留しています。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/20">#20</a> 候補抽出CLIとテストは<a href="https://github.com/ksuke0322/LLM_settings/tree/feature/skill-consistency-candidates">専用ブランチ</a>に保存。関連テスト5件は通過、全件再実行は987件中72件失敗。株式系Skillの除外も未反映です。全件テストと除外確認が通るまでマージしません。</p>
     </section>
@@ -75,7 +78,7 @@
     <section aria-labelledby="phase-1">
       <h2 id="phase-1">1. 先行</h2>
       <div class="table-wrap"><table><caption>正本・台帳・安全境界</caption><thead><tr><th scope="col">ID</th><th scope="col">状態</th><th scope="col">タスク名</th></tr></thead><tbody>
-        <tr data-issue="16" data-status="検証待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/16">#16</a></td><td><span class="status">検証待ち</span></td><td>Git・worktree・承認規則の正本と優先順位を整理</td></tr>
+        <tr data-issue="16" data-status="阻害"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/16">#16</a></td><td><span class="status">阻害</span></td><td>Git・worktree・承認規則の正本と優先順位を整理</td></tr>
         <tr data-issue="17" data-status="検証待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/17">#17</a></td><td><span class="status">検証待ち</span></td><td>非株式 Skill の台帳を作り、外部由来と unknown を区別</td></tr>
         <tr data-issue="24" data-status="対象外"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/24">#24</a></td><td><span class="status">対象外</span></td><td>株式判断の状態・例外順序を定義し、fail-close を契約テストで確認</td></tr>
       </tbody></table></div>
