@@ -35,17 +35,16 @@
 <body>
   <header>
     <h1>LLM_settings Issue 着手計画</h1>
-    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34（#24は対象外）／ 最終更新: 2026年10月4日 08:26 JST</p>
+    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34（#24は対象外）／ 最終更新: 2026年10月4日 08:50 JST</p>
     <div class="summary" aria-label="進捗の要約">
       <div><strong>0 / 18</strong><span>完了 / 対象タスク</span></div>
-      <div><strong>方針決定・開始待ち</strong><span>15件・検証待ち 1件・阻害 2件</span></div>
+      <div><strong>方針決定・開始待ち</strong><span>14件・検証待ち 1件・阻害 3件</span></div>
     </div>
-    <p class="note">対象19件を順番に進めています。現在は #16・#17 が阻害、#20 が検証待ち、#18・#23・#19・#21・#25・#22・#26・#27・#28・#29・#30・#31・#32・#33・#34 が方針決定済み、#24 が対象外です。次は #18 を確認します。#25にはmainへのマージ後の専用worktree削除を必須にする追加方針を反映します。株式系Skillと共有参照は原則として除外し、全Skill共通のworktree後片付け方針のみ適用対象に含めます。</p>
+    <p class="note">対象19件を順番に進めています。現在は #16・#17・#18 が阻害、#20 が検証待ち、#23・#19・#21・#25・#22・#26・#27・#28・#29・#30・#31・#32・#33・#34 が方針決定済み、#24 が対象外です。次は #23 を確認します。#25にはmainへのマージ後の専用worktree削除を必須にする追加方針を反映します。株式系Skillと共有参照は原則として除外し、全Skill共通のworktree後片付け方針のみ適用対象に含めます。</p>
   </header>
   <main>
     <section aria-labelledby="decided">
       <h2 id="decided">方針決定・開始待ち</h2>
-      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/18">#18</a> まず参照を計測して理由付きで報告する。明確なリポジトリ内欠落だけを確認後に失敗判定へ進め、外部未確認は警告のまま残す。失敗判定の導入前に結果をレビューする。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/23">#23</a> 上流tree SHAとローカル内容の比較を別項目で管理し、生成経路が不明な既存lock値は未確認として扱う。上流更新をローカル改変と断定しない。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/19">#19</a> 重複Skillは併存と優先順位を台帳に明記し、lock更新時の人による競合レビューを必須とする。具体的なroutingは #17 の台帳と照合する。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/21">#21</a> 依頼の種類ごとにSkillを標準・補助・非適用へ分ける。#17 台帳と #19 の採用結果を確認してからroutingを記録する。</p>
@@ -65,6 +64,7 @@
       <h2 id="blocked">阻害</h2>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/16">#16</a> 現行mainと<a href="https://github.com/ksuke0322/LLM_settings/tree/docs/clarify-git-worktree-authority">専用ブランチ</a>の全件テストは同じ72件が失敗。マージ後worktree削除方針の追加回帰テストで、<code>task-flow-non-speckit</code> のdone更新手順と後片付け後のdone条件の矛盾も検出しました（関連テスト5件通過・1件失敗）。4ファイルの未コミット差分は専用worktreeに保持し、PR・マージは行っていません。#25の状態設計と全件テスト基準の解消後に再開します。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/17">#17</a> <a href="https://github.com/ksuke0322/LLM_settings/tree/docs/catalog-nonstock-skill-ownership">専用ブランチ</a>の非株式Skill台帳39件は現行mainと一致し、lock掲載18件と由来unknown21件を保持。unknownのsource・versionに架空値を入れるミューテーションを検出できるようテスト2行を追加し、関連テスト4件は通過しました。全件テストは986件中72件失敗し、現行mainと失敗項目が同一です。追加テストは未コミットで保持し、全件テスト基準の解消後に再開します。</p>
+      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/18">#18</a> 計測専用CLIとテストを専用worktreeに未コミットで保存しました。非株式Skillなどから385参照を列挙し、外部未確認53件と欠落候補76件を理由付きで報告。関連テスト3件とミューテーション1件は通過しました。全件テストは985件中72件失敗し、現行mainと失敗項目が同一です。欠落候補のレビューと失敗判定・CIゲートの判断、全件テスト基準の解消までPR・マージは保留します。</p>
     </section>
     <section aria-labelledby="validation">
       <h2 id="validation">検証待ち</h2>
@@ -86,7 +86,7 @@
     <section aria-labelledby="phase-2">
       <h2 id="phase-2">2. 基盤</h2>
       <div class="table-wrap"><table><caption>参照検査・更新検知</caption><thead><tr><th scope="col">ID</th><th scope="col">状態</th><th scope="col">タスク名</th></tr></thead><tbody>
-        <tr data-issue="18" data-status="開始待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/18">#18</a></td><td><span class="status">開始待ち</span></td><td>Skill 参照を検査し、リポジトリ内欠落と外部未確認を区別</td></tr>
+        <tr data-issue="18" data-status="阻害"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/18">#18</a></td><td><span class="status">阻害</span></td><td>Skill 参照を検査し、リポジトリ内欠落と外部未確認を区別</td></tr>
         <tr data-issue="23" data-status="開始待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/23">#23</a></td><td><span class="status">開始待ち</span></td><td>installer のハッシュ仕様を確認してからドリフト検知を設計</td></tr>
       </tbody></table></div>
     </section>
