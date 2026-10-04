@@ -35,7 +35,7 @@
 <body>
   <header>
     <h1>LLM_settings Issue 着手計画</h1>
-    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34（#24は対象外）／ 最終更新: 2026年10月4日 14:33 JST</p>
+    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34（#24は対象外）／ 最終更新: 2026年10月4日 14:42 JST</p>
     <div class="summary" aria-label="進捗の要約">
       <div><strong>0 / 18</strong><span>完了 / 対象タスク</span></div>
       <div><strong>方針決定・開始待ち</strong><span>0件・ユーザー待ち 1件・阻害 17件</span></div>
@@ -58,7 +58,7 @@
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/23">#23</a> 現行の<a href="https://github.com/vercel-labs/skills/blob/main/src/skill-lock.ts">公式lock実装</a>で<code>skillFolderHash</code>はSkillフォルダ全体のGitHub tree SHAと確認しました。非株式18件のlock値を2026年10月4日の上流デフォルトブランチと読み取り照合し、11件一致・6件不一致・1件は記録された上流パスが存在しません。既存lockを作ったCLI版は未確認です。専用worktreeの計測CLI・テストは未追跡で保持し、ローカルdigestは18件とも取得済みですが、tree SHAとは直接比較できずローカル改変は全件<code>verification-unknown</code>です。上流との差をローカル改変と断定せず、ローカル照合方式・カスタマイズ方式・CIゲートと全件テスト基準の判断を待ちます。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/19">#19</a> Issueは未解決です。既存の整合性監査Skillから、外部Skillの導入・更新時にlock差分の出所・path・hash、descriptionの重複、MUST/NEVERなどの強い指示、scripts・referencesの所在を人が確認する手順は整理できます。ただし、その手順のルール化と、Playwright・SwiftUIの具体的な採用順位・併存判断は未確定です。#17台帳がmainに入った後に照合し、全件テスト基準と合わせて判断するまで実装を保留します。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/20">#20</a> 専用ブランチを現行mainに同期し、候補抽出CLIと株式系Skill7件・<code>stock-shared</code>の走査前除外を保持しました。関連テスト6件は通過し、除外を壊すミューテーションは失敗を検出。全件テストは993件中76件失敗し、現行mainの失敗項目と一致します。候補抽出は意味上の競合を断定しません。全件テスト基準の判断後に実装PR・マージを再開します。</p>
-      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/21">#21</a> SwiftUI、Web／Playwright、Testingの候補重複と現行の参照関係を読み取り確認しました。依頼種類ごとの標準・補助・非適用を確定するには、未マージの #17 台帳と #19 の採用・併存判断との照合が必要です。実際の同時発火や採用順位を推測せず、両前提が整うまでroutingのルール化を保留します。</p>
+      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/21">#21</a> 読み取り確認では、SwiftUIの2候補は広く重なり、<code>swiftui-expert-skill</code>に実装・Instrumentsの記述があります。Playwrightは一時的なブラウザー操作と永続的なE2Eテストで成果物が異なり、Testing系はTDD手順・既存失敗修正・Webテスト各階層の役割が記述されています。rootの<code>swiftui-pro</code>はv1.1、入れ子はv1.0で、lockとplugin設定の参照先が異なります。実際の発動順位は未確認です。#17台帳のmain導入と#19の採用・併存判断後に、標準・補助・非適用のroutingを設計します。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/25">#25</a> 状態とGit・PR・worktree後処理を分ける設計は #16 の正本整理を前提とします。現行のtask-flowは<code>done</code>に承認・commit・PR・削除をまとめ、Git Skillとの手順に矛盾があります。#16が阻害中のため遷移確定を保留します。ユーザーの後からの方針により、マージ済み・保全済み・cleanの専用worktreeは別承認なしで通常削除を必須とし、dirty・未マージ・不明は停止、強制削除は個別承認です。この共通方針のみ株式系Skillの該当箇所にも適用します。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/22">#22</a> 読み取り計測では、非株式・非外部の候補は<code>hatch-pet</code>（923行・reference 3件・script 17件）、<code>isometric-story-workflow</code>（433行・10件・17件）、<code>blender-isometric-rules</code>（297行・5件・8件）です。見出し数は責務数の代用に過ぎず、分割閾値は未決定。<code>archify</code>はlock上の外部由来として直接分割から除外します。#18の参照検査がmainに未導入のため、参照移動と必須規則の分離は保留します。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/26">#26</a> 読み取り確認で、workflowの文書変更一律検証不要と、外部由来TDD・test-fixingの固定コマンド例が、対象package設定と内容に応じて検証する方針に合わないと分かりました。ルート共通のテスト設定は確認できず、<code>archify</code>には個別<code>npm test</code>があり、<code>playwright-skill</code>にはtest scriptがありません。外部Skillを直接編集せず、ローカル優先規則とTDD適用表を決めるまでルール変更を保留します。</p>
