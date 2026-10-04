@@ -4,9 +4,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 
-const notifierPath = "/Users/sawairikeisuke/.agents/hooks/agent-notify-ntfy.mjs";
-const contextPath = "/Users/sawairikeisuke/.agents/hooks/agent-notify-context.mjs";
-const agentsPath = "/Users/sawairikeisuke/.agents/AGENTS.md";
+const notifierPath = new URL("./agent-notify-ntfy.mjs", import.meta.url);
+const contextPath = new URL("./agent-notify-context.mjs", import.meta.url);
+const agentsPath = new URL("../AGENTS.md", import.meta.url);
 const codexHooksPath = "/Users/sawairikeisuke/.codex/hooks.json";
 const claudeSettingsPath = "/Users/sawairikeisuke/.claude/settings.json";
 
@@ -136,7 +136,7 @@ test("作業要約は依頼要約と別stateへ秘匿化して保存し、全文
         last_assistant_message: assistantMessage,
       },
       stateDir,
-      now: new Date("2026-08-17T00:00:00.000Z"),
+      now: new Date(),
     }), true);
 
     const files = await readdir(stateDir);
@@ -303,7 +303,7 @@ test("状態保存は短縮済み要約だけを保存し、sessionとagentを�
       product: "codex",
       input: { session_id: "session-a", agent_id: "agent-a", prompt },
       stateDir,
-      now: new Date("2026-08-17T00:00:00.000Z"),
+      now: new Date(),
     }), true);
 
     const files = await readdir(stateDir);
