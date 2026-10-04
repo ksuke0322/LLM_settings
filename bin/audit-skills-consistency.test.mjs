@@ -87,6 +87,60 @@ test('allowlist suppresses only the exact pair and changed paths limit candidate
   assert.ok(changed.warnings.some(({ path: file }) => file === 'skills/gamma/SKILL.md'))
 })
 
+test('excludes stock skill directories and stock-shared from the full audit and changed-path candidates', async (t) => {
+  const projectRoot = await makeProject(t)
+  await addSkill(projectRoot, 'alpha', {
+    name: 'alpha',
+    description: 'Review security for user input and output'
+  })
+
+  const stockFolders = [
+    'high-beta-daily-flow',
+    'japan-high-beta-breakout-screening',
+    'japan-top-companies-screening',
+    'market-regime-assessment',
+    'portfolio-risk-allocator',
+    'stock-investment-decision-support',
+    'stock-investment-position-review',
+    'stock-shared'
+  ]
+  for (const folder of stockFolders) {
+    await addSkill(projectRoot, folder, {
+      name: folder,
+      description: 'Review security for user input and output',
+      body: 'MUST retain evidence.\n'
+    })
+  }
+
+  const result = await auditSkills(projectRoot)
+  const changedStockPath = `skills/${stockFolders.find((folder) => folder !== 'stock-shared')}/SKILL.md`
+  const changed = await auditSkills(projectRoot, {
+    changedPaths: [changedStockPath]
+  })
+  const stockPaths = new Set(stockFolders.map((folder) => `skills/${folder}/SKILL.md`))
+  assert.deepEqual({
+    inventoryPaths: result.inventory.map(({ path: file }) => file),
+    stockCandidatePaths: [
+      ...new Set(result.candidates.flatMap(({ left, right }) => [left, right]).filter((file) => stockPaths.has(file)))
+    ].sort(),
+    stockWarningPaths: [
+      ...new Set(result.warnings.map(({ path: file }) => file).filter((file) => stockPaths.has(file)))
+    ].sort(),
+    changedCandidatePairs: changed.candidates
+      .filter(({ left, right }) => left === changedStockPath || right === changedStockPath)
+      .map(({ left, right }) => [left, right]),
+    changedInventoryPaths: changed.inventory.map(({ path: file }) => file),
+    changedWarningPaths: changed.warnings.map(({ path: file }) => file)
+  }, {
+    inventoryPaths: ['skills/alpha/SKILL.md'],
+    stockCandidatePaths: [],
+    stockWarningPaths: [],
+    changedCandidatePairs: [],
+    changedInventoryPaths: ['skills/alpha/SKILL.md'],
+    changedWarningPaths: []
+  })
+})
+
 test('CLI accepts explicit allow-pair and changed-path options', async (t) => {
   const projectRoot = await makeProject(t)
   for (const folder of ['alpha', 'beta', 'gamma']) {

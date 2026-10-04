@@ -4,6 +4,16 @@ import { pathToFileURL } from 'node:url'
 
 const stopWords = new Set(['a', 'an', 'and', 'are', 'as', 'at', 'be', 'by', 'for', 'from', 'in', 'is', 'it', 'of', 'on', 'or', 'the', 'to', 'use', 'when', 'with'])
 const normativePattern = /\b(MUST|NEVER|ALWAYS)\b|必須|禁止|原則/giu
+const excludedSkillDirectories = new Set([
+  'high-beta-daily-flow',
+  'japan-high-beta-breakout-screening',
+  'japan-top-companies-screening',
+  'market-regime-assessment',
+  'portfolio-risk-allocator',
+  'stock-investment-decision-support',
+  'stock-investment-position-review',
+  'stock-shared'
+])
 const unique = (values) => [...new Set(values)]
 const usage = 'Usage: node bin/audit-skills-consistency.mjs [project-root] [--allow-pair path-a path-b]... [--changed path]...'
 
@@ -79,7 +89,7 @@ const parseFrontmatter = (source) => {
   return { name, nameLine, description, descriptionLine }
 }
 
-const collectSkillFiles = async (directory) => {
+const collectSkillFiles = async (directory, relativeDirectory = '') => {
   let entries
   try {
     entries = await readdir(directory, { withFileTypes: true })
@@ -91,7 +101,10 @@ const collectSkillFiles = async (directory) => {
   const files = []
   for (const entry of entries.sort((left, right) => left.name.localeCompare(right.name))) {
     const entryPath = path.join(directory, entry.name)
-    if (entry.isDirectory()) files.push(...await collectSkillFiles(entryPath))
+    const relativeEntryPath = relativeDirectory ? path.posix.join(relativeDirectory, entry.name) : entry.name
+    if (entry.isDirectory() && !excludedSkillDirectories.has(relativeEntryPath)) {
+      files.push(...await collectSkillFiles(entryPath, relativeEntryPath))
+    }
     else if (entry.isFile() && entry.name === 'SKILL.md') files.push(entryPath)
   }
   return files
