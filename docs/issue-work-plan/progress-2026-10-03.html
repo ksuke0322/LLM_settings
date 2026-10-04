@@ -35,84 +35,98 @@
 <body>
   <header>
     <h1>LLM_settings Issue 着手計画</h1>
-    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34（#24は対象外）／ 最終更新: 2026年10月4日 16:08 JST</p>
+    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34（#24は対象外）と先行する検証基盤タスク／ 最終更新: 2026年10月5日 07:10 JST</p>
     <div class="summary" aria-label="進捗の要約">
-      <div><strong>0 / 18</strong><span>完了 / 対象タスク</span></div>
-      <div><strong>方針決定・開始待ち</strong><span>0件・ユーザー待ち 1件・阻害 17件</span></div>
+      <div><strong>3 / 19</strong><span>完了 / 対象タスク（Issue 18件・検証基盤 1件）</span></div>
+      <div><strong>停止中</strong><span>3件完了・方針決定済み15件・一時停止1件。再開時は#34から</span></div>
     </div>
-    <p class="note">対象19件を順番に確認しました。#16 は検証を進めてユーザー判断待ち、#24 は対象外、ほか17件は阻害です。再開は各行の条件が整ってから1件ずつ行います。#25にはmainへのマージ後の専用worktree削除を必須にする追加方針を反映します。株式系Skillと共有参照は原則として除外し、全Skill共通のworktree後片付け方針のみ適用対象に含めます。</p>
+    <p class="note">Issue #16–#34 の19件を確認し、#24を除く18件と検証基盤1件、計19タスクを本計画の対象とします。ユーザーは非Archifyタスクに限り、記録付きで既知のArchify失敗を例外扱いする方針を承認しました。全テストを実行・記録し、非Archifyテストを通し、Archifyの失敗が同一条件の現行main基準から増加・変化しないことを確認します。Archify本体・依存資産・テスト基盤を変えるタスクには例外を適用しません。検証基盤はPR #113、#17はPR #114、#20はPR #115のマージと後片付けまで完了しました。#16を含む15件は方針決定済みで再開待ち、#34は一時停止です。再開時は各Issueの前提と差分を検証します。#16のタスクファイル上の<code>done</code>と最終完了は別段階で、最終完了にはmainマージ後の内容保全・clean確認とworktreeの通常削除を含みます。株式系Skillと共有参照は原則として除外し、全Skill共通のworktree後片付け方針のみ適用対象に含めます。</p>
   </header>
   <main>
     <section aria-labelledby="decided">
-      <h2 id="decided">方針決定・開始待ち</h2>
-      <p>0件。#16 は検証済みの差分についてユーザー判断を待ち、ほか17件は阻害条件を記録済みです。</p>
+      <h2 id="decided">完了</h2>
+      <p>通知テストの時刻依存を修正し、関連18件とミューテーションは通過。Jevの依存を両worktreeでそろえ、非Archifyの55件は全件通過しました。同じNode 22.12.0とコマンドで全988件を実行し、現行main参照は71件失敗、候補は69件失敗。候補の失敗69件はすべてArchify内で、参照側のArchify失敗69件とテスト名・エラー種別・原因・スキップ23件が一致し、新しい失敗はありません。<a href="https://github.com/ksuke0322/LLM_settings/pull/113">PR #113</a>をマージし、main同期、専用worktreeのclean確認と通常削除まで完了しました。Archifyの69失敗は継続する未解決事項であり、成功扱いしません。同版の上流資産を使う隔離診断で残った8件も、Archify本体の欠陥8件とは断定しません。</p>
+      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/17">#17</a> は非株式Skill39件の台帳（lock掲載external 18件・由来unknown 21件）と更新漏れ検知テストを<a href="https://github.com/ksuke0322/LLM_settings/pull/114">PR #114</a>で導入しました。関連4件と非Archify全59件は通過し、取得元を故意に壊した場合は失敗を検出しました。同条件の全件テストでは参照988件・候補992件の双方でArchify内69件のみ失敗し、失敗名・原因・スキップ23件が一致しました。main同期、変更保全、専用worktreeのclean確認と通常削除まで完了。利用状態や未確認の関係はunknown/nullを保ち、推測していません。</p>
+      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/20">#20</a> は根拠付き候補を出す非株式Skill監査CLIと関連6テストを<a href="https://github.com/ksuke0322/LLM_settings/pull/115">PR #115</a>で導入しました。株式系Skill7件と<code>stock-shared</code>の除外を故意に壊すとテストは失敗し、復元済みです。非Archify65件は通過。同条件の全件テストでは参照992件・候補998件の双方でArchify内69件のみ失敗し、原因とスキップ23件が一致しました。main同期、変更保全、専用worktreeのclean確認と通常削除まで完了。出力85件は確認候補であり、競合確定ではありません。</p>
     </section>
-    <section aria-labelledby="waiting">
-      <h2 id="waiting">ユーザー待ち</h2>
-      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/16">#16</a> <code>task-flow-non-speckit</code>のタスクファイル上の<code>done</code>記録と、マージ・保全・clean確認・worktree削除後の最終完了を区別する修正を専用worktreeに未コミットで保存しました。関連テスト6件とマージ前後境界のミューテーションは通過。全件テストは993件中76件失敗し、現行mainの失敗項目と一致します。checkoutにないArchify資産への参照などが全件失敗の主因です。二段階の状態解釈と全件テスト基準の扱いについてユーザー判断を待ち、実装PR・マージを保留します。</p>
+    <section aria-labelledby="test-gate">
+      <h2 id="test-gate">非Archifyタスクの検証完了条件</h2>
+      <ol>
+        <li>差分が<code>skills/archify/</code>、Archifyが使う共有資産、共通テスト実行基盤を変更しないことを確認する。該当する変更には例外を適用せず、個別に検証する。</li>
+        <li>対象タスクの関連テストと故障検出を確認し、同じ依存・Node版・コマンドで実行した非Archifyの全テストを通す。現時点の基準は55件通過だが、件数は実行時に再計測する。</li>
+        <li>現行mainを分離した参照worktreeと候補worktreeで全Nodeテストを同じ条件で実行し、Archifyの失敗をテスト名・原因・スキップ状態で照合する。候補側に新規・悪化・未説明の失敗やスキップがあれば止める。失敗件数だけの一致では通過としない。</li>
+        <li>PRごとに対象差分、両revision、Node版、実行コマンド、関連テスト、全件実行結果、既知例外との差分を記録する。PR・マージと最終完了は、従来どおり変更内容の確認とmainマージ後のworktree後片付けまで含める。</li>
+      </ol>
+      <p>検証基盤タスク自体は、この判定を再現可能に記録し、通知テスト修正を専用PRでマージし、main同期と専用worktreeの通常削除まで確認した時点で完了とします。隔離検証で残った8件は診断記録として保持し、Archify本体の欠陥8件とは扱いません。</p>
     </section>
     <section aria-labelledby="blocked">
-      <h2 id="blocked">阻害</h2>
-      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/17">#17</a> <a href="https://github.com/ksuke0322/LLM_settings/tree/docs/catalog-nonstock-skill-ownership">専用ブランチ</a>を現行mainに同期し、非株式Skill台帳39件（lock掲載18件・由来unknown21件）と検証テストを保持。関連テスト4件は通過し、取得元を壊すミューテーションは失敗を検出しました。全件テストは991件中76件失敗し、現行mainの失敗項目76件と一致します。全件テスト基準の判断待ちのため実装PR・マージを保留します。</p>
-      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/18">#18</a> 専用worktreeの計測CLIとテストは未追跡で保持し、現行mainには未導入です。非株式対象の参照385件を読み取り計測し、外部未確認53件・欠落候補76件を記録しました。欠落候補には別Skillの実在ファイルを相対パスとして誤解したものや生成出力例が混ざります。一方、<code>skills/blender-isometric-rules/SKILL.md</code>の<code>specs/flow/006-artwork-video-format.md</code>は現行mainに存在しません。候補の誤検出修正、既知の外部参照の区別、失敗判定・CIゲートの判断、全件テスト基準の解消が再開条件です。</p>
-      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/23">#23</a> 現行の<a href="https://github.com/vercel-labs/skills/blob/main/src/skill-lock.ts">公式lock実装</a>で<code>skillFolderHash</code>はSkillフォルダ全体のGitHub tree SHAと確認しました。非株式18件のlock値を2026年10月4日の上流デフォルトブランチと読み取り照合し、11件一致・6件不一致・1件は記録された上流パスが存在しません。既存lockを作ったCLI版は未確認です。専用worktreeの計測CLI・テストは未追跡で保持し、ローカルdigestは18件とも取得済みですが、tree SHAとは直接比較できずローカル改変は全件<code>verification-unknown</code>です。上流との差をローカル改変と断定せず、ローカル照合方式・カスタマイズ方式・CIゲートと全件テスト基準の判断を待ちます。</p>
-      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/19">#19</a> Issueは未解決です。既存の整合性監査Skillから、外部Skillの導入・更新時にlock差分の出所・path・hash、descriptionの重複、MUST/NEVERなどの強い指示、scripts・referencesの所在を人が確認する手順は整理できます。ただし、その手順のルール化と、Playwright・SwiftUIの具体的な採用順位・併存判断は未確定です。#17台帳がmainに入った後に照合し、全件テスト基準と合わせて判断するまで実装を保留します。</p>
-      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/20">#20</a> 専用ブランチを現行mainに同期し、候補抽出CLIと株式系Skill7件・<code>stock-shared</code>の走査前除外を保持しました。関連テスト6件は通過し、除外を壊すミューテーションは失敗を検出。全件テストは993件中76件失敗し、現行mainの失敗項目と一致します。候補抽出は意味上の競合を断定しません。全件テスト基準の判断後に実装PR・マージを再開します。</p>
-      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/21">#21</a> 読み取り確認では、SwiftUIの2候補は広く重なり、<code>swiftui-expert-skill</code>に実装・Instrumentsの記述があります。Playwrightは一時的なブラウザー操作と永続的なE2Eテストで成果物が異なり、Testing系はTDD手順・既存失敗修正・Webテスト各階層の役割が記述されています。rootの<code>swiftui-pro</code>はv1.1、入れ子はv1.0で、lockとplugin設定の参照先が異なります。実際の発動順位は未確認です。#17台帳のmain導入と#19の採用・併存判断後に、標準・補助・非適用のroutingを設計します。</p>
-      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/25">#25</a> 現行mainはタスク状態を<code>未着手</code>／<code>done</code>に限り、承認・commit・PR・worktree削除を一つの状態にまとめています。マージ前削除の記述は承認済みの後片付け方針と衝突します。<code>worktree</code>に言及するSkillは7件で、実際に後片付け手順を持つGit Skillとtask-flowが主な修正対象です。mainマージ・内容保全・clean確認済みの専用worktreeは通常削除を必須とし、未マージ・dirty・不明は保持、強制削除は個別承認という方針は確定しています。株式系Skillは共通後片付け記述のみ対象です。状態遷移と<code>done</code>の時点は#16の二段階解釈の判断後に確定します。</p>
-      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/22">#22</a> 非株式・非外部の大きな候補は<code>hatch-pet</code>923行、<code>isometric-story-workflow</code>433行、<code>blender-isometric-rules</code>297行です。<code>isometric-story-workflow</code>の読み取り責務マップでは、設計、契約準備、制作検証、独立レビュー、承認・動画・統合の5群を確認しました。制作全体は一つの流れですが、参照正本・反復制御・委任規則に不一致または重複の候補があります。<code>archify</code>は外部由来で直接分割せず、株式系Skillも除外します。#18の参照検査、正本判断、分割閾値の決定まで本文移動・routing変更を保留します。</p>
-      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/26">#26</a> 現行mainではworkflowがREADME・docs変更を一律検証不要とし、外部由来のTDD・test-fixingは<code>npm test</code>、<code>make test</code>、<code>uv run pytest</code>などの固定例を示します。ルート共通のテスト設定は確認できず、archifyには個別の<code>npm test</code>があり、playwright-skillにはtest scriptがありません。変更種別ごとのTDD適用表、正本設定にコマンドがない場合の停止条件、JS/TS・Pythonでの確認は未整備です。外部Skillは直接編集せず、ローカル優先規則と承認条件を判断するまで実装を保留します。</p>
-      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/27">#27</a> 外部由来の<code>playwright-skill/run.js</code>は依存不足時にnpmとChromiumを自動導入し、次回起動時にSkill内の<code>.temp-execution-*.js</code>を追跡状態を問わず削除します。現行mainにはこのprefixの追跡済みファイルが1件あるため、既存runnerは起動していません。Skill文書は入力スクリプトを<code>/tmp</code>に置く説明ですが、実行用コピーの保存先と後始末は異なります。依存・ブラウザー・入力のpreflightとrun専用一時領域は設計可能ですが、導入承認、成果物の保持期間、実行経路のルール判断と全件テスト基準の解消まで実装・実行を保留します。</p>
-      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/28">#28</a> A11y系・学習計画系の外部Skillには、現行ツール一覧と同名でない<code>Read</code>・<code>WebFetch</code>・<code>Task</code>・<code>mcp__playwright__browser_*</code>等の記述があります。同等の実行経路は未定義です。レビュー手順はキーボード操作を要求しますが、該当allowed-toolsに操作名がありません。監査CLIは未導入で、Chromium実行ファイルは存在するものの起動は未確認。Markdownリンクの欠落候補6件は結果テンプレートの画像参照です。学習計画Skillの対象範囲、ツール対応、導入・保存条件とNT扱いを決めるまで外部Skill本文の変更・監査実行を保留します。</p>
-      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/29">#29</a> 定量QAと最終静止画の人間承認は現行Skillで分かれていますが、Blender Skillは閾値外を広く「自動修正ループ」に入れ、修正可能項目・変更幅・修正後証跡を定めていません。Step 8の反復停止とStep 10のrevision・validator再実行は存在するものの、一般の自動修正指示には接続されていません。定量WARNのwaiver入力にも承認者・影響範囲がありません。検出方法、現行閾値、変更値、担当、証跡の対応表は作成可能です。自動修正allowlist、全体試行上限、receipt・waiver規則はgate・state判断に触れるため保留します。</p>
-      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/30">#30</a> 8状態名と禁止操作・報告項目はありますが、Skill本文とplaybookで画面再取得の頻度、スペシャル報酬の上限5分／10分、成功画面名、想定外画面と取得失敗時の扱いが食い違います。<code>node_repl/@oai/sky</code>指定と現行UI操作経路の同等性も未確認です。状態・操作・期待画面・再取得・時間・停止理由を静的に照合するところまでは進められます。停止条件と操作経路を判断し、実機証跡を取れるまでSkill変更とゲーム操作を保留します。</p>
-      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/31">#31</a> 非株式Skill39件の説明文計測では300文字超が9件です。読み取りでは<code>context-engineering</code>／<code>prompt-engineering</code>、<code>workflow</code>／<code>test-driven-development</code>、SwiftUIの2候補で対象が重なります。これは静的な候補であり、実際の同時発動や優先順位は未確認です。対象・非対象・成果物の欠落を整理することは可能ですが、description変更、標準・補助・非適用、reference移動は#17台帳のmain導入、#21 routing、#23ローカル照合方式の判断後に行います。</p>
-      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/32">#32</a> ローカルのcoding_typescript規則は関数宣言とCommonJSを禁じますが、外部Playwright SkillはNode &gt;=14のCommonJSで<code>require()</code>を使い、外部TDD Skillは関数宣言を良い例として示します。ルート共通のpackage・tsconfigはなく、archifyはESM/Node &gt;=18、shared/jevはESM/Node &gt;=20です。最寄りpackageのmodule方式・関数記法・実行例／概念例の対応表は読み取りで作れます。設定優先順位、設定がない場合の扱い、ローカル例外とfixture検証の方針決定まで規則変更を保留します。</p>
-      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/33">#33</a> rootの<code>swiftui-pro</code>はv1.1、入れ子の同名Skillはv1.0で、各9件の参照ファイル内容は一致します。rootは相対参照、入れ子は<code>${CLAUDE_SKILL_DIR}</code>参照です。plugin設定は入れ子を指し、lockは上流の<code>swiftui-pro/SKILL.md</code>を1件記録しますが、実際の有効版やローカル配置との対応は未確認です。root版を正本候補として扱うに留め、入れ子削除・探索除外・hash解釈・<code>swiftui-expert-skill</code>とのroutingは#17・#21・#23の判断後に行います。</p>
-      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/34">#34</a> 専用ブランチを現行mainへ同期し、確認済みの手順番号と未完文の2行修正を保持しました。番号の照合と故意の破損検出、差分検査は通過。全件テストは987件中76件失敗し、現行mainの失敗項目と一致します。禁止例と良い例の適用範囲は方針判断、<code>/grilling</code>は外部未確認、参照の失敗判定は#18と合わせます。全件テスト基準の判断まで修正の実装PR・マージを保留します。</p>
+      <h2 id="blocked">方針決定済み・再開待ち／一時停止</h2>
+      <p>2026年10月3日と4日に承認された方針を今回再照合し、おすすめ案8組も了承されました。以下の詳細には承認前の調査結果が残ります。各「再開条件」は実装時の照合・検証項目であり、同じ方針の再承認を求める意味ではありません。Issueは未実装・未完了で、ユーザーの停止指示により作業は再開していません。</p>
+      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/16">#16</a> 承認・開始・方針変更はAGENTS.mdの安全境界に従う方針が決定済みです。保存済み候補4ファイルは未コミットです。再開時に現行mainとの整合を確認し、関連・非Archify・全件テストと二段階完了を検証します。</p>
+      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/18">#18</a> 参照を計測し、外部依存とrepository-local欠落を分ける方針が決定済みです。前回の外部未確認53件・欠落候補76件には誤検出が含まれます。再開時にクエリ付きリンクを修正し、実際の欠落を確認して警告・失敗境界を適用します。</p>
+      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/23">#23</a> 上流tree SHAとローカルdigestを分けて記録する方針が決定済みです。前回の上流照合は18件中11件一致・6件不一致・1件パス不在で、ローカルdigestとの直接比較はできません。再開時に比較基準・カスタマイズ宣言・警告条件を具体化します。</p>
+      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/19">#19</a> 外部Skillの採用・併存条件を人が確認できる表にし、lock差分や重複をレビューする方針が決定済みです。台帳のPlaywright・web-e2e・SwiftUIの関係は未検証です。再開時に代表依頼と台帳記録を確認します。</p>
+      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/21">#21</a> Playwrightの一時操作と永続E2E、SwiftUIの標準・補助、Testing系の併用順を分ける方針が決定済みです。再開時に#19と整合するrouting表を作り、非適用条件を確認します。</p>
+      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/25">#25</a> AGENTS.mdの安全境界と二段階完了を状態遷移に反映する方針が決定済みです。内容を保全しcleanを確認したマージ済みworktreeは通常削除します。再開時に#16との整合、次担当、停止条件を検証します。</p>
+      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/22">#22</a> 大きな非株式Skillを入口と条件付き参照に分け、行数はレビュー候補の目安とする方針が決定済みです。再開時に#18の参照検査と正本を照合します。外部Archifyと株式系Skillは対象外です。</p>
+      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/26">#26</a> 動作変更にはTDD、文書変更には内容に合う検証を適用する方針が決定済みです。再開時に対象packageのテストコマンドを確認し、JS/TS・Pythonのfixtureで検証します。外部Skillは直接編集しません。</p>
+      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/27">#27</a> 依存導入を明示的な準備工程に分け、実行単位の一時領域を使う方針が決定済みです。既存の外部runnerには自動導入と一時ファイル削除の懸念があり起動していません。再開時にlocal runnerを隔離検証します。</p>
+      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/28">#28</a> 現行ツール能力を測り、実行不能な監査項目は理由付きNTとする方針が決定済みです。再開時に正式監査・通常レビュー・計画作成の対応表と保存条件を確認します。</p>
+      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/29">#29</a> 自動修正は対象・変更幅・試行回数を限定し、WARNの例外は理由と責任者を記録して人のレビューを通す方針が決定済みです。再開時に許可項目と修正後証跡を検証します。</p>
+      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/30">#30</a> 各操作後に画面を確認し、報酬候補は一度に1箇所、5分で打ち切る方針が決定済みです。再開時に対象クエスト、現行UI経路、画面取得不能時の停止を実機で確認します。</p>
+      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/31">#31</a> descriptionは発動条件と役割を短く示し、詳細を参照に移す方針が決定済みです。前回の計測では非株式Skill39件中300文字超が9件でした。再開時に#21のroutingと#23の上流差分を照合します。</p>
+      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/32">#32</a> 対象に最も近いpackageの設定を先に確認し、実行可能例と概念例を区別する方針が決定済みです。再開時に設定がない場合の扱いと最小fixtureを確認します。</p>
+      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/33">#33</a> rootの<code>swiftui-pro</code>を正本候補とし、入れ子版を探索から除外する方向が決定済みです。有効版とlockの対応は未確認です。再開時にroutingと上流を照合し、削除が必要なら個別承認の対象とします。</p>
+      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/34">#34</a> ユーザーの停止指示で一時停止中です。内容のない「本章では…」だけを禁止し具体的な説明は許す方針は決定済みです。再開時に保存済み候補の2行修正と現行mainを照合し、外部未確認の<code>/grilling</code>と#18に依存する参照判定を確認します。</p>
     </section>
     <section aria-labelledby="excluded">
       <h2 id="excluded">対象外</h2>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/24">#24</a> は別途改善中の株式系Skillに関わるため、この計画から除外します。既存の調査記録は残し、ここから実装や判断を進めません。</p>
       <p>横断的な #17・#18・#19・#20・#21・#23・#22・#31・#34 などでも、株式系Skillおよび共有参照は対象に含めません。現時点の除外ディレクトリは <code>skills/high-beta-daily-flow</code>、<code>skills/japan-high-beta-breakout-screening</code>、<code>skills/japan-top-companies-screening</code>、<code>skills/market-regime-assessment</code>、<code>skills/portfolio-risk-allocator</code>、<code>skills/stock-investment-decision-support</code>、<code>skills/stock-investment-position-review</code>、<code>skills/stock-shared</code> です。関連する新しい配置が見つかった場合も除外します。</p>
     </section>
+    <section aria-labelledby="phase-0">
+      <h2 id="phase-0">0. 検証基盤</h2>
+      <div class="table-wrap"><table><caption>非Archifyタスクの例外付き検証基盤</caption><thead><tr><th scope="col">ID</th><th scope="col">状態</th><th scope="col">タスク名</th></tr></thead><tbody>
+        <tr data-task="test-baseline" data-status="完了"><td>検証基盤</td><td><span class="status">完了</span></td><td>例外判定と通知テスト修正を記録し、<a href="https://github.com/ksuke0322/LLM_settings/pull/113">PR #113</a>マージ・main同期・専用worktree通常削除まで完了</td></tr>
+      </tbody></table></div>
+    </section>
     <section aria-labelledby="phase-1">
       <h2 id="phase-1">1. 先行</h2>
       <div class="table-wrap"><table><caption>正本・台帳・安全境界</caption><thead><tr><th scope="col">ID</th><th scope="col">状態</th><th scope="col">タスク名</th></tr></thead><tbody>
-        <tr data-issue="16" data-status="ユーザー待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/16">#16</a></td><td><span class="status">ユーザー待ち</span></td><td>Git・worktree・承認規則の正本と優先順位を整理</td></tr>
-        <tr data-issue="17" data-status="阻害"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/17">#17</a></td><td><span class="status">阻害</span></td><td>非株式 Skill の台帳を作り、外部由来と unknown を区別</td></tr>
+        <tr data-issue="16" data-status="再開待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/16">#16</a></td><td><span class="status">再開待ち</span></td><td>方針決定済み。承認・開始・方針変更はAGENTS.mdの安全境界を優先</td></tr>
+        <tr data-issue="17" data-status="完了"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/17">#17</a></td><td><span class="status">完了</span></td><td>非株式 Skill 39件の台帳を<a href="https://github.com/ksuke0322/LLM_settings/pull/114">PR #114</a>で導入し後片付け完了</td></tr>
         <tr data-issue="24" data-status="対象外"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/24">#24</a></td><td><span class="status">対象外</span></td><td>株式判断の状態・例外順序を定義し、fail-close を契約テストで確認</td></tr>
       </tbody></table></div>
     </section>
     <section aria-labelledby="phase-2">
       <h2 id="phase-2">2. 基盤</h2>
       <div class="table-wrap"><table><caption>参照検査・更新検知</caption><thead><tr><th scope="col">ID</th><th scope="col">状態</th><th scope="col">タスク名</th></tr></thead><tbody>
-        <tr data-issue="18" data-status="阻害"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/18">#18</a></td><td><span class="status">阻害</span></td><td>Skill 参照を検査し、リポジトリ内欠落と外部未確認を区別</td></tr>
-        <tr data-issue="23" data-status="阻害"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/23">#23</a></td><td><span class="status">阻害</span></td><td>installer のハッシュ仕様を確認してからドリフト検知を設計</td></tr>
+        <tr data-issue="18" data-status="再開待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/18">#18</a></td><td><span class="status">再開待ち</span></td><td>方針決定済み。誤検出を除き明確なrepo内欠落を判定</td></tr>
+        <tr data-issue="23" data-status="再開待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/23">#23</a></td><td><span class="status">再開待ち</span></td><td>方針決定済み。上流tree SHAとローカル比較基準を分離</td></tr>
       </tbody></table></div>
     </section>
     <section aria-labelledby="phase-3">
       <h2 id="phase-3">3. 次段</h2>
       <div class="table-wrap"><table><caption>台帳を使う監査と運用</caption><thead><tr><th scope="col">ID</th><th scope="col">状態</th><th scope="col">タスク名</th></tr></thead><tbody>
-        <tr data-issue="19" data-status="阻害"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/19">#19</a></td><td><span class="status">阻害</span></td><td>外部 Skill 導入・更新時の競合レビューを標準化</td></tr>
-        <tr data-issue="20" data-status="阻害"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/20">#20</a></td><td><span class="status">阻害</span></td><td>根拠付き候補を出す Skill 整合性監査を自動化</td></tr>
-        <tr data-issue="21" data-status="阻害"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/21">#21</a></td><td><span class="status">阻害</span></td><td>重複 Skill の標準・補助・非適用条件を定義</td></tr>
-        <tr data-issue="25" data-status="阻害"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/25">#25</a></td><td><span class="status">阻害</span></td><td>#16 を前提にタスク状態と承認・後始末を分離</td></tr>
+        <tr data-issue="19" data-status="再開待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/19">#19</a></td><td><span class="status">再開待ち</span></td><td>方針決定済み。依頼種別のroutingを台帳へ記録</td></tr>
+        <tr data-issue="20" data-status="完了"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/20">#20</a></td><td><span class="status">完了</span></td><td>根拠付き候補を出す Skill 整合性監査を<a href="https://github.com/ksuke0322/LLM_settings/pull/115">PR #115</a>で導入し後片付け完了</td></tr>
+        <tr data-issue="21" data-status="再開待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/21">#21</a></td><td><span class="status">再開待ち</span></td><td>方針決定済み。SwiftUI・Playwright・Testing系のroutingを具体化</td></tr>
+        <tr data-issue="25" data-status="再開待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/25">#25</a></td><td><span class="status">再開待ち</span></td><td>方針決定済み。タスク上のdoneと最終完了を分ける</td></tr>
       </tbody></table></div>
     </section>
     <section aria-labelledby="phase-4">
       <h2 id="phase-4">4. 後段</h2>
       <div class="table-wrap"><table><caption>個別 Skill と文書の整合</caption><thead><tr><th scope="col">ID</th><th scope="col">状態</th><th scope="col">タスク名</th></tr></thead><tbody>
-        <tr data-issue="22" data-status="阻害"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/22">#22</a></td><td><span class="status">阻害</span></td><td>巨大 Skill を責務別に分割し、#18 で参照を確認</td></tr>
-        <tr data-issue="26" data-status="阻害"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/26">#26</a></td><td><span class="status">阻害</span></td><td>TDD とテスト修正の適用範囲を整理</td></tr>
-        <tr data-issue="27" data-status="阻害"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/27">#27</a></td><td><span class="status">阻害</span></td><td>Playwright の導入準備と一時ファイル処理を分離</td></tr>
-        <tr data-issue="28" data-status="阻害"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/28">#28</a></td><td><span class="status">阻害</span></td><td>A11y・学習計画 Skill のツール記述を照合</td></tr>
-        <tr data-issue="29" data-status="阻害"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/29">#29</a></td><td><span class="status">阻害</span></td><td>Blender 自動修正と人手レビューの境界を統一</td></tr>
-        <tr data-issue="30" data-status="阻害"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/30">#30</a></td><td><span class="status">阻害</span></td><td>モンスト周回手順の正本と停止条件を統一</td></tr>
-        <tr data-issue="31" data-status="阻害"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/31">#31</a></td><td><span class="status">阻害</span></td><td>Skill 発動条件と説明文を整理</td></tr>
-        <tr data-issue="32" data-status="阻害"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/32">#32</a></td><td><span class="status">阻害</span></td><td>JS/TS 規則を実行環境と整合</td></tr>
-        <tr data-issue="33" data-status="阻害"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/33">#33</a></td><td><span class="status">阻害</span></td><td><code>swiftui-pro</code> の版・配置・lock を照合</td></tr>
-        <tr data-issue="34" data-status="阻害"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/34">#34</a></td><td><span class="status">阻害</span></td><td>Skill 文書の誤参照・矛盾等を整理</td></tr>
+        <tr data-issue="22" data-status="再開待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/22">#22</a></td><td><span class="status">再開待ち</span></td><td>方針決定済み。行数は目安にし責務・参照を評価</td></tr>
+        <tr data-issue="26" data-status="再開待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/26">#26</a></td><td><span class="status">再開待ち</span></td><td>方針決定済み。変更種別と対象packageでTDD・検証を選ぶ</td></tr>
+        <tr data-issue="27" data-status="再開待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/27">#27</a></td><td><span class="status">再開待ち</span></td><td>方針決定済み。依存導入を別工程にし一時ファイルを保護</td></tr>
+        <tr data-issue="28" data-status="再開待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/28">#28</a></td><td><span class="status">再開待ち</span></td><td>方針決定済み。ツール能力を照合し不能な検査はNT</td></tr>
+        <tr data-issue="29" data-status="再開待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/29">#29</a></td><td><span class="status">再開待ち</span></td><td>方針決定済み。自動修正を限定し人間レビューを維持</td></tr>
+        <tr data-issue="30" data-status="再開待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/30">#30</a></td><td><span class="status">再開待ち</span></td><td>方針決定済み。操作ごと再取得、報酬1箇所、5分上限</td></tr>
+        <tr data-issue="31" data-status="再開待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/31">#31</a></td><td><span class="status">再開待ち</span></td><td>方針決定済み。description 300文字はレビュー目安</td></tr>
+        <tr data-issue="32" data-status="再開待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/32">#32</a></td><td><span class="status">再開待ち</span></td><td>方針決定済み。近いpackage/runnerの実行方式を優先</td></tr>
+        <tr data-issue="33" data-status="再開待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/33">#33</a></td><td><span class="status">再開待ち</span></td><td>方針決定済み。root v1.1を標準候補にし入れ子は削除保留</td></tr>
+        <tr data-issue="34" data-status="一時停止"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/34">#34</a></td><td><span class="status">一時停止</span></td><td>読み取り調査を中断。再開時に現行mainと保存済み候補を照合</td></tr>
       </tbody></table></div>
     </section>
   </main>
