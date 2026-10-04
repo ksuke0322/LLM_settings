@@ -1,0 +1,1307 @@
+{
+  "schemaVersion": 1,
+  "scope": "非株式の直下 skills/*/SKILL.md",
+  "skills": [
+    {
+      "name": "archify",
+      "directory": "archify",
+      "origin": "external",
+      "source": "tt-a1i/archify",
+      "category": "visualization",
+      "trigger": "Create polished, validated architecture, workflow, sequence, data-flow, and lifecycle/state diagrams as explorable standalone HTML with inline SVG, dark/light themes, optional trace motion, and PNG/JPEG/WebP/SVG/WebM export. Accept plain-language requirements or pasted Mermaid flowchart, sequenceDiagram, and stateDiagram input; inspect repository evidence when the diagram must reflect real code. Use when the user asks to visualize system architecture, infrastructure, cloud/security/network topology, technical workflows, API call sequences, request lifecycles, data pipelines, ETL/ELT, data lineage, state machines, or to convert/beautify Mermaid.",
+      "responsibility": "自然言語や Mermaid の要件を、検証済みの対話式図として表現するための仕様・描画手順を定める。",
+      "related": null,
+      "conflicts": null,
+      "updatePolicy": "外部由来として記録し、原則直接編集せず upstream 追従またはローカル側の回避策を使う。",
+      "status": "unknown",
+      "version": {
+        "basis": "skillFolderHash",
+        "value": "051deaa87b3179757770d9ec3a07e340b4cb2cb1"
+      },
+      "verification": {
+        "skillFile": "skills/archify/SKILL.md",
+        "nameEvidence": "frontmatter.name",
+        "triggerEvidence": "frontmatter.description",
+        "responsibilityEvidence": "SKILL.md のタイトルと冒頭説明",
+        "categoryEvidence": "frontmatter.description とタイトルから分類",
+        "provenance": {
+          "file": ".skill-lock.json",
+          "sourceType": "github",
+          "sourceUrl": "https://github.com/tt-a1i/archify.git",
+          "skillPath": "archify/SKILL.md",
+          "skillFolderHash": "051deaa87b3179757770d9ec3a07e340b4cb2cb1",
+          "installedAt": "2026-08-30T22:51:19.625Z",
+          "updatedAt": "2026-08-30T22:51:19.625Z"
+        },
+        "relationshipEvidence": "未確認。",
+        "conflictEvidence": "unknown; Skill 間の競合を体系的には監査していない。",
+        "lifecycleEvidence": "unknown; 利用状態や所有者の判断を確認していない。",
+        "reviewedAt": "2026-10-03"
+      }
+    },
+    {
+      "name": "audit-skills-consistency",
+      "directory": "audit-skills-consistency",
+      "origin": "unknown",
+      "source": null,
+      "category": "skill governance",
+      "trigger": "ローカル skill 群の重複、矛盾、責務境界、trigger の競合を監査する。skills が増えてきたとき、ルールの重複やコンフリクトが疑われるとき、skill の統合・参照化・削除・description 調整方針を立てるときに使用する。",
+      "responsibility": "ローカル Skill 群の重複・矛盾・trigger 競合を監査し、承認前の編集や削除を避けながら整理案を示す。",
+      "related": null,
+      "conflicts": null,
+      "updatePolicy": "由来が未確認のため不明。編集前に由来と更新方針を確認する。",
+      "status": "unknown",
+      "version": null,
+      "verification": {
+        "skillFile": "skills/audit-skills-consistency/SKILL.md",
+        "nameEvidence": "frontmatter.name",
+        "triggerEvidence": "frontmatter.description",
+        "responsibilityEvidence": "SKILL.md のタイトルと冒頭説明",
+        "categoryEvidence": "frontmatter.description とタイトルから分類",
+        "provenance": {
+          "status": "unknown",
+          "reason": ".skill-lock.json に対応キーがなく、由来は独立確認していない。"
+        },
+        "relationshipEvidence": "未確認。",
+        "conflictEvidence": "unknown; Skill 間の競合を体系的には監査していない。",
+        "lifecycleEvidence": "unknown; 利用状態や所有者の判断を確認していない。",
+        "reviewedAt": "2026-10-03"
+      }
+    },
+    {
+      "name": "auditing-wcag",
+      "directory": "auditing-wcag",
+      "origin": "external",
+      "source": "masuP9/a11y-specialist-skills",
+      "category": "accessibility",
+      "trigger": "Perform formal WCAG 2.2 A/AA conformance audits and assign Pass/Fail/NT/NA to every success criterion with evidence. Use reviewing-a11y instead for issue discovery and improvement feedback.",
+      "responsibility": "WCAG 2.2 A/AA の適合性を成功基準ごとに評価し、Pass/Fail/NT/NA と根拠を記録する。",
+      "related": [
+        "reviewing-a11y"
+      ],
+      "conflicts": null,
+      "updatePolicy": "外部由来として記録し、原則直接編集せず upstream 追従またはローカル側の回避策を使う。",
+      "status": "unknown",
+      "version": {
+        "basis": "skillFolderHash",
+        "value": "bd3e4b269b788121ca3a7ec631ac7049303c4577"
+      },
+      "verification": {
+        "skillFile": "skills/auditing-wcag/SKILL.md",
+        "nameEvidence": "frontmatter.name",
+        "triggerEvidence": "frontmatter.description",
+        "responsibilityEvidence": "SKILL.md のタイトルと冒頭説明",
+        "categoryEvidence": "frontmatter.description とタイトルから分類",
+        "provenance": {
+          "file": ".skill-lock.json",
+          "sourceType": "github",
+          "sourceUrl": "https://github.com/masuP9/a11y-specialist-skills.git",
+          "skillPath": "skills/auditing-wcag/SKILL.md",
+          "skillFolderHash": "bd3e4b269b788121ca3a7ec631ac7049303c4577",
+          "installedAt": "2026-02-20T06:51:10.349Z",
+          "updatedAt": "2026-07-02T14:44:21.334Z"
+        },
+        "relationshipEvidence": "SKILL.md に明示された Skill 間参照のみ記録。",
+        "conflictEvidence": "unknown; Skill 間の競合を体系的には監査していない。",
+        "lifecycleEvidence": "unknown; 利用状態や所有者の判断を確認していない。",
+        "reviewedAt": "2026-10-03"
+      }
+    },
+    {
+      "name": "ax",
+      "directory": "ax",
+      "origin": "external",
+      "source": "yusukebe/ax",
+      "category": "web",
+      "trigger": "Use the ax CLI instead of curl + throwaway parsing scripts whenever you fetch a URL, explore an unknown web page, or extract structured data from HTML. Trigger whenever you are about to write an inline script (python3 heredoc, node -e, regex over HTML) or a bare curl for one-off web fetching, scraping, or page exploration.",
+      "responsibility": "ax CLI を使い、URL の取得、未知ページの探索、HTML からの構造化データ抽出を行う。",
+      "related": null,
+      "conflicts": null,
+      "updatePolicy": "外部由来として記録し、原則直接編集せず upstream 追従またはローカル側の回避策を使う。",
+      "status": "unknown",
+      "version": {
+        "basis": "skillFolderHash",
+        "value": "be4e42e6b11bf79f26ddd5585b6c49f5a9219aa4"
+      },
+      "verification": {
+        "skillFile": "skills/ax/SKILL.md",
+        "nameEvidence": "frontmatter.name",
+        "triggerEvidence": "frontmatter.description",
+        "responsibilityEvidence": "SKILL.md のタイトルと冒頭説明",
+        "categoryEvidence": "frontmatter.description とタイトルから分類",
+        "provenance": {
+          "file": ".skill-lock.json",
+          "sourceType": "github",
+          "sourceUrl": "https://github.com/yusukebe/ax.git",
+          "skillPath": "skills/ax/SKILL.md",
+          "skillFolderHash": "be4e42e6b11bf79f26ddd5585b6c49f5a9219aa4",
+          "installedAt": "2026-08-15T14:04:12.156Z",
+          "updatedAt": "2026-08-15T14:04:12.156Z"
+        },
+        "relationshipEvidence": "未確認。",
+        "conflictEvidence": "unknown; Skill 間の競合を体系的には監査していない。",
+        "lifecycleEvidence": "unknown; 利用状態や所有者の判断を確認していない。",
+        "reviewedAt": "2026-10-03"
+      }
+    },
+    {
+      "name": "blender-isometric-rules",
+      "directory": "blender-isometric-rules",
+      "origin": "unknown",
+      "source": null,
+      "category": "3D content",
+      "trigger": "Blender(blender-mcp/bpy)でアイソメトリック映像素材を制作・修正する際に必ず参照する。寸法のパラメトリック設計、接合チェック、マテリアル、カメラ自動フィット、World/ライティング、アニメーション・トランジション、背景ディテールのGeometry Nodesスキャッター、アニメーション実装時の既知の事故(animation_data_clear二重呼び出し、発光オブジェクトの非表示忘れ、解析的配置による浮き/刺さり等)を扱うすべてのタスクで使う。「灯台」「桟橋」「店」等のテーマ名や「state」「クール」という語と一緒にBlender作業が出てきたら必ずこれを読む。",
+      "responsibility": "アイソメトリック Blender 制作の寸法・接合・材質・カメラ・照明・アニメーションの実装規則と失敗回避を定める。",
+      "related": [
+        "isometric-story-workflow"
+      ],
+      "conflicts": null,
+      "updatePolicy": "由来が未確認のため不明。編集前に由来と更新方針を確認する。",
+      "status": "unknown",
+      "version": null,
+      "verification": {
+        "skillFile": "skills/blender-isometric-rules/SKILL.md",
+        "nameEvidence": "frontmatter.name",
+        "triggerEvidence": "frontmatter.description",
+        "responsibilityEvidence": "SKILL.md のタイトルと冒頭説明",
+        "categoryEvidence": "frontmatter.description とタイトルから分類",
+        "provenance": {
+          "status": "unknown",
+          "reason": ".skill-lock.json に対応キーがなく、由来は独立確認していない。"
+        },
+        "relationshipEvidence": "SKILL.md に明示された Skill 間参照のみ記録。",
+        "conflictEvidence": "unknown; Skill 間の競合を体系的には監査していない。",
+        "lifecycleEvidence": "unknown; 利用状態や所有者の判断を確認していない。",
+        "reviewedAt": "2026-10-03"
+      }
+    },
+    {
+      "name": "branch-worktree-naming",
+      "directory": "branch-worktree-naming",
+      "origin": "unknown",
+      "source": null,
+      "category": "git workflow",
+      "trigger": "ブランチを切る時や worktree を作成する時の命名規則を定義する。`<type>/<slug>` 形式、許可する type、slug 正規化、判定基準、良い例/悪い例を適用したいときに使う。",
+      "responsibility": "ブランチ名と worktree 名を許可された type と slug の規則に沿って決める。",
+      "related": null,
+      "conflicts": null,
+      "updatePolicy": "由来が未確認のため不明。編集前に由来と更新方針を確認する。",
+      "status": "unknown",
+      "version": null,
+      "verification": {
+        "skillFile": "skills/branch-worktree-naming/SKILL.md",
+        "nameEvidence": "frontmatter.name",
+        "triggerEvidence": "frontmatter.description",
+        "responsibilityEvidence": "SKILL.md のタイトルと冒頭説明",
+        "categoryEvidence": "frontmatter.description とタイトルから分類",
+        "provenance": {
+          "status": "unknown",
+          "reason": ".skill-lock.json に対応キーがなく、由来は独立確認していない。"
+        },
+        "relationshipEvidence": "未確認。",
+        "conflictEvidence": "unknown; Skill 間の競合を体系的には監査していない。",
+        "lifecycleEvidence": "unknown; 利用状態や所有者の判断を確認していない。",
+        "reviewedAt": "2026-10-03"
+      }
+    },
+    {
+      "name": "ecmascript-modern-syntax",
+      "directory": "coding_typescript",
+      "origin": "unknown",
+      "source": null,
+      "category": "programming",
+      "trigger": "TypeScript / JavaScript のコードを記述・修正する際に適用する記法ルール。TypeScript / JavaScript のコードを記述・修正する際に参照する。ECMAScript 2022 以降の構文を優先し、アロー関数、分割代入、オプショナルチェイニング、Null 合体演算子、テンプレートリテラル、スプレッド / レスト構文、ES Modules（import/export）、async/await、Promise.all / allSettled、top-level await を積極的に使用する。function 宣言、CommonJS（require/module.exports）、then チェーン中心の記述は原則使用しない。",
+      "responsibility": "TypeScript と JavaScript で優先する ECMAScript 2022 以降の記法を示す。",
+      "related": null,
+      "conflicts": null,
+      "updatePolicy": "由来が未確認のため不明。編集前に由来と更新方針を確認する。",
+      "status": "unknown",
+      "version": null,
+      "verification": {
+        "skillFile": "skills/coding_typescript/SKILL.md",
+        "nameEvidence": "frontmatter.name",
+        "triggerEvidence": "frontmatter.description",
+        "responsibilityEvidence": "SKILL.md のタイトルと冒頭説明",
+        "categoryEvidence": "frontmatter.description とタイトルから分類",
+        "provenance": {
+          "status": "unknown",
+          "reason": ".skill-lock.json に対応キーがなく、由来は独立確認していない。"
+        },
+        "relationshipEvidence": "未確認。",
+        "conflictEvidence": "unknown; Skill 間の競合を体系的には監査していない。",
+        "lifecycleEvidence": "unknown; 利用状態や所有者の判断を確認していない。",
+        "reviewedAt": "2026-10-03"
+      }
+    },
+    {
+      "name": "cognitive-rhythm-writing",
+      "directory": "cognitive-rhythm-writing",
+      "origin": "unknown",
+      "source": null,
+      "category": "writing",
+      "trigger": "説明的な文章に緩急を設計するための規範。緩急を装飾ではなく認知モードの切替（観察→逡巡→断定→再観察）と未回収の緊張の管理として扱い、文の拍、段落の密度波形、節の入り方、緩みと駄文の判別、執筆後の機械的な点検手順を定める。読み物として読ませたい章・記事・解説文を生成するとき、または「密度はあるが平坦でおもしろくない」文章を診断・修正するときに使用する。",
+      "responsibility": "説明文の認知モード、文の拍、段落密度を設計し、文章の緩急を診断・調整する。",
+      "related": null,
+      "conflicts": null,
+      "updatePolicy": "由来が未確認のため不明。編集前に由来と更新方針を確認する。",
+      "status": "unknown",
+      "version": null,
+      "verification": {
+        "skillFile": "skills/cognitive-rhythm-writing/SKILL.md",
+        "nameEvidence": "frontmatter.name",
+        "triggerEvidence": "frontmatter.description",
+        "responsibilityEvidence": "SKILL.md のタイトルと冒頭説明",
+        "categoryEvidence": "frontmatter.description とタイトルから分類",
+        "provenance": {
+          "status": "unknown",
+          "reason": ".skill-lock.json に対応キーがなく、由来は独立確認していない。"
+        },
+        "relationshipEvidence": "未確認。",
+        "conflictEvidence": "unknown; Skill 間の競合を体系的には監査していない。",
+        "lifecycleEvidence": "unknown; 利用状態や所有者の判断を確認していない。",
+        "reviewedAt": "2026-10-03"
+      }
+    },
+    {
+      "name": "context-engineering",
+      "directory": "context-engineering",
+      "origin": "external",
+      "source": "NeoLabHQ/context-engineering-kit",
+      "category": "agent systems",
+      "trigger": "Understand the components, mechanics, and constraints of context in agent systems. Use when writing, editing, or optimizing commands, skills, or sub-agents prompts.",
+      "responsibility": "エージェント実行時の context の構成・機構・制約を説明し、commands・skills・subagent prompts の設計を支援する。",
+      "related": null,
+      "conflicts": null,
+      "updatePolicy": "外部由来として記録し、原則直接編集せず upstream 追従またはローカル側の回避策を使う。",
+      "status": "unknown",
+      "version": {
+        "basis": "skillFolderHash",
+        "value": "0f1c5855bedc4549cb2d06a031667a9a96711073"
+      },
+      "verification": {
+        "skillFile": "skills/context-engineering/SKILL.md",
+        "nameEvidence": "frontmatter.name",
+        "triggerEvidence": "frontmatter.description",
+        "responsibilityEvidence": "SKILL.md のタイトルと冒頭説明",
+        "categoryEvidence": "frontmatter.description とタイトルから分類",
+        "provenance": {
+          "file": ".skill-lock.json",
+          "sourceType": "github",
+          "sourceUrl": "https://github.com/NeoLabHQ/context-engineering-kit.git",
+          "skillPath": "plugins/customaize-agent/skills/context-engineering/SKILL.md",
+          "skillFolderHash": "0f1c5855bedc4549cb2d06a031667a9a96711073",
+          "installedAt": "2026-01-31T11:20:09.020Z",
+          "updatedAt": "2026-01-31T11:20:09.020Z"
+        },
+        "relationshipEvidence": "未確認。",
+        "conflictEvidence": "unknown; Skill 間の競合を体系的には監査していない。",
+        "lifecycleEvidence": "unknown; 利用状態や所有者の判断を確認していない。",
+        "reviewedAt": "2026-10-03"
+      }
+    },
+    {
+      "name": "web-design-reference",
+      "directory": "design_ref",
+      "origin": "unknown",
+      "source": null,
+      "category": "design",
+      "trigger": "Web デザイン（レイアウト、色、タイポグラフィ、モーション、UI の振る舞い）に関する判断を行う際に参照するガイドライン集。基本判断は Material Design – Foundations を第一基準とし、アクセシビリティおよびタイポグラフィは該当ページを必ず参照する。実装後の品質・体験の最終確認には Apple Human Interface Guidelines を副参照として用いる。UI 判断に迷った場合は、独自判断を行わず参照先に従う。",
+      "responsibility": "Material Design を主基準に、Web のレイアウト・色・文字・動き・UI 挙動の判断に使う参照規則を示す。",
+      "related": null,
+      "conflicts": null,
+      "updatePolicy": "由来が未確認のため不明。編集前に由来と更新方針を確認する。",
+      "status": "unknown",
+      "version": null,
+      "verification": {
+        "skillFile": "skills/design_ref/SKILL.md",
+        "nameEvidence": "frontmatter.name",
+        "triggerEvidence": "frontmatter.description",
+        "responsibilityEvidence": "SKILL.md のタイトルと冒頭説明",
+        "categoryEvidence": "frontmatter.description とタイトルから分類",
+        "provenance": {
+          "status": "unknown",
+          "reason": ".skill-lock.json に対応キーがなく、由来は独立確認していない。"
+        },
+        "relationshipEvidence": "未確認。",
+        "conflictEvidence": "unknown; Skill 間の競合を体系的には監査していない。",
+        "lifecycleEvidence": "unknown; 利用状態や所有者の判断を確認していない。",
+        "reviewedAt": "2026-10-03"
+      }
+    },
+    {
+      "name": "find-skills",
+      "directory": "find-skills",
+      "origin": "external",
+      "source": "vercel-labs/skills",
+      "category": "skill discovery",
+      "trigger": "Helps users discover and install agent skills when they ask questions like \"how do I do X\", \"find a skill for X\", \"is there a skill that can...\", or express interest in extending capabilities. This skill should be used when the user is looking for functionality that might exist as an installable skill.",
+      "responsibility": "ユーザーの目的に合う既存 Skill を探索し、導入候補と使い方を案内する。",
+      "related": null,
+      "conflicts": null,
+      "updatePolicy": "外部由来として記録し、原則直接編集せず upstream 追従またはローカル側の回避策を使う。",
+      "status": "unknown",
+      "version": {
+        "basis": "skillFolderHash",
+        "value": "eb6a23305aea6e340d14b9de3766e721f9f4861b"
+      },
+      "verification": {
+        "skillFile": "skills/find-skills/SKILL.md",
+        "nameEvidence": "frontmatter.name",
+        "triggerEvidence": "frontmatter.description",
+        "responsibilityEvidence": "SKILL.md のタイトルと冒頭説明",
+        "categoryEvidence": "frontmatter.description とタイトルから分類",
+        "provenance": {
+          "file": ".skill-lock.json",
+          "sourceType": "github",
+          "sourceUrl": "https://github.com/vercel-labs/skills.git",
+          "skillPath": "skills/find-skills/SKILL.md",
+          "skillFolderHash": "eb6a23305aea6e340d14b9de3766e721f9f4861b",
+          "installedAt": "2026-01-31T05:44:14.962Z",
+          "updatedAt": "2026-07-02T14:44:19.622Z"
+        },
+        "relationshipEvidence": "未確認。",
+        "conflictEvidence": "unknown; Skill 間の競合を体系的には監査していない。",
+        "lifecycleEvidence": "unknown; 利用状態や所有者の判断を確認していない。",
+        "reviewedAt": "2026-10-03"
+      }
+    },
+    {
+      "name": "git-workflow-safety",
+      "directory": "git",
+      "origin": "unknown",
+      "source": null,
+      "category": "git workflow",
+      "trigger": "Git 操作（ブランチ作成、コミット、push、PR 作成）を行うときに必ず適用するルール集。main 直push禁止、force push 禁止（例外は単独PRブランチでの --force-with-lease のみ）、Conventional Commits、1コミット=1意図、PR の Why/What/How/Risk 記載、secrets・生成物・巨大バイナリのコミット禁止を強制する。",
+      "responsibility": "ブランチ、commit、push、PR の安全な進め方と禁止事項を定める。",
+      "related": null,
+      "conflicts": null,
+      "updatePolicy": "由来が未確認のため不明。編集前に由来と更新方針を確認する。",
+      "status": "unknown",
+      "version": null,
+      "verification": {
+        "skillFile": "skills/git/SKILL.md",
+        "nameEvidence": "frontmatter.name",
+        "triggerEvidence": "frontmatter.description",
+        "responsibilityEvidence": "SKILL.md のタイトルと冒頭説明",
+        "categoryEvidence": "frontmatter.description とタイトルから分類",
+        "provenance": {
+          "status": "unknown",
+          "reason": ".skill-lock.json に対応キーがなく、由来は独立確認していない。"
+        },
+        "relationshipEvidence": "未確認。",
+        "conflictEvidence": "unknown; Skill 間の競合を体系的には監査していない。",
+        "lifecycleEvidence": "unknown; 利用状態や所有者の判断を確認していない。",
+        "reviewedAt": "2026-10-03"
+      }
+    },
+    {
+      "name": "grill-me",
+      "directory": "grill-me",
+      "origin": "external",
+      "source": "mattpocock/skills",
+      "category": "planning",
+      "trigger": "A relentless interview to sharpen a plan or design.",
+      "responsibility": "質問を重ねて計画や設計の前提を検証し、より明確な判断材料へ整える。",
+      "related": null,
+      "conflicts": null,
+      "updatePolicy": "外部由来として記録し、原則直接編集せず upstream 追従またはローカル側の回避策を使う。",
+      "status": "unknown",
+      "version": {
+        "basis": "skillFolderHash",
+        "value": "8320e7b87f7b208f50ce165b1dd43d1e93c8e801"
+      },
+      "verification": {
+        "skillFile": "skills/grill-me/SKILL.md",
+        "nameEvidence": "frontmatter.name",
+        "triggerEvidence": "frontmatter.description",
+        "responsibilityEvidence": "SKILL.md のタイトルと冒頭説明",
+        "categoryEvidence": "frontmatter.description とタイトルから分類",
+        "provenance": {
+          "file": ".skill-lock.json",
+          "sourceType": "github",
+          "sourceUrl": "https://github.com/mattpocock/skills.git",
+          "skillPath": "skills/productivity/grill-me/SKILL.md",
+          "skillFolderHash": "8320e7b87f7b208f50ce165b1dd43d1e93c8e801",
+          "installedAt": "2026-06-03T06:47:52.807Z",
+          "updatedAt": "2026-07-02T14:44:28.137Z"
+        },
+        "relationshipEvidence": "未確認。",
+        "conflictEvidence": "unknown; Skill 間の競合を体系的には監査していない。",
+        "lifecycleEvidence": "unknown; 利用状態や所有者の判断を確認していない。",
+        "reviewedAt": "2026-10-03"
+      }
+    },
+    {
+      "name": "hatch-pet",
+      "directory": "hatch-pet",
+      "origin": "unknown",
+      "source": null,
+      "category": "creative assets",
+      "trigger": "Create, repair, validate, visually QA, and package Codex-compatible v2 animated pets from character art, generated images, company or prospect brand cues, or visual references. Use for any new Codex pet, custom mascot, non-pixel pet style, brand-inspired pet, existing-pet repair, or 8x11 spritesheet workflow requiring all 9 standard animation rows, 16 look directions, deterministic assembly, QA artifacts, and spriteVersionNumber 2 packaging.",
+      "responsibility": "キャラクターや参照画像から Codex 向け v2 animated pet を作成・修復・検証し、package 化する。",
+      "related": null,
+      "conflicts": null,
+      "updatePolicy": "由来が未確認のため不明。編集前に由来と更新方針を確認する。",
+      "status": "unknown",
+      "version": null,
+      "verification": {
+        "skillFile": "skills/hatch-pet/SKILL.md",
+        "nameEvidence": "frontmatter.name",
+        "triggerEvidence": "frontmatter.description",
+        "responsibilityEvidence": "SKILL.md のタイトルと冒頭説明",
+        "categoryEvidence": "frontmatter.description とタイトルから分類",
+        "provenance": {
+          "status": "unknown",
+          "reason": ".skill-lock.json に対応キーがなく、由来は独立確認していない。"
+        },
+        "relationshipEvidence": "未確認。",
+        "conflictEvidence": "unknown; Skill 間の競合を体系的には監査していない。",
+        "lifecycleEvidence": "unknown; 利用状態や所有者の判断を確認していない。",
+        "reviewedAt": "2026-10-03"
+      }
+    },
+    {
+      "name": "i-have-adhd",
+      "directory": "i-have-adhd",
+      "origin": "external",
+      "source": "ayghri/i-have-adhd",
+      "category": "response style",
+      "trigger": "'Shape output for a reader with ADHD: lead with the next action, number multi-step work, restate state across turns, suppress tangents, give specific time estimates, make wins visible. Invoke with /i-have-adhd; stays on until \"stop adhd mode\".'",
+      "responsibility": "次の行動を先に示し、手順・状態・時間見積りを明確にした出力形式を定める。",
+      "related": null,
+      "conflicts": null,
+      "updatePolicy": "外部由来として記録し、原則直接編集せず upstream 追従またはローカル側の回避策を使う。",
+      "status": "unknown",
+      "version": {
+        "basis": "skillFolderHash",
+        "value": "5f9aed51e473d34f38962ac270ada0b1e3ff2a4a"
+      },
+      "verification": {
+        "skillFile": "skills/i-have-adhd/SKILL.md",
+        "nameEvidence": "frontmatter.name",
+        "triggerEvidence": "frontmatter.description",
+        "responsibilityEvidence": "SKILL.md のタイトルと冒頭説明",
+        "categoryEvidence": "frontmatter.description とタイトルから分類",
+        "provenance": {
+          "file": ".skill-lock.json",
+          "sourceType": "github",
+          "sourceUrl": "https://github.com/ayghri/i-have-adhd.git",
+          "skillPath": "skills/i-have-adhd/SKILL.md",
+          "skillFolderHash": "5f9aed51e473d34f38962ac270ada0b1e3ff2a4a",
+          "installedAt": "2026-07-28T13:28:20.658Z",
+          "updatedAt": "2026-07-28T13:28:20.658Z"
+        },
+        "relationshipEvidence": "未確認。",
+        "conflictEvidence": "unknown; Skill 間の競合を体系的には監査していない。",
+        "lifecycleEvidence": "unknown; 利用状態や所有者の判断を確認していない。",
+        "reviewedAt": "2026-10-03"
+      }
+    },
+    {
+      "name": "isometric-story-workflow",
+      "directory": "isometric-story-workflow",
+      "origin": "unknown",
+      "source": null,
+      "category": "3D content",
+      "trigger": "アイソメトリックポモドーロアプリ用に新しいテーマ・ストーリー・クールを設計・制作する際に必ず参照する。Story Beat、animatic、参考収集、設計表、Blender制作、静止画・Motion QA、アプリ統合確認、成果物manifestまでの品質ゲートを扱う。「新しいテーマを作って」「ストーリーを設計して」「クール1/クール2を作って」のようなタスクで必ず読む。Blenderでの具体的な実装ルールは blender-isometric-rules スキルを併用する。",
+      "responsibility": "アイソメトリック・ポモドーロ向けテーマやストーリーを設計し、制作から QA・manifest までの品質ゲートを定める。",
+      "related": [
+        "blender-isometric-rules"
+      ],
+      "conflicts": null,
+      "updatePolicy": "由来が未確認のため不明。編集前に由来と更新方針を確認する。",
+      "status": "unknown",
+      "version": null,
+      "verification": {
+        "skillFile": "skills/isometric-story-workflow/SKILL.md",
+        "nameEvidence": "frontmatter.name",
+        "triggerEvidence": "frontmatter.description",
+        "responsibilityEvidence": "SKILL.md のタイトルと冒頭説明",
+        "categoryEvidence": "frontmatter.description とタイトルから分類",
+        "provenance": {
+          "status": "unknown",
+          "reason": ".skill-lock.json に対応キーがなく、由来は独立確認していない。"
+        },
+        "relationshipEvidence": "SKILL.md に明示された Skill 間参照のみ記録。",
+        "conflictEvidence": "unknown; Skill 間の競合を体系的には監査していない。",
+        "lifecycleEvidence": "unknown; 利用状態や所有者の判断を確認していない。",
+        "reviewedAt": "2026-10-03"
+      }
+    },
+    {
+      "name": "japanese-response-style",
+      "directory": "japanese-response-style",
+      "origin": "unknown",
+      "source": null,
+      "category": "response style",
+      "trigger": "ユーザーへのすべての日本語応答に使用する。質問への回答、前提確認、進捗共有、作業報告、検証結果、完了報告を含め、結論を先に示し、事実と未確認事項を分け、簡潔で検証可能な文章に整える。",
+      "responsibility": "日本語の回答・進捗・検証報告を結論先行で簡潔かつ検証可能に整える。",
+      "related": null,
+      "conflicts": null,
+      "updatePolicy": "由来が未確認のため不明。編集前に由来と更新方針を確認する。",
+      "status": "unknown",
+      "version": null,
+      "verification": {
+        "skillFile": "skills/japanese-response-style/SKILL.md",
+        "nameEvidence": "frontmatter.name",
+        "triggerEvidence": "frontmatter.description",
+        "responsibilityEvidence": "SKILL.md のタイトルと冒頭説明",
+        "categoryEvidence": "frontmatter.description とタイトルから分類",
+        "provenance": {
+          "status": "unknown",
+          "reason": ".skill-lock.json に対応キーがなく、由来は独立確認していない。"
+        },
+        "relationshipEvidence": "未確認。",
+        "conflictEvidence": "unknown; Skill 間の競合を体系的には監査していない。",
+        "lifecycleEvidence": "unknown; 利用状態や所有者の判断を確認していない。",
+        "reviewedAt": "2026-10-03"
+      }
+    },
+    {
+      "name": "japanese-tech-writing",
+      "directory": "japanese-tech-writing",
+      "origin": "unknown",
+      "source": null,
+      "category": "writing",
+      "trigger": "日本語の技術文書・書籍原稿の文章規範。整形（一文一行、引用ブロック、脚注、コラム記法）、段落と論証の構成（パラグラフライティング）、論証の厳密さ（ツッコミどころの除去）、読み手の負荷の管理、視点と語り、演出の抑制、LLM っぽい空句の禁止、冗長の排除を定める。日本語で技術書の章、草稿、記事、解説文を書くとき、または推敲・リライトするときに使用する。",
+      "responsibility": "日本語の技術書・記事・解説文の構成、論証、整形、推敲の規範を定める。",
+      "related": null,
+      "conflicts": null,
+      "updatePolicy": "由来が未確認のため不明。編集前に由来と更新方針を確認する。",
+      "status": "unknown",
+      "version": null,
+      "verification": {
+        "skillFile": "skills/japanese-tech-writing/SKILL.md",
+        "nameEvidence": "frontmatter.name",
+        "triggerEvidence": "frontmatter.description",
+        "responsibilityEvidence": "SKILL.md のタイトルと冒頭説明",
+        "categoryEvidence": "frontmatter.description とタイトルから分類",
+        "provenance": {
+          "status": "unknown",
+          "reason": ".skill-lock.json に対応キーがなく、由来は独立確認していない。"
+        },
+        "relationshipEvidence": "未確認。",
+        "conflictEvidence": "unknown; Skill 間の競合を体系的には監査していない。",
+        "lifecycleEvidence": "unknown; 利用状態や所有者の判断を確認していない。",
+        "reviewedAt": "2026-10-03"
+      }
+    },
+    {
+      "name": "monster-strike-material-farming",
+      "directory": "monster-strike-material-farming",
+      "origin": "unknown",
+      "source": null,
+      "category": "game operation",
+      "trigger": "\"Operate Monster Strike on a mirrored iPhone to solo-farm a user-specified evolution-material quest with screenshot-verified UI transitions, reward-screen retries, deck checks, and stamina checks. Apply only when the user asks to perform or resume the farming run; do not use for rankings, material calculations, or workbook edits.\"",
+      "responsibility": "依頼されたモンスト素材クエストを、画面遷移や報酬を確認しながらミラーリング端末で周回する手順を定める。",
+      "related": null,
+      "conflicts": null,
+      "updatePolicy": "由来が未確認のため不明。編集前に由来と更新方針を確認する。",
+      "status": "unknown",
+      "version": null,
+      "verification": {
+        "skillFile": "skills/monster-strike-material-farming/SKILL.md",
+        "nameEvidence": "frontmatter.name",
+        "triggerEvidence": "frontmatter.description",
+        "responsibilityEvidence": "SKILL.md のタイトルと冒頭説明",
+        "categoryEvidence": "frontmatter.description とタイトルから分類",
+        "provenance": {
+          "status": "unknown",
+          "reason": ".skill-lock.json に対応キーがなく、由来は独立確認していない。"
+        },
+        "relationshipEvidence": "未確認。",
+        "conflictEvidence": "unknown; Skill 間の競合を体系的には監査していない。",
+        "lifecycleEvidence": "unknown; 利用状態や所有者の判断を確認していない。",
+        "reviewedAt": "2026-10-03"
+      }
+    },
+    {
+      "name": "planning-a11y-improvement",
+      "directory": "planning-a11y-improvement",
+      "origin": "external",
+      "source": "masuP9/a11y-specialist-skills",
+      "category": "accessibility",
+      "trigger": "Assess organizational accessibility maturity and create a long-term improvement plan with a roadmap, KPIs, and stakeholder materials. Use planning-wcag-audit for the execution plan of a specific site's WCAG audit.",
+      "responsibility": "組織のアクセシビリティ成熟度を評価し、ロードマップ・KPI・関係者向け資料を作る。",
+      "related": [
+        "planning-wcag-audit"
+      ],
+      "conflicts": null,
+      "updatePolicy": "外部由来として記録し、原則直接編集せず upstream 追従またはローカル側の回避策を使う。",
+      "status": "unknown",
+      "version": {
+        "basis": "skillFolderHash",
+        "value": "b1fbd323e3e9dbdd09f28a7e44d661cb155b4493"
+      },
+      "verification": {
+        "skillFile": "skills/planning-a11y-improvement/SKILL.md",
+        "nameEvidence": "frontmatter.name",
+        "triggerEvidence": "frontmatter.description",
+        "responsibilityEvidence": "SKILL.md のタイトルと冒頭説明",
+        "categoryEvidence": "frontmatter.description とタイトルから分類",
+        "provenance": {
+          "file": ".skill-lock.json",
+          "sourceType": "github",
+          "sourceUrl": "https://github.com/masuP9/a11y-specialist-skills.git",
+          "skillPath": "skills/planning-a11y-improvement/SKILL.md",
+          "skillFolderHash": "b1fbd323e3e9dbdd09f28a7e44d661cb155b4493",
+          "installedAt": "2026-02-20T06:51:10.372Z",
+          "updatedAt": "2026-07-02T14:44:23.126Z"
+        },
+        "relationshipEvidence": "SKILL.md に明示された Skill 間参照のみ記録。",
+        "conflictEvidence": "unknown; Skill 間の競合を体系的には監査していない。",
+        "lifecycleEvidence": "unknown; 利用状態や所有者の判断を確認していない。",
+        "reviewedAt": "2026-10-03"
+      }
+    },
+    {
+      "name": "planning-wcag-audit",
+      "directory": "planning-wcag-audit",
+      "origin": "external",
+      "source": "masuP9/a11y-specialist-skills",
+      "category": "accessibility",
+      "trigger": "Plan WCAG audits for a specific site using WAIC test guidelines, including scope, page selection, environment, and execution plan. Use planning-a11y-improvement for organization-wide, long-term improvement planning.",
+      "responsibility": "特定サイトの WCAG 監査について、対象・ページ選定・環境・実行計画を定める。",
+      "related": [
+        "planning-a11y-improvement"
+      ],
+      "conflicts": null,
+      "updatePolicy": "外部由来として記録し、原則直接編集せず upstream 追従またはローカル側の回避策を使う。",
+      "status": "unknown",
+      "version": {
+        "basis": "skillFolderHash",
+        "value": "2496dd650ee2831e6f18837db35c5f03e7ef0e1d"
+      },
+      "verification": {
+        "skillFile": "skills/planning-wcag-audit/SKILL.md",
+        "nameEvidence": "frontmatter.name",
+        "triggerEvidence": "frontmatter.description",
+        "responsibilityEvidence": "SKILL.md のタイトルと冒頭説明",
+        "categoryEvidence": "frontmatter.description とタイトルから分類",
+        "provenance": {
+          "file": ".skill-lock.json",
+          "sourceType": "github",
+          "sourceUrl": "https://github.com/masuP9/a11y-specialist-skills.git",
+          "skillPath": "skills/planning-wcag-audit/SKILL.md",
+          "skillFolderHash": "2496dd650ee2831e6f18837db35c5f03e7ef0e1d",
+          "installedAt": "2026-02-20T06:51:10.391Z",
+          "updatedAt": "2026-07-02T14:44:24.999Z"
+        },
+        "relationshipEvidence": "SKILL.md に明示された Skill 間参照のみ記録。",
+        "conflictEvidence": "unknown; Skill 間の競合を体系的には監査していない。",
+        "lifecycleEvidence": "unknown; 利用状態や所有者の判断を確認していない。",
+        "reviewedAt": "2026-10-03"
+      }
+    },
+    {
+      "name": "playwright-skill",
+      "directory": "playwright-skill",
+      "origin": "external",
+      "source": "lackeyjb/playwright-skill",
+      "category": "web",
+      "trigger": "Complete browser automation with Playwright. Auto-detects dev servers, writes clean test scripts to /tmp. Test pages, fill forms, take screenshots, check responsive design, validate UX, test login flows, check links, automate any browser task. Use when user wants to test websites, automate browser interactions, validate web functionality, or perform any browser-based testing.",
+      "responsibility": "Playwright を使ってブラウザー操作、画面検証、フォーム・リンク・ログイン等の Web 作業を自動化する。",
+      "related": null,
+      "conflicts": null,
+      "updatePolicy": "外部由来として記録し、原則直接編集せず upstream 追従またはローカル側の回避策を使う。",
+      "status": "unknown",
+      "version": {
+        "basis": "skillFolderHash",
+        "value": "b2d559b68b4c3004840124862f30c6d371270646"
+      },
+      "verification": {
+        "skillFile": "skills/playwright-skill/SKILL.md",
+        "nameEvidence": "frontmatter.name",
+        "triggerEvidence": "frontmatter.description",
+        "responsibilityEvidence": "SKILL.md のタイトルと冒頭説明",
+        "categoryEvidence": "frontmatter.description とタイトルから分類",
+        "provenance": {
+          "file": ".skill-lock.json",
+          "sourceType": "github",
+          "sourceUrl": "https://github.com/lackeyjb/playwright-skill.git",
+          "skillPath": "skills/playwright-skill/SKILL.md",
+          "skillFolderHash": "b2d559b68b4c3004840124862f30c6d371270646",
+          "installedAt": "2026-01-31T11:07:14.575Z",
+          "updatedAt": "2026-01-31T11:07:14.575Z"
+        },
+        "relationshipEvidence": "未確認。",
+        "conflictEvidence": "unknown; Skill 間の競合を体系的には監査していない。",
+        "lifecycleEvidence": "unknown; 利用状態や所有者の判断を確認していない。",
+        "reviewedAt": "2026-10-03"
+      }
+    },
+    {
+      "name": "prompt-engineering",
+      "directory": "prompt-engineering",
+      "origin": "external",
+      "source": "NeoLabHQ/context-engineering-kit",
+      "category": "agent systems",
+      "trigger": "Use this skill when you writing commands, hooks, skills for Agent, or prompts for sub agents or any other LLM interaction, including optimizing prompts, improving LLM outputs, or designing production prompt templates.",
+      "responsibility": "commands・hooks・skills・subagent prompts など、LLM への指示を設計・改善する手法を示す。",
+      "related": null,
+      "conflicts": null,
+      "updatePolicy": "外部由来として記録し、原則直接編集せず upstream 追従またはローカル側の回避策を使う。",
+      "status": "unknown",
+      "version": {
+        "basis": "skillFolderHash",
+        "value": "b38edcd12944f82d8759ea2d7078336c0970927f"
+      },
+      "verification": {
+        "skillFile": "skills/prompt-engineering/SKILL.md",
+        "nameEvidence": "frontmatter.name",
+        "triggerEvidence": "frontmatter.description",
+        "responsibilityEvidence": "SKILL.md のタイトルと冒頭説明",
+        "categoryEvidence": "frontmatter.description とタイトルから分類",
+        "provenance": {
+          "file": ".skill-lock.json",
+          "sourceType": "github",
+          "sourceUrl": "https://github.com/NeoLabHQ/context-engineering-kit.git",
+          "skillPath": "plugins/customaize-agent/skills/prompt-engineering/SKILL.md",
+          "skillFolderHash": "b38edcd12944f82d8759ea2d7078336c0970927f",
+          "installedAt": "2026-01-31T11:20:09.154Z",
+          "updatedAt": "2026-01-31T11:20:09.154Z"
+        },
+        "relationshipEvidence": "未確認。",
+        "conflictEvidence": "unknown; Skill 間の競合を体系的には監査していない。",
+        "lifecycleEvidence": "unknown; 利用状態や所有者の判断を確認していない。",
+        "reviewedAt": "2026-10-03"
+      }
+    },
+    {
+      "name": "reviewing-a11y",
+      "directory": "reviewing-a11y",
+      "origin": "external",
+      "source": "masuP9/a11y-specialist-skills",
+      "category": "accessibility",
+      "trigger": "Review accessibility of web pages, code implementations, design mockups, and specifications, then report severity-ranked issues and fixes. Use auditing-wcag instead for formal conformance decisions across all success criteria.",
+      "responsibility": "Web ページ、実装、デザイン、仕様をレビューし、重大度順の問題と修正案を示す。",
+      "related": [
+        "auditing-wcag"
+      ],
+      "conflicts": null,
+      "updatePolicy": "外部由来として記録し、原則直接編集せず upstream 追従またはローカル側の回避策を使う。",
+      "status": "unknown",
+      "version": {
+        "basis": "skillFolderHash",
+        "value": "3fef802cfcd198381bb609d6b36ec7a732c2a609"
+      },
+      "verification": {
+        "skillFile": "skills/reviewing-a11y/SKILL.md",
+        "nameEvidence": "frontmatter.name",
+        "triggerEvidence": "frontmatter.description",
+        "responsibilityEvidence": "SKILL.md のタイトルと冒頭説明",
+        "categoryEvidence": "frontmatter.description とタイトルから分類",
+        "provenance": {
+          "file": ".skill-lock.json",
+          "sourceType": "github",
+          "sourceUrl": "https://github.com/masuP9/a11y-specialist-skills.git",
+          "skillPath": "skills/reviewing-a11y/SKILL.md",
+          "skillFolderHash": "3fef802cfcd198381bb609d6b36ec7a732c2a609",
+          "installedAt": "2026-02-20T06:51:10.408Z",
+          "updatedAt": "2026-07-02T14:44:26.838Z"
+        },
+        "relationshipEvidence": "SKILL.md に明示された Skill 間参照のみ記録。",
+        "conflictEvidence": "unknown; Skill 間の競合を体系的には監査していない。",
+        "lifecycleEvidence": "unknown; 利用状態や所有者の判断を確認していない。",
+        "reviewedAt": "2026-10-03"
+      }
+    },
+    {
+      "name": "ship-learn-next",
+      "directory": "ship-learn-next",
+      "origin": "external",
+      "source": "michalparkola/tapestry-skills-for-claude-code",
+      "category": "learning",
+      "trigger": "Transform learning content (like YouTube transcripts, articles, tutorials) into actionable implementation plans using the Ship-Learn-Next framework. Use when user wants to turn advice, lessons, or educational content into concrete action steps, reps, or a learning quest.",
+      "responsibility": "学習コンテンツを、実装可能な反復と次の行動へ変換する。",
+      "related": null,
+      "conflicts": null,
+      "updatePolicy": "外部由来として記録し、原則直接編集せず upstream 追従またはローカル側の回避策を使う。",
+      "status": "unknown",
+      "version": {
+        "basis": "skillFolderHash",
+        "value": "bde2a70a9dcb2a5f40ca19baa5a8190b8311ee08"
+      },
+      "verification": {
+        "skillFile": "skills/ship-learn-next/SKILL.md",
+        "nameEvidence": "frontmatter.name",
+        "triggerEvidence": "frontmatter.description",
+        "responsibilityEvidence": "SKILL.md のタイトルと冒頭説明",
+        "categoryEvidence": "frontmatter.description とタイトルから分類",
+        "provenance": {
+          "file": ".skill-lock.json",
+          "sourceType": "github",
+          "sourceUrl": "https://github.com/michalparkola/tapestry-skills-for-claude-code.git",
+          "skillPath": "ship-learn-next/SKILL.md",
+          "skillFolderHash": "bde2a70a9dcb2a5f40ca19baa5a8190b8311ee08",
+          "installedAt": "2026-01-31T11:21:48.644Z",
+          "updatedAt": "2026-01-31T11:21:48.644Z"
+        },
+        "relationshipEvidence": "未確認。",
+        "conflictEvidence": "unknown; Skill 間の競合を体系的には監査していない。",
+        "lifecycleEvidence": "unknown; 利用状態や所有者の判断を確認していない。",
+        "reviewedAt": "2026-10-03"
+      }
+    },
+    {
+      "name": "swiftui-expert-skill",
+      "directory": "swiftui-expert-skill",
+      "origin": "external",
+      "source": "avdlee/swiftui-agent-skill",
+      "category": "SwiftUI",
+      "trigger": "Use when writing, reviewing, or refactoring SwiftUI code for iOS or macOS, including state management and `@Observable` data flow, view composition and invalidation/performance, lists and `ForEach` identity, environment usage, localization, animations, Liquid Glass adoption, migrating soft-deprecated APIs, or Instruments `.trace` capture/analysis for hangs, hitches, CPU hotspots, or",
+      "responsibility": "SwiftUI アプリの実装・レビュー・リファクタと、性能・状態・アニメーション・trace 調査を支援する。",
+      "related": null,
+      "conflicts": null,
+      "updatePolicy": "外部由来として記録し、原則直接編集せず upstream 追従またはローカル側の回避策を使う。",
+      "status": "unknown",
+      "version": {
+        "basis": "skillFolderHash",
+        "value": "813404b84a2b3de4f920be8671971bcb014d82ef"
+      },
+      "verification": {
+        "skillFile": "skills/swiftui-expert-skill/SKILL.md",
+        "nameEvidence": "frontmatter.name",
+        "triggerEvidence": "frontmatter.description",
+        "responsibilityEvidence": "SKILL.md のタイトルと冒頭説明",
+        "categoryEvidence": "frontmatter.description とタイトルから分類",
+        "provenance": {
+          "file": ".skill-lock.json",
+          "sourceType": "github",
+          "sourceUrl": "https://github.com/avdlee/swiftui-agent-skill.git",
+          "skillPath": "swiftui-expert-skill/SKILL.md",
+          "skillFolderHash": "813404b84a2b3de4f920be8671971bcb014d82ef",
+          "installedAt": "2026-07-02T14:43:22.027Z",
+          "updatedAt": "2026-07-02T14:43:22.027Z"
+        },
+        "relationshipEvidence": "未確認。",
+        "conflictEvidence": "unknown; Skill 間の競合を体系的には監査していない。",
+        "lifecycleEvidence": "unknown; 利用状態や所有者の判断を確認していない。",
+        "reviewedAt": "2026-10-03"
+      }
+    },
+    {
+      "name": "swiftui-pro",
+      "directory": "swiftui-pro",
+      "origin": "external",
+      "source": "twostraws/swiftui-agent-skill",
+      "category": "SwiftUI",
+      "trigger": "Comprehensively reviews SwiftUI code for best practices on modern APIs, maintainability, and performance. Use when reading, writing, or reviewing SwiftUI projects.",
+      "responsibility": "SwiftUI コードを現行 API、保守性、性能の観点からレビューする。",
+      "related": null,
+      "conflicts": null,
+      "updatePolicy": "外部由来として記録し、原則直接編集せず upstream 追従またはローカル側の回避策を使う。",
+      "status": "unknown",
+      "version": {
+        "basis": "skillFolderHash",
+        "value": "09b8fff9743cfc94eea3ada3727e3ec369ff10fb"
+      },
+      "verification": {
+        "skillFile": "skills/swiftui-pro/SKILL.md",
+        "nameEvidence": "frontmatter.name",
+        "triggerEvidence": "frontmatter.description",
+        "responsibilityEvidence": "SKILL.md のタイトルと冒頭説明",
+        "categoryEvidence": "frontmatter.description とタイトルから分類",
+        "provenance": {
+          "file": ".skill-lock.json",
+          "sourceType": "github",
+          "sourceUrl": "https://github.com/twostraws/swiftui-agent-skill.git",
+          "skillPath": "swiftui-pro/SKILL.md",
+          "skillFolderHash": "09b8fff9743cfc94eea3ada3727e3ec369ff10fb",
+          "installedAt": "2026-07-02T14:43:30.375Z",
+          "updatedAt": "2026-07-02T14:43:30.375Z"
+        },
+        "relationshipEvidence": "未確認。",
+        "conflictEvidence": "unknown; Skill 間の競合を体系的には監査していない。",
+        "lifecycleEvidence": "unknown; 利用状態や所有者の判断を確認していない。",
+        "reviewedAt": "2026-10-03"
+      }
+    },
+    {
+      "name": "sync-codex-claude-hooks",
+      "directory": "sync-codex-claude-hooks",
+      "origin": "unknown",
+      "source": null,
+      "category": "developer tooling",
+      "trigger": "Codex と Claude Code の hooks を同期したい、または片側に追加した hook をもう片側にも同じ目的で反映したいとユーザーが依頼したときに使う。両側の現行設定を優先し、イベントの意味と粒度の違いを整理して、承認後に対象限定で修正する。単一製品だけの hook 作成・原因調査や定期 parity 監査には使わない。",
+      "responsibility": "Codex と Claude Code の hook 設定を、イベント意味と動作要件を揃えて同期する。",
+      "related": null,
+      "conflicts": null,
+      "updatePolicy": "由来が未確認のため不明。編集前に由来と更新方針を確認する。",
+      "status": "unknown",
+      "version": null,
+      "verification": {
+        "skillFile": "skills/sync-codex-claude-hooks/SKILL.md",
+        "nameEvidence": "frontmatter.name",
+        "triggerEvidence": "frontmatter.description",
+        "responsibilityEvidence": "SKILL.md のタイトルと冒頭説明",
+        "categoryEvidence": "frontmatter.description とタイトルから分類",
+        "provenance": {
+          "status": "unknown",
+          "reason": ".skill-lock.json に対応キーがなく、由来は独立確認していない。"
+        },
+        "relationshipEvidence": "未確認。",
+        "conflictEvidence": "unknown; Skill 間の競合を体系的には監査していない。",
+        "lifecycleEvidence": "unknown; 利用状態や所有者の判断を確認していない。",
+        "reviewedAt": "2026-10-03"
+      }
+    },
+    {
+      "name": "task-flow-non-speckit",
+      "directory": "task-flow-non-speckit",
+      "origin": "unknown",
+      "source": null,
+      "category": "task management",
+      "trigger": "\"`specs/flow` で管理する作業タスクに限定して利用する。`specs/flow` 運用時の task lifecycle 専用 skill として、タスク分割基準、ステータス定義、done 条件、worktree 運用、記述テンプレの前提を適用する。repo-wide の 1 task = 1 PR 方針そのものは `single-task-pr-policy` を参照する。\"",
+      "responsibility": "specs/flow で管理する作業の分割・状態・完了条件・worktree 運用を定める。",
+      "related": [
+        "single-task-pr-policy"
+      ],
+      "conflicts": null,
+      "updatePolicy": "由来が未確認のため不明。編集前に由来と更新方針を確認する。",
+      "status": "unknown",
+      "version": null,
+      "verification": {
+        "skillFile": "skills/task-flow-non-speckit/SKILL.md",
+        "nameEvidence": "frontmatter.name",
+        "triggerEvidence": "frontmatter.description",
+        "responsibilityEvidence": "SKILL.md のタイトルと冒頭説明",
+        "categoryEvidence": "frontmatter.description とタイトルから分類",
+        "provenance": {
+          "status": "unknown",
+          "reason": ".skill-lock.json に対応キーがなく、由来は独立確認していない。"
+        },
+        "relationshipEvidence": "SKILL.md に明示された Skill 間参照のみ記録。",
+        "conflictEvidence": "unknown; Skill 間の競合を体系的には監査していない。",
+        "lifecycleEvidence": "unknown; 利用状態や所有者の判断を確認していない。",
+        "reviewedAt": "2026-10-03"
+      }
+    },
+    {
+      "name": "task-progress-dashboard",
+      "directory": "task-progress-dashboard",
+      "origin": "unknown",
+      "source": null,
+      "category": "task management",
+      "trigger": "\"長時間に及ぶ複数タスクや複数工程の作業で、タスク順序を中心にした自己完結HTMLの進捗管理表を自動作成・更新する。単純な単発タスクや通常のチェックリストには適用しない。\"",
+      "responsibility": "複数工程や中断・再開のある作業について、自己完結型 HTML 進捗表を作成・更新する。",
+      "related": null,
+      "conflicts": null,
+      "updatePolicy": "由来が未確認のため不明。編集前に由来と更新方針を確認する。",
+      "status": "unknown",
+      "version": null,
+      "verification": {
+        "skillFile": "skills/task-progress-dashboard/SKILL.md",
+        "nameEvidence": "frontmatter.name",
+        "triggerEvidence": "frontmatter.description",
+        "responsibilityEvidence": "SKILL.md のタイトルと冒頭説明",
+        "categoryEvidence": "frontmatter.description とタイトルから分類",
+        "provenance": {
+          "status": "unknown",
+          "reason": ".skill-lock.json に対応キーがなく、由来は独立確認していない。"
+        },
+        "relationshipEvidence": "未確認。",
+        "conflictEvidence": "unknown; Skill 間の競合を体系的には監査していない。",
+        "lifecycleEvidence": "unknown; 利用状態や所有者の判断を確認していない。",
+        "reviewedAt": "2026-10-03"
+      }
+    },
+    {
+      "name": "single-task-pr-policy",
+      "directory": "task_common",
+      "origin": "unknown",
+      "source": null,
+      "category": "delivery governance",
+      "trigger": "repo 全体で共通に適用する 1 タスク = 1 PR 方針。複数タスクを同一 PR にまとめないこと、作業開始前に専用ブランチを切ること、ブランチ作成前の差分確認、TDD ワークフロー参照、Git / PR 安全ルール参照、worktree 作業終了時の main 取り込み確認を定義する。`specs/flow` 固有の task lifecycle や worktree の詳細な作成・削除手順は扱わない。",
+      "responsibility": "1 task = 1 PR の方針、専用ブランチ、TDD・Git 安全ルール参照と完了時の確認を定める。",
+      "related": [
+        "tdd-approved-workflow",
+        "git-workflow-safety"
+      ],
+      "conflicts": null,
+      "updatePolicy": "由来が未確認のため不明。編集前に由来と更新方針を確認する。",
+      "status": "unknown",
+      "version": null,
+      "verification": {
+        "skillFile": "skills/task_common/SKILL.md",
+        "nameEvidence": "frontmatter.name",
+        "triggerEvidence": "frontmatter.description",
+        "responsibilityEvidence": "SKILL.md のタイトルと冒頭説明",
+        "categoryEvidence": "frontmatter.description とタイトルから分類",
+        "provenance": {
+          "status": "unknown",
+          "reason": ".skill-lock.json に対応キーがなく、由来は独立確認していない。"
+        },
+        "relationshipEvidence": "SKILL.md に明示された Skill 間参照のみ記録。",
+        "conflictEvidence": "unknown; Skill 間の競合を体系的には監査していない。",
+        "lifecycleEvidence": "unknown; 利用状態や所有者の判断を確認していない。",
+        "reviewedAt": "2026-10-03"
+      }
+    },
+    {
+      "name": "test-driven-development",
+      "directory": "test-driven-development",
+      "origin": "external",
+      "source": "NeoLabHQ/context-engineering-kit",
+      "category": "testing",
+      "trigger": "Use when implementing any feature or bugfix, before writing implementation code - write the test first, watch it fail, write minimal code to pass; ensures tests actually verify behavior by requiring failure first",
+      "responsibility": "実装前に失敗するテストを書き、失敗理由を確認してから最小実装に進む TDD 手順を示す。",
+      "related": null,
+      "conflicts": null,
+      "updatePolicy": "外部由来として記録し、原則直接編集せず upstream 追従またはローカル側の回避策を使う。",
+      "status": "unknown",
+      "version": {
+        "basis": "skillFolderHash",
+        "value": "bace396b4bd89d610971646687dc1951c2e210b6"
+      },
+      "verification": {
+        "skillFile": "skills/test-driven-development/SKILL.md",
+        "nameEvidence": "frontmatter.name",
+        "triggerEvidence": "frontmatter.description",
+        "responsibilityEvidence": "SKILL.md のタイトルと冒頭説明",
+        "categoryEvidence": "frontmatter.description とタイトルから分類",
+        "provenance": {
+          "file": ".skill-lock.json",
+          "sourceType": "github",
+          "sourceUrl": "https://github.com/NeoLabHQ/context-engineering-kit.git",
+          "skillPath": "plugins/tdd/skills/test-driven-development/SKILL.md",
+          "skillFolderHash": "bace396b4bd89d610971646687dc1951c2e210b6",
+          "installedAt": "2026-01-31T11:20:09.267Z",
+          "updatedAt": "2026-01-31T11:20:09.267Z"
+        },
+        "relationshipEvidence": "未確認。",
+        "conflictEvidence": "unknown; Skill 間の競合を体系的には監査していない。",
+        "lifecycleEvidence": "unknown; 利用状態や所有者の判断を確認していない。",
+        "reviewedAt": "2026-10-03"
+      }
+    },
+    {
+      "name": "test-fixing",
+      "directory": "test-fixing",
+      "origin": "external",
+      "source": "mhattingpete/claude-skills-marketplace",
+      "category": "testing",
+      "trigger": "Run tests and systematically fix all failing tests using smart error grouping. Use when user asks to fix failing tests, mentions test failures, runs test suite and failures occur, or requests to make tests pass.",
+      "responsibility": "テスト失敗を原因ごとに整理し、原因を特定して修正する手順を定める。",
+      "related": null,
+      "conflicts": null,
+      "updatePolicy": "外部由来として記録し、原則直接編集せず upstream 追従またはローカル側の回避策を使う。",
+      "status": "unknown",
+      "version": {
+        "basis": "skillFolderHash",
+        "value": "d40869c07ef66ece9b34c28683b4be8667c415d3"
+      },
+      "verification": {
+        "skillFile": "skills/test-fixing/SKILL.md",
+        "nameEvidence": "frontmatter.name",
+        "triggerEvidence": "frontmatter.description",
+        "responsibilityEvidence": "SKILL.md のタイトルと冒頭説明",
+        "categoryEvidence": "frontmatter.description とタイトルから分類",
+        "provenance": {
+          "file": ".skill-lock.json",
+          "sourceType": "github",
+          "sourceUrl": "https://github.com/mhattingpete/claude-skills-marketplace.git",
+          "skillPath": "engineering-workflow-plugin/skills/test-fixing/SKILL.md",
+          "skillFolderHash": "d40869c07ef66ece9b34c28683b4be8667c415d3",
+          "installedAt": "2026-01-31T11:33:58.157Z",
+          "updatedAt": "2026-01-31T11:33:58.157Z"
+        },
+        "relationshipEvidence": "未確認。",
+        "conflictEvidence": "unknown; Skill 間の競合を体系的には監査していない。",
+        "lifecycleEvidence": "unknown; 利用状態や所有者の判断を確認していない。",
+        "reviewedAt": "2026-10-03"
+      }
+    },
+    {
+      "name": "typesafe-ai",
+      "directory": "typesafe-ai",
+      "origin": "external",
+      "source": "typesafe-ai/skills",
+      "category": "agent systems",
+      "trigger": "Build AI-powered software with TypeSafe: small units of AI intelligence you can use like programming primitives. Its System One models, including Jev, turn natural language and application state into typed judgments and probabilities that code can combine. Use when a feature needs programmable common sense, when brainstorming what AI could make possible in an app, or when an LLM prompt-and-parse step could become a structured decision. Applications include routing, ranking, extraction, verification, and interactive experiences; these are starting points, not the limits. Read live docs and cookbooks to find useful patterns and discover new combinations.",
+      "responsibility": "TypeSafe の型付き AI 判断をアプリの routing・ranking・extraction・verification 等へ組み込む方法を示す。",
+      "related": null,
+      "conflicts": null,
+      "updatePolicy": "外部由来として記録し、原則直接編集せず upstream 追従またはローカル側の回避策を使う。",
+      "status": "unknown",
+      "version": {
+        "basis": "skillFolderHash",
+        "value": "678c375b883794bf4292715a43acbba5c84681aa"
+      },
+      "verification": {
+        "skillFile": "skills/typesafe-ai/SKILL.md",
+        "nameEvidence": "frontmatter.name",
+        "triggerEvidence": "frontmatter.description",
+        "responsibilityEvidence": "SKILL.md のタイトルと冒頭説明",
+        "categoryEvidence": "frontmatter.description とタイトルから分類",
+        "provenance": {
+          "file": ".skill-lock.json",
+          "sourceType": "github",
+          "sourceUrl": "https://github.com/typesafe-ai/skills.git",
+          "skillPath": "skills/typesafe-ai/SKILL.md",
+          "skillFolderHash": "678c375b883794bf4292715a43acbba5c84681aa",
+          "installedAt": "2026-09-25T13:42:59.460Z",
+          "updatedAt": "2026-09-25T13:42:59.460Z"
+        },
+        "relationshipEvidence": "未確認。",
+        "conflictEvidence": "unknown; Skill 間の競合を体系的には監査していない。",
+        "lifecycleEvidence": "unknown; 利用状態や所有者の判断を確認していない。",
+        "reviewedAt": "2026-10-03"
+      }
+    },
+    {
+      "name": "web-e2e-test",
+      "directory": "web_e2e_test",
+      "origin": "unknown",
+      "source": null,
+      "category": "web testing",
+      "trigger": "Web アプリケーションの E2E テストを作成する際に使用するスキル。実ブラウザ上でユーザーが想定したフローを問題なく完了できるかを検証する。Playwright を使用し、プロジェクトルートの __e2e__ ディレクトリに配置する。UI の細かい見た目や分岐は対象としない。",
+      "responsibility": "Playwright を使った Web アプリの E2E テストの対象・配置・検証ルールを定める。",
+      "related": [
+        "web-test-guidelines"
+      ],
+      "conflicts": null,
+      "updatePolicy": "由来が未確認のため不明。編集前に由来と更新方針を確認する。",
+      "status": "unknown",
+      "version": null,
+      "verification": {
+        "skillFile": "skills/web_e2e_test/SKILL.md",
+        "nameEvidence": "frontmatter.name",
+        "triggerEvidence": "frontmatter.description",
+        "responsibilityEvidence": "SKILL.md のタイトルと冒頭説明",
+        "categoryEvidence": "frontmatter.description とタイトルから分類",
+        "provenance": {
+          "status": "unknown",
+          "reason": ".skill-lock.json に対応キーがなく、由来は独立確認していない。"
+        },
+        "relationshipEvidence": "SKILL.md に明示された Skill 間参照のみ記録。",
+        "conflictEvidence": "unknown; Skill 間の競合を体系的には監査していない。",
+        "lifecycleEvidence": "unknown; 利用状態や所有者の判断を確認していない。",
+        "reviewedAt": "2026-10-03"
+      }
+    },
+    {
+      "name": "web-integration-test",
+      "directory": "web_integration_test",
+      "origin": "unknown",
+      "source": null,
+      "category": "web testing",
+      "trigger": "Web アプリケーションの結合テスト（Integration Test）を作成する際に使用するスキル。複数のユニットが組み合わさったときの挙動や、ユーザインタラクションによるUI の変化を検証する。外部 API は原則モック化し、UI の状態遷移に対するアサーションを重視する。",
+      "responsibility": "複数ユニットや UI 状態遷移を検証する Web 結合テストの作成ルールを定める。",
+      "related": [
+        "web-test-guidelines"
+      ],
+      "conflicts": null,
+      "updatePolicy": "由来が未確認のため不明。編集前に由来と更新方針を確認する。",
+      "status": "unknown",
+      "version": null,
+      "verification": {
+        "skillFile": "skills/web_integration_test/SKILL.md",
+        "nameEvidence": "frontmatter.name",
+        "triggerEvidence": "frontmatter.description",
+        "responsibilityEvidence": "SKILL.md のタイトルと冒頭説明",
+        "categoryEvidence": "frontmatter.description とタイトルから分類",
+        "provenance": {
+          "status": "unknown",
+          "reason": ".skill-lock.json に対応キーがなく、由来は独立確認していない。"
+        },
+        "relationshipEvidence": "SKILL.md に明示された Skill 間参照のみ記録。",
+        "conflictEvidence": "unknown; Skill 間の競合を体系的には監査していない。",
+        "lifecycleEvidence": "unknown; 利用状態や所有者の判断を確認していない。",
+        "reviewedAt": "2026-10-03"
+      }
+    },
+    {
+      "name": "web-test-guidelines",
+      "directory": "web_test_common",
+      "origin": "unknown",
+      "source": null,
+      "category": "web testing",
+      "trigger": "Web アプリケーションのテストを作成・修正する際に必ず参照する共通ルール。テストの書き方、配置、モック方針、カバレッジ思想、テストしない対象を規定する。テストコードを書く前に必ず適用する。",
+      "responsibility": "Web テスト全体に共通する記法・配置・mock・coverage・対象外の規則を定める。",
+      "related": null,
+      "conflicts": null,
+      "updatePolicy": "由来が未確認のため不明。編集前に由来と更新方針を確認する。",
+      "status": "unknown",
+      "version": null,
+      "verification": {
+        "skillFile": "skills/web_test_common/SKILL.md",
+        "nameEvidence": "frontmatter.name",
+        "triggerEvidence": "frontmatter.description",
+        "responsibilityEvidence": "SKILL.md のタイトルと冒頭説明",
+        "categoryEvidence": "frontmatter.description とタイトルから分類",
+        "provenance": {
+          "status": "unknown",
+          "reason": ".skill-lock.json に対応キーがなく、由来は独立確認していない。"
+        },
+        "relationshipEvidence": "未確認。",
+        "conflictEvidence": "unknown; Skill 間の競合を体系的には監査していない。",
+        "lifecycleEvidence": "unknown; 利用状態や所有者の判断を確認していない。",
+        "reviewedAt": "2026-10-03"
+      }
+    },
+    {
+      "name": "web-unit-test",
+      "directory": "web_unit_test",
+      "origin": "unknown",
+      "source": null,
+      "category": "web testing",
+      "trigger": "Web アプリケーションの単体テスト（Unit Test）を作成する際に使用するスキル。ユーティリティ関数、カスタム Hook、Reducer、ユーザインタラクションを伴わないコンポーネントを対象とし、最小ロジック単位の正当性と副作用を検証する。Vitest / React Testing Library / vitest-axe を使用する。",
+      "responsibility": "utility・Hook・Reducer・静的 UI などの最小ロジックを検証する Web 単体テストの規則を定める。",
+      "related": [
+        "web-test-guidelines"
+      ],
+      "conflicts": null,
+      "updatePolicy": "由来が未確認のため不明。編集前に由来と更新方針を確認する。",
+      "status": "unknown",
+      "version": null,
+      "verification": {
+        "skillFile": "skills/web_unit_test/SKILL.md",
+        "nameEvidence": "frontmatter.name",
+        "triggerEvidence": "frontmatter.description",
+        "responsibilityEvidence": "SKILL.md のタイトルと冒頭説明",
+        "categoryEvidence": "frontmatter.description とタイトルから分類",
+        "provenance": {
+          "status": "unknown",
+          "reason": ".skill-lock.json に対応キーがなく、由来は独立確認していない。"
+        },
+        "relationshipEvidence": "SKILL.md に明示された Skill 間参照のみ記録。",
+        "conflictEvidence": "unknown; Skill 間の競合を体系的には監査していない。",
+        "lifecycleEvidence": "unknown; 利用状態や所有者の判断を確認していない。",
+        "reviewedAt": "2026-10-03"
+      }
+    },
+    {
+      "name": "tdd-approved-workflow",
+      "directory": "workflow",
+      "origin": "unknown",
+      "source": null,
+      "category": "development workflow",
+      "trigger": "開発作業を行う際に適用する基本ワークフロー。すべての作業は TDD を前提とし、実装前に計画を提示して y/n による承認を得てから開始する。方針変更や代替案が必要な場合も、必ず事前に承認を取得する。TDD ループ（Red → Green → Refactor）を厳密に守り、テスト変更は原則禁止（必要な場合は事前承認）とする。検証・反映前には差分確認を行い、最終的に PR ルールに従って成果を提出する。",
+      "responsibility": "開発前の承認、TDD、検証、差分確認、PR 提出までの基本フローを定める。",
+      "related": [
+        "test-driven-development",
+        "git-workflow-safety"
+      ],
+      "conflicts": null,
+      "updatePolicy": "由来が未確認のため不明。編集前に由来と更新方針を確認する。",
+      "status": "unknown",
+      "version": null,
+      "verification": {
+        "skillFile": "skills/workflow/SKILL.md",
+        "nameEvidence": "frontmatter.name",
+        "triggerEvidence": "frontmatter.description",
+        "responsibilityEvidence": "SKILL.md のタイトルと冒頭説明",
+        "categoryEvidence": "frontmatter.description とタイトルから分類",
+        "provenance": {
+          "status": "unknown",
+          "reason": ".skill-lock.json に対応キーがなく、由来は独立確認していない。"
+        },
+        "relationshipEvidence": "SKILL.md に明示された Skill 間参照のみ記録。",
+        "conflictEvidence": "unknown; Skill 間の競合を体系的には監査していない。",
+        "lifecycleEvidence": "unknown; 利用状態や所有者の判断を確認していない。",
+        "reviewedAt": "2026-10-03"
+      }
+    }
+  ]
+}
