@@ -35,7 +35,7 @@
 <body>
   <header>
     <h1>LLM_settings Issue 着手計画</h1>
-    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34（#24は対象外）／ 最終更新: 2026年10月4日 15:21 JST</p>
+    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34（#24は対象外）／ 最終更新: 2026年10月4日 15:28 JST</p>
     <div class="summary" aria-label="進捗の要約">
       <div><strong>0 / 18</strong><span>完了 / 対象タスク</span></div>
       <div><strong>方針決定・開始待ち</strong><span>0件・ユーザー待ち 1件・阻害 17件</span></div>
@@ -64,7 +64,7 @@
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/26">#26</a> 現行mainではworkflowがREADME・docs変更を一律検証不要とし、外部由来のTDD・test-fixingは<code>npm test</code>、<code>make test</code>、<code>uv run pytest</code>などの固定例を示します。ルート共通のテスト設定は確認できず、archifyには個別の<code>npm test</code>があり、playwright-skillにはtest scriptがありません。変更種別ごとのTDD適用表、正本設定にコマンドがない場合の停止条件、JS/TS・Pythonでの確認は未整備です。外部Skillは直接編集せず、ローカル優先規則と承認条件を判断するまで実装を保留します。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/27">#27</a> 外部由来の<code>playwright-skill/run.js</code>は依存不足時にnpmとChromiumを自動導入し、次回起動時にSkill内の<code>.temp-execution-*.js</code>を追跡状態を問わず削除します。現行mainにはこのprefixの追跡済みファイルが1件あるため、既存runnerは起動していません。Skill文書は入力スクリプトを<code>/tmp</code>に置く説明ですが、実行用コピーの保存先と後始末は異なります。依存・ブラウザー・入力のpreflightとrun専用一時領域は設計可能ですが、導入承認、成果物の保持期間、実行経路のルール判断と全件テスト基準の解消まで実装・実行を保留します。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/28">#28</a> A11y系・学習計画系の外部Skillには、現行ツール一覧と同名でない<code>Read</code>・<code>WebFetch</code>・<code>Task</code>・<code>mcp__playwright__browser_*</code>等の記述があります。同等の実行経路は未定義です。レビュー手順はキーボード操作を要求しますが、該当allowed-toolsに操作名がありません。監査CLIは未導入で、Chromium実行ファイルは存在するものの起動は未確認。Markdownリンクの欠落候補6件は結果テンプレートの画像参照です。学習計画Skillの対象範囲、ツール対応、導入・保存条件とNT扱いを決めるまで外部Skill本文の変更・監査実行を保留します。</p>
-      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/29">#29</a> Blender規則の「閾値外れは自動修正・人間レビューに頼らない」は、isometric-story-workflowの最終画像人間レビュー必須と境界が曖昧です。既存QAには数値閾値と同一finding再発時の親判断がありますが、自動補正のallowlist・最大変更幅・全体試行上限がありません。waiver要件も文書間で一致しません。gate・閾値・状態遷移の判断が必要なため実装を保留し、Blender実行や画像判定は行っていません。</p>
+      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/29">#29</a> 定量QAと最終静止画の人間承認は現行Skillで分かれていますが、Blender Skillは閾値外を広く「自動修正ループ」に入れ、修正可能項目・変更幅・修正後証跡を定めていません。Step 8の反復停止とStep 10のrevision・validator再実行は存在するものの、一般の自動修正指示には接続されていません。定量WARNのwaiver入力にも承認者・影響範囲がありません。検出方法、現行閾値、変更値、担当、証跡の対応表は作成可能です。自動修正allowlist、全体試行上限、receipt・waiver規則はgate・state判断に触れるため保留します。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/30">#30</a> 本文の報酬待機最大10分と停止条件・参照文書の5分、候補5箇所連続タップと1箇所ごとの再取得、結果画面の成功判定が一致しません。承認済み方向は1操作ごとの画面確認、1箇所ずつ、上限5分ですが、現行の操作経路<code>node_repl/@oai/sky</code>はこの環境で確認できず、別経路へ黙って切り替えられません。状態・停止ルールと実機証跡を要するため実装を保留します。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/31">#31</a> 非株式Skill39件の説明文を計測し、300文字超は9件でした。<code>context-engineering</code>と<code>prompt-engineering</code>は発動語と本文の責務が重なり、両方とも同じ外部sourceのlock対象です。説得技法を既定で使わない境界も本文では一意でありません。#17台帳、#19採用判断、#20候補抽出、#21 routing、#22参照分割が未確定で、実際の同時発火も不明です。発動・責務ルール変更を保留し、静的計測だけ記録します。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/32">#32</a> ローカルJS/TS規則は関数宣言とCommonJSを禁止し既存規約より優先しますが、外部PlaywrightのrunnerはCommonJS、外部TDDの例は関数宣言と固定<code>npm test</code>を使います。ルートに共通package・tsconfig・runner設定はなく、Playwrightに近いpackageにはテストscriptがありません。最寄り設定を優先し、設定なしの例は概念例とする優先ルール判断と、モジュール形式のfixture検証が必要なため実装を保留します。</p>
