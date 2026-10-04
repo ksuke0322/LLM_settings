@@ -35,17 +35,16 @@
 <body>
   <header>
     <h1>LLM_settings Issue 着手計画</h1>
-    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34（#24は対象外）／ 最終更新: 2026年10月4日 11:02 JST</p>
+    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34（#24は対象外）／ 最終更新: 2026年10月4日 11:10 JST</p>
     <div class="summary" aria-label="進捗の要約">
       <div><strong>0 / 18</strong><span>完了 / 対象タスク</span></div>
-      <div><strong>方針決定・開始待ち</strong><span>2件・阻害 16件</span></div>
+      <div><strong>方針決定・開始待ち</strong><span>1件・阻害 17件</span></div>
     </div>
-    <p class="note">対象19件を順番に進めています。現在は #16・#17・#18・#23・#19・#20・#21・#25・#22・#26・#27・#28・#29・#30・#31・#32 が阻害、#33・#34 が方針決定済み、#24 が対象外です。次は #33 を確認します。#25にはmainへのマージ後の専用worktree削除を必須にする追加方針を反映します。株式系Skillと共有参照は原則として除外し、全Skill共通のworktree後片付け方針のみ適用対象に含めます。</p>
+    <p class="note">対象19件を順番に進めています。現在は #16・#17・#18・#23・#19・#20・#21・#25・#22・#26・#27・#28・#29・#30・#31・#32・#33 が阻害、#34 が方針決定済み、#24 が対象外です。次は #34 を確認します。#25にはmainへのマージ後の専用worktree削除を必須にする追加方針を反映します。株式系Skillと共有参照は原則として除外し、全Skill共通のworktree後片付け方針のみ適用対象に含めます。</p>
   </header>
   <main>
     <section aria-labelledby="decided">
       <h2 id="decided">方針決定・開始待ち</h2>
-      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/33">#33</a> lockが指すルート版1.1を標準候補とし、入れ子版1.0を探索対象から外す。入れ子Skill自体の削除はworktree後片付けと別で、個別承認を要する。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/34">#34</a> 確認済みの文書誤記3件だけを修正する。<code>/grilling</code> は外部未確認として残し、参照の失敗判定は #18 と合わせて決める。現ツリーにないAGENTS.mdの数え間違いは修正対象にしない。</p>
     </section>
     <section aria-labelledby="blocked">
@@ -66,6 +65,7 @@
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/30">#30</a> 本文の報酬待機最大10分と停止条件・参照文書の5分、候補5箇所連続タップと1箇所ごとの再取得、結果画面の成功判定が一致しません。承認済み方向は1操作ごとの画面確認、1箇所ずつ、上限5分ですが、現行の操作経路<code>node_repl/@oai/sky</code>はこの環境で確認できず、別経路へ黙って切り替えられません。状態・停止ルールと実機証跡を要するため実装を保留します。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/31">#31</a> 非株式Skill39件の説明文を計測し、300文字超は9件でした。<code>context-engineering</code>と<code>prompt-engineering</code>は発動語と本文の責務が重なり、両方とも同じ外部sourceのlock対象です。説得技法を既定で使わない境界も本文では一意でありません。#17台帳、#19採用判断、#20候補抽出、#21 routing、#22参照分割が未確定で、実際の同時発火も不明です。発動・責務ルール変更を保留し、静的計測だけ記録します。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/32">#32</a> ローカルJS/TS規則は関数宣言とCommonJSを禁止し既存規約より優先しますが、外部PlaywrightのrunnerはCommonJS、外部TDDの例は関数宣言と固定<code>npm test</code>を使います。ルートに共通package・tsconfig・runner設定はなく、Playwrightに近いpackageにはテストscriptがありません。最寄り設定を優先し、設定なしの例は概念例とする優先ルール判断と、モジュール形式のfixture検証が必要なため実装を保留します。</p>
+      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/33">#33</a> <code>skills/swiftui-pro/SKILL.md</code>は版1.1、入れ子の同名Skillは版1.0で、lockはルート版の<code>swiftui-pro/SKILL.md</code>だけを指します。プラグイン設定は入れ子側を示す一方、実行時にどちらが選ばれるかは未確認です。#17台帳・#21 routing・#23 hash判断と探索対象のルールが必要です。入れ子Skillの削除は個別承認待ちとし、実装を保留します。</p>
     </section>
     <section aria-labelledby="excluded">
       <h2 id="excluded">対象外</h2>
@@ -107,7 +107,7 @@
         <tr data-issue="30" data-status="阻害"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/30">#30</a></td><td><span class="status">阻害</span></td><td>モンスト周回手順の正本と停止条件を統一</td></tr>
         <tr data-issue="31" data-status="阻害"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/31">#31</a></td><td><span class="status">阻害</span></td><td>Skill 発動条件と説明文を整理</td></tr>
         <tr data-issue="32" data-status="阻害"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/32">#32</a></td><td><span class="status">阻害</span></td><td>JS/TS 規則を実行環境と整合</td></tr>
-        <tr data-issue="33" data-status="開始待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/33">#33</a></td><td><span class="status">開始待ち</span></td><td><code>swiftui-pro</code> の版・配置・lock を照合</td></tr>
+        <tr data-issue="33" data-status="阻害"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/33">#33</a></td><td><span class="status">阻害</span></td><td><code>swiftui-pro</code> の版・配置・lock を照合</td></tr>
         <tr data-issue="34" data-status="開始待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/34">#34</a></td><td><span class="status">開始待ち</span></td><td>Skill 文書の誤参照・矛盾等を整理</td></tr>
       </tbody></table></div>
     </section>
