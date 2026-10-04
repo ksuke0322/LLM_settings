@@ -35,7 +35,7 @@
 <body>
   <header>
     <h1>LLM_settings Issue 着手計画</h1>
-    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34（#24は対象外）／ 最終更新: 2026年10月4日 14:48 JST</p>
+    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34（#24は対象外）／ 最終更新: 2026年10月4日 15:02 JST</p>
     <div class="summary" aria-label="進捗の要約">
       <div><strong>0 / 18</strong><span>完了 / 対象タスク</span></div>
       <div><strong>方針決定・開始待ち</strong><span>0件・ユーザー待ち 1件・阻害 17件</span></div>
@@ -60,7 +60,7 @@
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/20">#20</a> 専用ブランチを現行mainに同期し、候補抽出CLIと株式系Skill7件・<code>stock-shared</code>の走査前除外を保持しました。関連テスト6件は通過し、除外を壊すミューテーションは失敗を検出。全件テストは993件中76件失敗し、現行mainの失敗項目と一致します。候補抽出は意味上の競合を断定しません。全件テスト基準の判断後に実装PR・マージを再開します。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/21">#21</a> 読み取り確認では、SwiftUIの2候補は広く重なり、<code>swiftui-expert-skill</code>に実装・Instrumentsの記述があります。Playwrightは一時的なブラウザー操作と永続的なE2Eテストで成果物が異なり、Testing系はTDD手順・既存失敗修正・Webテスト各階層の役割が記述されています。rootの<code>swiftui-pro</code>はv1.1、入れ子はv1.0で、lockとplugin設定の参照先が異なります。実際の発動順位は未確認です。#17台帳のmain導入と#19の採用・併存判断後に、標準・補助・非適用のroutingを設計します。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/25">#25</a> 現行mainはタスク状態を<code>未着手</code>／<code>done</code>に限り、承認・commit・PR・worktree削除を一つの状態にまとめています。マージ前削除の記述は承認済みの後片付け方針と衝突します。<code>worktree</code>に言及するSkillは7件で、実際に後片付け手順を持つGit Skillとtask-flowが主な修正対象です。mainマージ・内容保全・clean確認済みの専用worktreeは通常削除を必須とし、未マージ・dirty・不明は保持、強制削除は個別承認という方針は確定しています。株式系Skillは共通後片付け記述のみ対象です。状態遷移と<code>done</code>の時点は#16の二段階解釈の判断後に確定します。</p>
-      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/22">#22</a> 読み取り計測では、非株式・非外部の候補は<code>hatch-pet</code>（923行・reference 3件・script 17件）、<code>isometric-story-workflow</code>（433行・10件・17件）、<code>blender-isometric-rules</code>（297行・5件・8件）です。見出し数は責務数の代用に過ぎず、分割閾値は未決定。<code>archify</code>はlock上の外部由来として直接分割から除外します。#18の参照検査がmainに未導入のため、参照移動と必須規則の分離は保留します。</p>
+      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/22">#22</a> 非株式・非外部の大きな候補は<code>hatch-pet</code>923行、<code>isometric-story-workflow</code>433行、<code>blender-isometric-rules</code>297行です。<code>isometric-story-workflow</code>の読み取り責務マップでは、設計、契約準備、制作検証、独立レビュー、承認・動画・統合の5群を確認しました。制作全体は一つの流れですが、参照正本・反復制御・委任規則に不一致または重複の候補があります。<code>archify</code>は外部由来で直接分割せず、株式系Skillも除外します。#18の参照検査、正本判断、分割閾値の決定まで本文移動・routing変更を保留します。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/26">#26</a> 読み取り確認で、workflowの文書変更一律検証不要と、外部由来TDD・test-fixingの固定コマンド例が、対象package設定と内容に応じて検証する方針に合わないと分かりました。ルート共通のテスト設定は確認できず、<code>archify</code>には個別<code>npm test</code>があり、<code>playwright-skill</code>にはtest scriptがありません。外部Skillを直接編集せず、ローカル優先規則とTDD適用表を決めるまでルール変更を保留します。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/27">#27</a> 外部由来の<code>playwright-skill/run.js</code>は依存不足時にnpmとChromiumを自動導入し、Skill内の<code>.temp-execution-*.js</code>を追跡状態を問わず削除します。外部Skillを直接編集せず、独立runnerで依存未準備なら停止し、専用一時ディレクトリだけを後始末する案を確認しました。実行経路・準備承認のルール判断と、現行mainでも72件失敗する全件テスト基準の解消まで実装・PRを保留します。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/28">#28</a> WCAG監査・レビュー・計画・学習Skillを読み取り照合し、宣言済みツールにないCLI・ブラウザー・視覚取得の手順と、保存先未確認の出力を確認しました。ローカルのPlaywright依存は解決できましたが、監査CLI、Chromium、動的な外部ツールの利用可否は未確認です。許可ツール・保存条件のルール変更と全件テスト基準が必要なため、実装を保留します。未実施操作は成功扱いしません。</p>
