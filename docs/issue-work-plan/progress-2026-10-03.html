@@ -35,7 +35,7 @@
 <body>
   <header>
     <h1>LLM_settings Issue 着手計画</h1>
-    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34（#24は対象外）／ 最終更新: 2026年10月4日 15:55 JST</p>
+    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34（#24は対象外）／ 最終更新: 2026年10月4日 16:08 JST</p>
     <div class="summary" aria-label="進捗の要約">
       <div><strong>0 / 18</strong><span>完了 / 対象タスク</span></div>
       <div><strong>方針決定・開始待ち</strong><span>0件・ユーザー待ち 1件・阻害 17件</span></div>
@@ -69,7 +69,7 @@
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/31">#31</a> 非株式Skill39件の説明文計測では300文字超が9件です。読み取りでは<code>context-engineering</code>／<code>prompt-engineering</code>、<code>workflow</code>／<code>test-driven-development</code>、SwiftUIの2候補で対象が重なります。これは静的な候補であり、実際の同時発動や優先順位は未確認です。対象・非対象・成果物の欠落を整理することは可能ですが、description変更、標準・補助・非適用、reference移動は#17台帳のmain導入、#21 routing、#23ローカル照合方式の判断後に行います。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/32">#32</a> ローカルのcoding_typescript規則は関数宣言とCommonJSを禁じますが、外部Playwright SkillはNode &gt;=14のCommonJSで<code>require()</code>を使い、外部TDD Skillは関数宣言を良い例として示します。ルート共通のpackage・tsconfigはなく、archifyはESM/Node &gt;=18、shared/jevはESM/Node &gt;=20です。最寄りpackageのmodule方式・関数記法・実行例／概念例の対応表は読み取りで作れます。設定優先順位、設定がない場合の扱い、ローカル例外とfixture検証の方針決定まで規則変更を保留します。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/33">#33</a> rootの<code>swiftui-pro</code>はv1.1、入れ子の同名Skillはv1.0で、各9件の参照ファイル内容は一致します。rootは相対参照、入れ子は<code>${CLAUDE_SKILL_DIR}</code>参照です。plugin設定は入れ子を指し、lockは上流の<code>swiftui-pro/SKILL.md</code>を1件記録しますが、実際の有効版やローカル配置との対応は未確認です。root版を正本候補として扱うに留め、入れ子削除・探索除外・hash解釈・<code>swiftui-expert-skill</code>とのroutingは#17・#21・#23の判断後に行います。</p>
-      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/34">#34</a> 確認済みの手順番号と日本語文の誤記3箇所を、専用worktreeの2ファイルに未コミットで修正しました。差分検査は通過し、全件テストは修正worktreeと同じmainの読み取りworktreeで各987件中76件失敗、失敗項目は一致しました。旧baselineの72件から増えた4件は両worktreeで同じ外部依存・環境の失敗です。禁止例と良い例の矛盾は方針判断、<code>/grilling</code>は外部未確認、参照の失敗判定は #18 と合わせます。全件テスト基準の解消まで修正のPR・マージを保留します。</p>
+      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/34">#34</a> 専用ブランチを現行mainへ同期し、確認済みの手順番号と未完文の2行修正を保持しました。番号の照合と故意の破損検出、差分検査は通過。全件テストは987件中76件失敗し、現行mainの失敗項目と一致します。禁止例と良い例の適用範囲は方針判断、<code>/grilling</code>は外部未確認、参照の失敗判定は#18と合わせます。全件テスト基準の判断まで修正の実装PR・マージを保留します。</p>
     </section>
     <section aria-labelledby="excluded">
       <h2 id="excluded">対象外</h2>
