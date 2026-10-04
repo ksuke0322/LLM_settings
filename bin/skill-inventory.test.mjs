@@ -105,6 +105,8 @@ test("inventory origin and source follow the skill lock, with unlocked skills le
     assert.ok(record, `Skill ${directory} should be present in the inventory`);
     if (!Object.hasOwn(lock.skills, directory)) {
       assert.equal(record.origin, "unknown", `${directory} has no lock evidence and should remain unknown`);
+      assert.equal(record.source, null, `${directory} has no lock evidence and should not claim a source`);
+      assert.equal(record.version, null, `${directory} has no lock evidence and should not claim a version`);
     }
   }
 });
