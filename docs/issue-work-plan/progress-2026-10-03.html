@@ -35,7 +35,7 @@
 <body>
   <header>
     <h1>LLM_settings Issue 着手計画</h1>
-    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34（#24は対象外）／ 最終更新: 2026年10月4日 13:47 JST</p>
+    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34（#24は対象外）／ 最終更新: 2026年10月4日 14:00 JST</p>
     <div class="summary" aria-label="進捗の要約">
       <div><strong>0 / 18</strong><span>完了 / 対象タスク</span></div>
       <div><strong>方針決定・開始待ち</strong><span>0件・ユーザー待ち 1件・阻害 17件</span></div>
@@ -54,7 +54,7 @@
     <section aria-labelledby="blocked">
       <h2 id="blocked">阻害</h2>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/17">#17</a> <a href="https://github.com/ksuke0322/LLM_settings/tree/docs/catalog-nonstock-skill-ownership">専用ブランチ</a>を現行mainに同期し、非株式Skill台帳39件（lock掲載18件・由来unknown21件）と検証テストを保持。関連テスト4件は通過し、取得元を壊すミューテーションは失敗を検出しました。全件テストは991件中76件失敗し、現行mainの失敗項目76件と一致します。全件テスト基準の判断待ちのため実装PR・マージを保留します。</p>
-      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/18">#18</a> 計測専用CLIとテストを専用worktreeに未コミットで保存しました。非株式Skillなどから385参照を列挙し、外部未確認53件と欠落候補76件を理由付きで報告。関連テスト3件とミューテーション1件は通過しました。全件テストは985件中72件失敗し、現行mainと失敗項目が同一です。欠落候補のレビューと失敗判定・CIゲートの判断、全件テスト基準の解消までPR・マージは保留します。</p>
+      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/18">#18</a> 専用worktreeの計測CLIとテストは未追跡で保持し、現行mainには未導入です。非株式対象の参照385件を読み取り計測し、外部未確認53件・欠落候補76件を記録しました。欠落候補には別Skillの実在ファイルを相対パスとして誤解したものや生成出力例が混ざります。一方、<code>skills/blender-isometric-rules/SKILL.md</code>の<code>specs/flow/006-artwork-video-format.md</code>は現行mainに存在しません。候補の誤検出修正、既知の外部参照の区別、失敗判定・CIゲートの判断、全件テスト基準の解消が再開条件です。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/23">#23</a> 計測専用CLIとテストを専用worktreeに未コミットで保存しました。lock掲載の非株式Skill18件すべてでローカルフォルダの内容digestを測定し、lock値と別項目に保持。上流tree SHAは未取得で、生成経路も不明なため18件すべて<code>verification-unknown</code>です。関連テスト2件とミューテーション1件は通過。全件テストは984件中72件失敗し、現行mainと失敗項目が同一です。上流照合方法と基準値の設計、全件テスト基準の解消後に再開します。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/19">#19</a> 導入・更新時に確認すべきtrigger、強い規則、同等責務の観点と、Playwright・SwiftUIの重複候補を読み取り確認しました。具体的な採用順位とroutingを記録する #17 の台帳はmainに未導入です。台帳と全件テスト基準が整い、人によるlock変更レビューのルール反映を判断できるまで実装を保留します。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/20">#20</a> 専用ブランチの候補抽出CLIに、株式系Skill7件と<code>stock-shared</code>を走査前に除外する変更と回帰テストを未コミットで保持。関連テスト6件とミューテーション1件は通過しました。全件テストは988件中72件失敗し、現行mainと失敗項目が同一です。候補抽出は意味上の競合を断定せず、全件テスト基準の解消後に再開します。</p>
