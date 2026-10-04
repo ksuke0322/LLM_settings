@@ -31,8 +31,34 @@ description: ローカル skill 群の重複、矛盾、責務境界、trigger �
 
 ## 手順
 
-1. `find skills -maxdepth 2 -name SKILL.md -print | sort` で対象を把握する。
-2. 関連しそうな skill の frontmatter と本文の主要ルールを読む。
+1. `.agents` リポジトリのルートで、読み取り専用CLIを実行する。
+
+   全件を走査する:
+
+   ```sh
+   node bin/audit-skills-consistency.mjs .
+   ```
+
+   変更された skill を含む候補ペアに絞る場合は、リポジトリルートからの相対パスを `--changed` で指定する。複数指定できる。
+
+   ```sh
+   node bin/audit-skills-consistency.mjs . --changed skills/skill-a/SKILL.md --changed skills/skill-b/SKILL.md
+   ```
+
+   意図的な重複として確認済みのペアだけを候補一覧から除く場合は、両方の相対パスを `--allow-pair` に渡す。指定した2パスの組み合わせだけに適用され、複数ペアを指定できる。
+
+   ```sh
+   node bin/audit-skills-consistency.mjs . --changed skills/skill-a/SKILL.md --allow-pair skills/skill-a/SKILL.md skills/skill-b/SKILL.md
+   ```
+
+   出力は JSON で、各項目は次の意味を持つ。
+   - `inventory`: 発見した全 SKILL.md の path/name/description。
+   - `candidates`: frontmatter description の語句類似から抽出した確認候補。意味上の重複・矛盾を確定する判定ではない。
+   - `warnings`: 強い規範表現と frontmatter name・フォルダ名の不一致を示す確認箇所。
+
+   `--changed` と `--allow-pair` が絞るのは候補ペアだけで、inventory と warnings は全件分を保つ。
+2. inventory から対象の skill を選び、関連しそうな skill の frontmatter と本文の主要ルールを読む。各 candidate の実ファイルを開き、trigger 重複、責務重複、ルール矛盾、正本不明、粒度不整合、参照関係を手作業で確認する。similarity や sharedTerms だけで結論を出さない。
+   warnings は該当行と周辺文脈を読み、強い規範表現や名前不一致が実際の問題かを判断する。
 3. skill をカテゴリに分ける。
    - workflow / git-pr / testing / web-testing / design / architecture / accessibility / prompt-context / utility
 4. 重複・矛盾・曖昧さを表にまとめる。
