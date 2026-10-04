@@ -35,17 +35,16 @@
 <body>
   <header>
     <h1>LLM_settings Issue 着手計画</h1>
-    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34（#24は対象外）／ 最終更新: 2026年10月4日 10:39 JST</p>
+    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34（#24は対象外）／ 最終更新: 2026年10月4日 10:44 JST</p>
     <div class="summary" aria-label="進捗の要約">
       <div><strong>0 / 18</strong><span>完了 / 対象タスク</span></div>
-      <div><strong>方針決定・開始待ち</strong><span>5件・阻害 13件</span></div>
+      <div><strong>方針決定・開始待ち</strong><span>4件・阻害 14件</span></div>
     </div>
-    <p class="note">対象19件を順番に進めています。現在は #16・#17・#18・#23・#19・#20・#21・#25・#22・#26・#27・#28・#29 が阻害、#30・#31・#32・#33・#34 が方針決定済み、#24 が対象外です。次は #30 を確認します。#25にはmainへのマージ後の専用worktree削除を必須にする追加方針を反映します。株式系Skillと共有参照は原則として除外し、全Skill共通のworktree後片付け方針のみ適用対象に含めます。</p>
+    <p class="note">対象19件を順番に進めています。現在は #16・#17・#18・#23・#19・#20・#21・#25・#22・#26・#27・#28・#29・#30 が阻害、#31・#32・#33・#34 が方針決定済み、#24 が対象外です。次は #31 を確認します。#25にはmainへのマージ後の専用worktree削除を必須にする追加方針を反映します。株式系Skillと共有参照は原則として除外し、全Skill共通のworktree後片付け方針のみ適用対象に含めます。</p>
   </header>
   <main>
     <section aria-labelledby="decided">
       <h2 id="decided">方針決定・開始待ち</h2>
-      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/30">#30</a> 各操作後に画面を確認し、報酬は1箇所ずつ試し、待機上限は5分とする。未知画面・接続断では停止し、画面証跡と理由を残す。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/31">#31</a> 説明文の300文字は目安とし、発動条件の明確さを優先する。情報の選択・容量管理はcontext、指示文の表現・構成はpromptに分け、説得技法は明示的に必要な場合だけ参照する。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/32">#32</a> 対象ファイルに最も近いpackage・runner設定を優先する。設定がない例は概念例と明示し、外部Skill本文を直接編集しない。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/33">#33</a> lockが指すルート版1.1を標準候補とし、入れ子版1.0を探索対象から外す。入れ子Skill自体の削除はworktree後片付けと別で、個別承認を要する。</p>
@@ -66,6 +65,7 @@
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/27">#27</a> 外部由来の<code>playwright-skill/run.js</code>は依存不足時にnpmとChromiumを自動導入し、Skill内の<code>.temp-execution-*.js</code>を追跡状態を問わず削除します。外部Skillを直接編集せず、独立runnerで依存未準備なら停止し、専用一時ディレクトリだけを後始末する案を確認しました。実行経路・準備承認のルール判断と、現行mainでも72件失敗する全件テスト基準の解消まで実装・PRを保留します。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/28">#28</a> WCAG監査・レビュー・計画・学習Skillを読み取り照合し、宣言済みツールにないCLI・ブラウザー・視覚取得の手順と、保存先未確認の出力を確認しました。ローカルのPlaywright依存は解決できましたが、監査CLI、Chromium、動的な外部ツールの利用可否は未確認です。許可ツール・保存条件のルール変更と全件テスト基準が必要なため、実装を保留します。未実施操作は成功扱いしません。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/29">#29</a> Blender規則の「閾値外れは自動修正・人間レビューに頼らない」は、isometric-story-workflowの最終画像人間レビュー必須と境界が曖昧です。既存QAには数値閾値と同一finding再発時の親判断がありますが、自動補正のallowlist・最大変更幅・全体試行上限がありません。waiver要件も文書間で一致しません。gate・閾値・状態遷移の判断が必要なため実装を保留し、Blender実行や画像判定は行っていません。</p>
+      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/30">#30</a> 本文の報酬待機最大10分と停止条件・参照文書の5分、候補5箇所連続タップと1箇所ごとの再取得、結果画面の成功判定が一致しません。承認済み方向は1操作ごとの画面確認、1箇所ずつ、上限5分ですが、現行の操作経路<code>node_repl/@oai/sky</code>はこの環境で確認できず、別経路へ黙って切り替えられません。状態・停止ルールと実機証跡を要するため実装を保留します。</p>
     </section>
     <section aria-labelledby="excluded">
       <h2 id="excluded">対象外</h2>
@@ -104,7 +104,7 @@
         <tr data-issue="27" data-status="阻害"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/27">#27</a></td><td><span class="status">阻害</span></td><td>Playwright の導入準備と一時ファイル処理を分離</td></tr>
         <tr data-issue="28" data-status="阻害"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/28">#28</a></td><td><span class="status">阻害</span></td><td>A11y・学習計画 Skill のツール記述を照合</td></tr>
         <tr data-issue="29" data-status="阻害"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/29">#29</a></td><td><span class="status">阻害</span></td><td>Blender 自動修正と人手レビューの境界を統一</td></tr>
-        <tr data-issue="30" data-status="開始待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/30">#30</a></td><td><span class="status">開始待ち</span></td><td>モンスト周回手順の正本と停止条件を統一</td></tr>
+        <tr data-issue="30" data-status="阻害"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/30">#30</a></td><td><span class="status">阻害</span></td><td>モンスト周回手順の正本と停止条件を統一</td></tr>
         <tr data-issue="31" data-status="開始待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/31">#31</a></td><td><span class="status">開始待ち</span></td><td>Skill 発動条件と説明文を整理</td></tr>
         <tr data-issue="32" data-status="開始待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/32">#32</a></td><td><span class="status">開始待ち</span></td><td>JS/TS 規則を実行環境と整合</td></tr>
         <tr data-issue="33" data-status="開始待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/33">#33</a></td><td><span class="status">開始待ち</span></td><td><code>swiftui-pro</code> の版・配置・lock を照合</td></tr>
