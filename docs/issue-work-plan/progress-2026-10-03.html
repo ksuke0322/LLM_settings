@@ -35,17 +35,16 @@
 <body>
   <header>
     <h1>LLM_settings Issue 着手計画</h1>
-    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34（#24は対象外）／ 最終更新: 2026年10月4日 10:08 JST</p>
+    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34（#24は対象外）／ 最終更新: 2026年10月4日 10:14 JST</p>
     <div class="summary" aria-label="進捗の要約">
       <div><strong>0 / 18</strong><span>完了 / 対象タスク</span></div>
-      <div><strong>方針決定・開始待ち</strong><span>9件・阻害 9件</span></div>
+      <div><strong>方針決定・開始待ち</strong><span>8件・阻害 10件</span></div>
     </div>
-    <p class="note">対象19件を順番に進めています。現在は #16・#17・#18・#23・#19・#20・#21・#25・#22 が阻害、#26・#27・#28・#29・#30・#31・#32・#33・#34 が方針決定済み、#24 が対象外です。次は #26 を確認します。#25にはmainへのマージ後の専用worktree削除を必須にする追加方針を反映します。株式系Skillと共有参照は原則として除外し、全Skill共通のworktree後片付け方針のみ適用対象に含めます。</p>
+    <p class="note">対象19件を順番に進めています。現在は #16・#17・#18・#23・#19・#20・#21・#25・#22・#26 が阻害、#27・#28・#29・#30・#31・#32・#33・#34 が方針決定済み、#24 が対象外です。次は #27 を確認します。#25にはmainへのマージ後の専用worktree削除を必須にする追加方針を反映します。株式系Skillと共有参照は原則として除外し、全Skill共通のworktree後片付け方針のみ適用対象に含めます。</p>
   </header>
   <main>
     <section aria-labelledby="decided">
       <h2 id="decided">方針決定・開始待ち</h2>
-      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/26">#26</a> コード変更は対象packageのテスト設定に従い、文書変更は内容に合う検証を選ぶ。設定がない場合は固定コマンドを推測せず、選択理由と未確認事項を記録する。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/27">#27</a> Playwrightの依存導入を明示的な準備工程に分ける。一時スクリプトは専用の作業用ディレクトリに置き、追跡済みファイルを削除対象にしない。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/28">#28</a> 必要なツール操作を正確に宣言し、実行できない項目は未実施として理由を残す。保存先が未指定なら確認し、暗黙にファイルを作らない。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/29">#29</a> Blender自動補正は対象・変更幅・反復上限を限定し、再検証と最終の人間レビューを必須にする。QA免除の承認条件を統一する。</p>
@@ -66,6 +65,7 @@
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/21">#21</a> SwiftUI、Web／Playwright、Testingの候補重複と現行の参照関係を読み取り確認しました。依頼種類ごとの標準・補助・非適用を確定するには、未マージの #17 台帳と #19 の採用・併存判断との照合が必要です。実際の同時発火や採用順位を推測せず、両前提が整うまでroutingのルール化を保留します。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/25">#25</a> 状態とGit・PR・worktree後処理を分ける設計は #16 の正本整理を前提とします。現行のtask-flowは<code>done</code>に承認・commit・PR・削除をまとめ、Git Skillとの手順に矛盾があります。#16が阻害中のため遷移確定を保留します。ユーザーの後からの方針により、マージ済み・保全済み・cleanの専用worktreeは別承認なしで通常削除を必須とし、dirty・未マージ・不明は停止、強制削除は個別承認です。この共通方針のみ株式系Skillの該当箇所にも適用します。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/22">#22</a> 読み取り計測では、非株式・非外部の候補は<code>hatch-pet</code>（923行・reference 3件・script 17件）、<code>isometric-story-workflow</code>（433行・10件・17件）、<code>blender-isometric-rules</code>（297行・5件・8件）です。見出し数は責務数の代用に過ぎず、分割閾値は未決定。<code>archify</code>はlock上の外部由来として直接分割から除外します。#18の参照検査がmainに未導入のため、参照移動と必須規則の分離は保留します。</p>
+      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/26">#26</a> 読み取り確認で、workflowの文書変更一律検証不要と、外部由来TDD・test-fixingの固定コマンド例が、対象package設定と内容に応じて検証する方針に合わないと分かりました。ルート共通のテスト設定は確認できず、<code>archify</code>には個別<code>npm test</code>があり、<code>playwright-skill</code>にはtest scriptがありません。外部Skillを直接編集せず、ローカル優先規則とTDD適用表を決めるまでルール変更を保留します。</p>
     </section>
     <section aria-labelledby="excluded">
       <h2 id="excluded">対象外</h2>
@@ -100,7 +100,7 @@
       <h2 id="phase-4">4. 後段</h2>
       <div class="table-wrap"><table><caption>個別 Skill と文書の整合</caption><thead><tr><th scope="col">ID</th><th scope="col">状態</th><th scope="col">タスク名</th></tr></thead><tbody>
         <tr data-issue="22" data-status="阻害"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/22">#22</a></td><td><span class="status">阻害</span></td><td>巨大 Skill を責務別に分割し、#18 で参照を確認</td></tr>
-        <tr data-issue="26" data-status="開始待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/26">#26</a></td><td><span class="status">開始待ち</span></td><td>TDD とテスト修正の適用範囲を整理</td></tr>
+        <tr data-issue="26" data-status="阻害"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/26">#26</a></td><td><span class="status">阻害</span></td><td>TDD とテスト修正の適用範囲を整理</td></tr>
         <tr data-issue="27" data-status="開始待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/27">#27</a></td><td><span class="status">開始待ち</span></td><td>Playwright の導入準備と一時ファイル処理を分離</td></tr>
         <tr data-issue="28" data-status="開始待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/28">#28</a></td><td><span class="status">開始待ち</span></td><td>A11y・学習計画 Skill のツール記述を照合</td></tr>
         <tr data-issue="29" data-status="開始待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/29">#29</a></td><td><span class="status">開始待ち</span></td><td>Blender 自動修正と人手レビューの境界を統一</td></tr>
