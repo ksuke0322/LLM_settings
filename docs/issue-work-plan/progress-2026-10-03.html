@@ -35,7 +35,7 @@
 <body>
   <header>
     <h1>LLM_settings Issue 着手計画</h1>
-    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34（#24は対象外）／ 最終更新: 2026年10月4日 15:33 JST</p>
+    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34（#24は対象外）／ 最終更新: 2026年10月4日 15:41 JST</p>
     <div class="summary" aria-label="進捗の要約">
       <div><strong>0 / 18</strong><span>完了 / 対象タスク</span></div>
       <div><strong>方針決定・開始待ち</strong><span>0件・ユーザー待ち 1件・阻害 17件</span></div>
@@ -66,7 +66,7 @@
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/28">#28</a> A11y系・学習計画系の外部Skillには、現行ツール一覧と同名でない<code>Read</code>・<code>WebFetch</code>・<code>Task</code>・<code>mcp__playwright__browser_*</code>等の記述があります。同等の実行経路は未定義です。レビュー手順はキーボード操作を要求しますが、該当allowed-toolsに操作名がありません。監査CLIは未導入で、Chromium実行ファイルは存在するものの起動は未確認。Markdownリンクの欠落候補6件は結果テンプレートの画像参照です。学習計画Skillの対象範囲、ツール対応、導入・保存条件とNT扱いを決めるまで外部Skill本文の変更・監査実行を保留します。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/29">#29</a> 定量QAと最終静止画の人間承認は現行Skillで分かれていますが、Blender Skillは閾値外を広く「自動修正ループ」に入れ、修正可能項目・変更幅・修正後証跡を定めていません。Step 8の反復停止とStep 10のrevision・validator再実行は存在するものの、一般の自動修正指示には接続されていません。定量WARNのwaiver入力にも承認者・影響範囲がありません。検出方法、現行閾値、変更値、担当、証跡の対応表は作成可能です。自動修正allowlist、全体試行上限、receipt・waiver規則はgate・state判断に触れるため保留します。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/30">#30</a> 8状態名と禁止操作・報告項目はありますが、Skill本文とplaybookで画面再取得の頻度、スペシャル報酬の上限5分／10分、成功画面名、想定外画面と取得失敗時の扱いが食い違います。<code>node_repl/@oai/sky</code>指定と現行UI操作経路の同等性も未確認です。状態・操作・期待画面・再取得・時間・停止理由を静的に照合するところまでは進められます。停止条件と操作経路を判断し、実機証跡を取れるまでSkill変更とゲーム操作を保留します。</p>
-      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/31">#31</a> 非株式Skill39件の説明文を計測し、300文字超は9件でした。<code>context-engineering</code>と<code>prompt-engineering</code>は発動語と本文の責務が重なり、両方とも同じ外部sourceのlock対象です。説得技法を既定で使わない境界も本文では一意でありません。#17台帳、#19採用判断、#20候補抽出、#21 routing、#22参照分割が未確定で、実際の同時発火も不明です。発動・責務ルール変更を保留し、静的計測だけ記録します。</p>
+      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/31">#31</a> 非株式Skill39件の説明文計測では300文字超が9件です。読み取りでは<code>context-engineering</code>／<code>prompt-engineering</code>、<code>workflow</code>／<code>test-driven-development</code>、SwiftUIの2候補で対象が重なります。これは静的な候補であり、実際の同時発動や優先順位は未確認です。対象・非対象・成果物の欠落を整理することは可能ですが、description変更、標準・補助・非適用、reference移動は#17台帳のmain導入、#21 routing、#23ローカル照合方式の判断後に行います。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/32">#32</a> ローカルJS/TS規則は関数宣言とCommonJSを禁止し既存規約より優先しますが、外部PlaywrightのrunnerはCommonJS、外部TDDの例は関数宣言と固定<code>npm test</code>を使います。ルートに共通package・tsconfig・runner設定はなく、Playwrightに近いpackageにはテストscriptがありません。最寄り設定を優先し、設定なしの例は概念例とする優先ルール判断と、モジュール形式のfixture検証が必要なため実装を保留します。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/33">#33</a> <code>skills/swiftui-pro/SKILL.md</code>は版1.1、入れ子の同名Skillは版1.0で、lockはルート版の<code>swiftui-pro/SKILL.md</code>だけを指します。プラグイン設定は入れ子側を示す一方、実行時にどちらが選ばれるかは未確認です。#17台帳・#21 routing・#23 hash判断と探索対象のルールが必要です。入れ子Skillの削除は個別承認待ちとし、実装を保留します。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/34">#34</a> 確認済みの手順番号と日本語文の誤記3箇所を、専用worktreeの2ファイルに未コミットで修正しました。差分検査は通過し、全件テストは修正worktreeと同じmainの読み取りworktreeで各987件中76件失敗、失敗項目は一致しました。旧baselineの72件から増えた4件は両worktreeで同じ外部依存・環境の失敗です。禁止例と良い例の矛盾は方針判断、<code>/grilling</code>は外部未確認、参照の失敗判定は #18 と合わせます。全件テスト基準の解消まで修正のPR・マージを保留します。</p>
