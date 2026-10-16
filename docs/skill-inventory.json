@@ -207,6 +207,14 @@
     {
       "name": "ecmascript-modern-syntax",
       "directory": "coding_typescript",
+      "routing": {
+        "role": "JavaScript / TypeScript 記法の補助",
+        "applyWhen": "JavaScript / TypeScript を実装・修正するとき。作業種別の担当Skillに重ねる。",
+        "relatedDirectories": ["playwright-skill", "web_e2e_test"],
+        "decision": "併存: 記法の補助と作業の責務を分離する",
+        "basis": "#19の承認済み方針。テスト配置や実行環境は担当Skillと最も近いpackage設定を確認する。",
+        "verification": "文書の責務を照合。実行例の環境適合は#32で未確認。"
+      },
       "origin": "unknown",
       "source": null,
       "category": "programming",
@@ -696,6 +704,14 @@
     {
       "name": "playwright-skill",
       "directory": "playwright-skill",
+      "routing": {
+        "role": "一時的なブラウザー操作・短い確認",
+        "applyWhen": "一度限りの操作や一時スクリプトによる確認。永続E2Eの配置・保守はweb_e2e_testへ分離する。",
+        "relatedDirectories": ["web_e2e_test", "coding_typescript"],
+        "decision": "併存: 一時操作と永続テストを分離し、外部本文は直接編集しない",
+        "basis": "#19の承認済み方針。Playwrightの実行手段とテスト種別の規則は役割が異なる。",
+        "verification": "descriptionと責務を照合。代表依頼・非適用条件の詳細は#21、実行例は#32で未確認。"
+      },
       "origin": "external",
       "source": "lackeyjb/playwright-skill",
       "category": "web",
@@ -846,6 +862,14 @@
     {
       "name": "swiftui-expert-skill",
       "directory": "swiftui-expert-skill",
+      "routing": {
+        "role": "SwiftUIの個別調査を補う候補",
+        "applyWhen": "状態管理・性能・Instruments trace等で標準候補だけでは不足する観点を補うとき。",
+        "relatedDirectories": ["swiftui-pro"],
+        "decision": "併存: swiftui-proを標準候補とし、必要な観点だけ補助する",
+        "basis": "#19の承認済み方針。外部本文は直接編集せずローカルの役割記録で分離する。",
+        "verification": "責務を照合。代表依頼は#21、実際のloaderとlockの対応は#33で未確認。同時発動は保証しない。"
+      },
       "origin": "external",
       "source": "avdlee/swiftui-agent-skill",
       "category": "SwiftUI",
@@ -883,6 +907,14 @@
     {
       "name": "swiftui-pro",
       "directory": "swiftui-pro",
+      "routing": {
+        "role": "SwiftUI作業の標準候補（ルート配置）",
+        "applyWhen": "通常のSwiftUI実装・レビュー。必要な個別観点だけswiftui-expert-skillで補う。",
+        "relatedDirectories": ["swiftui-expert-skill"],
+        "decision": "併存: 標準候補と補助候補を分離する",
+        "basis": "#19の承認済み方針。ルートを正本候補として扱い、入れ子の削除は行わない。",
+        "verification": "責務を照合。代表依頼は#21、ルート・入れ子・loader・lockの対応は#33で未確認。"
+      },
       "origin": "external",
       "source": "twostraws/swiftui-agent-skill",
       "category": "SwiftUI",
@@ -1152,6 +1184,14 @@
     {
       "name": "web-e2e-test",
       "directory": "web_e2e_test",
+      "routing": {
+        "role": "継続して保守するWeb E2Eテストの規則",
+        "applyWhen": "ユーザーフローを確認する永続テストをリポジトリへ追加・修正するとき。",
+        "relatedDirectories": ["playwright-skill", "coding_typescript", "web_test_common"],
+        "decision": "併存: 永続テストを担当し、一時操作と記法の補助を分離する",
+        "basis": "#19の承認済み方針。__e2e__配置とテスト種別の規則を担当し、Playwrightは実行手段として利用できる。",
+        "verification": "文書の責務を照合。代表依頼とTesting併用順は#21、実行環境は#32で未確認。"
+      },
       "origin": "unknown",
       "source": null,
       "category": "web testing",
