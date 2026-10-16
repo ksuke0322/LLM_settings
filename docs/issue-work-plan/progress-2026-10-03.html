@@ -35,10 +35,10 @@
 <body>
   <header>
     <h1>LLM_settings Issue 着手計画</h1>
-    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34（#24は対象外）と先行する検証基盤タスク／ 最終更新: 2026年10月17日 00:32 JST</p>
+    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34（#24は対象外）と先行する検証基盤タスク／ 最終更新: 2026年10月17日 00:57 JST</p>
     <div class="summary" aria-label="進捗の要約">
-      <div><strong>6 / 19</strong><span>完了 / 対象タスク（Issue 18件・検証基盤 1件）</span></div>
-      <div><strong>次は #23</strong><span>6件完了・実施待ち13件。開始承認済み、1件ずつ実施</span></div>
+      <div><strong>7 / 19</strong><span>完了 / 対象タスク（Issue 18件・検証基盤 1件）</span></div>
+      <div><strong>次は #19</strong><span>7件完了・実施待ち12件。開始承認済み、1件ずつ実施</span></div>
     </div>
     <p class="note">#24を除く18件と検証基盤1件、計19タスクを対象とします。開始承認済みの一覧を1件ずつ進めます。調査・実装はgpt-6-luna/maxへ小さく委任し、検証・マージ・記録後に次へ進みます。非Archify変更は、全件実行で非Archify通過、同条件の現行mainからArchifyの失敗名・原因・スキップの増加や変化がないことを記録します。Archify本体・共有資産・テスト基盤の変更には例外を適用しません。最終完了にはmainマージ後の内容保全・clean確認とworktreeの通常削除を含みます。株式系Skillと共有参照は除外し、全Skill共通のworktree後片付け方針のみ適用対象に含めます。</p>
   </header>
@@ -64,7 +64,7 @@
       <p>2026年10月16日の開始指示で再開しました。現在の進捗と次の対象は上部と一覧に示します。表の「再開待ち」は開始承認済みの実施待ちです。以下の詳細には過去の調査結果が残り、各再開条件は実装時の照合・検証項目です。同じ方針の再承認は求めません。新たな判断は理由と再開条件を記録し、対象をskipして次へ進みます。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/16">#16</a> 完了。正本表・優先順位・開始と承認境界・通常後片付け・二段階完了を<a href="https://github.com/ksuke0322/LLM_settings/pull/120">PR #120</a>で整合しました。関連3件、非Archify68件通過。全件は参照998件/候補1001件でArchify内69失敗・23スキップの名前/原因/項目が一致。故意の破損で見つかった検証不足を修正し、最終故障検出と復元済みです。main同期と今回の専用/参照worktreeの通常削除まで終了。旧候補は未コミット差分のため保全。<a href="issue-16-review.md">確認記録</a></p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/18">#18</a> 完了。参照監査CLIと外部依存registry、9件のfixtureを<a href="https://github.com/ksuke0322/LLM_settings/pull/122">PR #122</a>で導入。実測402参照、明確なMarkdownリンク欠落0、未確認警告168。関連9件・非Archify77件通過。全件は参照1001件/候補1010件で双方Archify内69失敗・23スキップの名前/原因/項目が一致。親の3種の故障検出と復元、main同期・内容保全・clean確認・今回の専用/参照worktree通常削除まで終了。旧候補は保全し、警告を解決済みにしません。<a href="issue-18-review.md">確認記録</a></p>
-      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/23">#23</a> 上流tree SHAとローカルdigestを分けて記録する方針が決定済みです。前回の上流照合は18件中11件一致・6件不一致・1件パス不在で、ローカルdigestとの直接比較はできません。再開時に比較基準・カスタマイズ宣言・警告条件を具体化します。</p>
+      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/23">#23</a> 完了。公式installer固定commitでtree SHA仕様を確認し、local baseline・指定上流・lock変化・カスタマイズ宣言を分離する監査方法を<a href="https://github.com/ksuke0322/LLM_settings/pull/124">PR #124</a>で導入。関連12件・非Archify89件通過。全件参照1010件/候補1022件で双方Archify内69失敗・23スキップの名前/原因/項目が一致。親の3種の故障検出・復元、main同期・内容保全・clean確認・専用/参照worktree通常削除まで完了。実測18件はlocal再現一致17件・symlinkでunknown1件、上流未指定で上流照合18件unknownです。全Skillの整合性を確認済みとは扱いません。<a href="issue-23-review.md">確認記録</a></p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/19">#19</a> 外部Skillの採用・併存条件を人が確認できる表にし、lock差分や重複をレビューする方針が決定済みです。台帳のPlaywright・web-e2e・SwiftUIの関係は未検証です。再開時に代表依頼と台帳記録を確認します。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/21">#21</a> Playwrightの一時操作と永続E2E、SwiftUIの標準・補助、Testing系の併用順を分ける方針が決定済みです。再開時に#19と整合するrouting表を作り、非適用条件を確認します。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/25">#25</a> AGENTS.mdの安全境界と二段階完了を状態遷移に反映する方針が決定済みです。内容を保全しcleanを確認したマージ済みworktreeは通常削除します。再開時に#16との整合、次担当、停止条件を検証します。</p>
@@ -102,7 +102,7 @@
       <h2 id="phase-2">2. 基盤</h2>
       <div class="table-wrap"><table><caption>参照検査・更新検知</caption><thead><tr><th scope="col">ID</th><th scope="col">状態</th><th scope="col">タスク名</th></tr></thead><tbody>
         <tr data-issue="18" data-status="完了"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/18">#18</a></td><td><span class="status">完了</span></td><td>参照監査とregistry、PR #122マージ・main同期・通常後片付け完了</td></tr>
-        <tr data-issue="23" data-status="再開待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/23">#23</a></td><td><span class="status">再開待ち</span></td><td>方針決定済み。上流tree SHAとローカル比較基準を分離</td></tr>
+        <tr data-issue="23" data-status="完了"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/23">#23</a></td><td><span class="status">完了</span></td><td>ドリフト監査方法、PR #124マージ・main同期・通常後片付け完了</td></tr>
       </tbody></table></div>
     </section>
     <section aria-labelledby="phase-3">
