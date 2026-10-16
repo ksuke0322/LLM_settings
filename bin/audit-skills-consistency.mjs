@@ -1,4 +1,4 @@
-import { readFile, readdir } from 'node:fs/promises'
+import { readFile, readdir, stat } from 'node:fs/promises'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 
@@ -15,7 +15,7 @@ const excludedSkillDirectories = new Set([
   'stock-shared'
 ])
 const unique = (values) => [...new Set(values)]
-const usage = 'Usage: node bin/audit-skills-consistency.mjs [project-root] [--allow-pair path-a path-b]... [--changed path]...'
+const usage = 'Usage: node bin/audit-skills-consistency.mjs [project-root] [--allow-pair path-a path-b]... [--changed path]... [--base-lock file --current-lock file]'
 
 const normalizeOptionPath = (value) => value.trim().replaceAll('\\', '/').replace(/^(?:\.\/)+/u, '').replace(/\/+/gu, '/')
 
@@ -38,6 +38,157 @@ const normalizeAllowlist = (pairs) => {
   }))
 }
 
+const isRecord = (value) => value !== null && typeof value === 'object' && !Array.isArray(value)
+
+const validateSkillLock = (lock, label = 'input') => {
+  const invalid = (reason) => {
+    throw new TypeError(`Invalid ${label} lock schema: ${reason}`)
+  }
+
+  if (!isRecord(lock)) invalid('root must be an object')
+  if (!Object.hasOwn(lock, 'skills') || !isRecord(lock.skills)) invalid('skills must be an object keyed by skill name')
+  if (Object.hasOwn(lock, 'version') && (!Number.isInteger(lock.version) || lock.version < 1)) {
+    invalid('version must be a positive integer when present')
+  }
+  if (Object.hasOwn(lock, 'dismissed') && !isRecord(lock.dismissed)) invalid('dismissed must be an object when present')
+  if (Object.hasOwn(lock, 'lastSelectedAgents') && !Array.isArray(lock.lastSelectedAgents)) {
+    invalid('lastSelectedAgents must be an array when present')
+  }
+
+  for (const [key, entry] of Object.entries(lock.skills)) {
+    if (!key.trim() || key === '.' || key === '..' || key.includes('/') || key.includes('\\')) {
+      invalid('skill keys must be non-empty directory names')
+    }
+    if (!isRecord(entry)) invalid(`skills.${key} must be an object`)
+    for (const field of ['source', 'sourceType', 'sourceUrl', 'skillPath', 'skillFolderHash', 'installedAt', 'updatedAt']) {
+      if (Object.hasOwn(entry, field) && typeof entry[field] !== 'string') {
+        invalid(`skills.${key}.${field} must be a string when present`)
+      }
+    }
+  }
+
+  return lock
+}
+
+const canonicalize = (value) => {
+  if (Array.isArray(value)) {
+    return value
+      .map(canonicalize)
+      .sort((left, right) => JSON.stringify(left).localeCompare(JSON.stringify(right)))
+  }
+  if (!isRecord(value)) return value
+  return Object.fromEntries(
+    Object.entries(value)
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([key, entryValue]) => [key, canonicalize(entryValue)])
+  )
+}
+
+const areFieldValuesEqual = (leftEntry, rightEntry, field) => {
+  const leftExists = Object.hasOwn(leftEntry, field)
+  const rightExists = Object.hasOwn(rightEntry, field)
+  if (leftExists !== rightExists) return false
+  if (!leftExists) return true
+  return JSON.stringify(canonicalize(leftEntry[field])) === JSON.stringify(canonicalize(rightEntry[field]))
+}
+
+const isStockLockEntry = (key, entry) => {
+  if (excludedSkillDirectories.has(key)) return true
+  if (typeof entry?.skillPath !== 'string') return false
+  const segments = entry.skillPath.replaceAll('\\', '/').split('/')
+  return segments.some((segment) => excludedSkillDirectories.has(segment))
+}
+
+/** Compare skill lock records without treating object or array ordering as a change. */
+export const compareSkillLocks = (before, after) => {
+  validateSkillLock(before, 'base')
+  validateSkillLock(after, 'current')
+
+  const beforeSkills = before.skills
+  const afterSkills = after.skills
+  const keys = unique([...Object.keys(beforeSkills), ...Object.keys(afterSkills)]).sort((left, right) => left.localeCompare(right))
+  const changes = []
+
+  for (const key of keys) {
+    const beforeEntry = beforeSkills[key]
+    const afterEntry = afterSkills[key]
+    if (isStockLockEntry(key, beforeEntry) || isStockLockEntry(key, afterEntry)) continue
+
+    const beforeExists = Object.hasOwn(beforeSkills, key)
+    const afterExists = Object.hasOwn(afterSkills, key)
+    if (beforeExists && afterExists) {
+      const changedFields = unique([...Object.keys(beforeEntry), ...Object.keys(afterEntry)])
+        .filter((field) => !areFieldValuesEqual(beforeEntry, afterEntry, field))
+        .sort((left, right) => left.localeCompare(right))
+      if (changedFields.length) changes.push({ action: 'updated', key, changedFields })
+      continue
+    }
+
+    const entry = afterExists ? afterEntry : beforeEntry
+    changes.push({
+      action: afterExists ? 'added' : 'removed',
+      key,
+      changedFields: Object.keys(entry).sort((left, right) => left.localeCompare(right))
+    })
+  }
+
+  return changes
+}
+
+const readSkillLock = async (filePath, label) => {
+  let source
+  try {
+    source = await readFile(path.resolve(filePath), 'utf8')
+  } catch (error) {
+    throw new Error(`Unable to read ${label} lock JSON file: ${error.message}`)
+  }
+
+  let lock
+  try {
+    lock = JSON.parse(source)
+  } catch (error) {
+    throw new Error(`Invalid ${label} lock JSON: ${error.message}`)
+  }
+  return validateSkillLock(lock, label)
+}
+
+const localSkillExists = async (projectRoot, localSkillPath) => {
+  const absolutePath = path.join(projectRoot, ...localSkillPath.split('/'))
+  try {
+    return (await stat(absolutePath)).isFile()
+  } catch (error) {
+    if (error?.code === 'ENOENT' || error?.code === 'ENOTDIR') return false
+    throw error
+  }
+}
+
+const reviewSkillLockChanges = async (projectRoot, before, after) => {
+  const changes = compareSkillLocks(before, after)
+  const resolvedRoot = path.resolve(projectRoot)
+  return Promise.all(changes.map(async (change) => {
+    const localSkillPath = `skills/${change.key}/SKILL.md`
+    const exists = await localSkillExists(resolvedRoot, localSkillPath)
+    const baseEntryExists = Object.hasOwn(before.skills, change.key)
+    const currentEntryExists = Object.hasOwn(after.skills, change.key)
+    const unknownReasons = []
+    if (!exists) unknownReasons.push(`local SKILL.md is missing at ${localSkillPath}`)
+    if (!baseEntryExists) unknownReasons.push('base lock ledger entry is missing')
+    if (!currentEntryExists) unknownReasons.push('current lock ledger entry is missing')
+    const reason = unknownReasons.length
+      ? `unknown: ${unknownReasons.join('; ')}; human review required`
+      : `changed fields require human review: ${change.changedFields.join(', ')}`
+
+    return {
+      ...change,
+      status: change.action === 'removed' ? 'reported-only' : 'review-required',
+      localSkillPath,
+      exists,
+      baseEntryExists,
+      currentEntryExists,
+      reason
+    }
+  }))
+}
 const unquote = (value) => {
   const trimmed = value.trim()
   if (trimmed.length >= 2 && ((trimmed.startsWith('"') && trimmed.endsWith('"')) || (trimmed.startsWith("'") && trimmed.endsWith("'")))) {
@@ -177,6 +328,7 @@ export const auditSkills = async (projectRoot = process.cwd(), {
         actualName: metadata.name,
         expectedFolder: folderName
       })
+
     }
 
     source.split(/\r?\n/u).forEach((text, index) => {
@@ -248,6 +400,8 @@ const parseCliArgs = (args) => {
 
   const allowlistedPairs = []
   const changedPaths = []
+  let baseLockPath
+  let currentLockPath
   while (index < args.length) {
     const option = args[index]
     if (option === '--allow-pair') {
@@ -261,17 +415,39 @@ const parseCliArgs = (args) => {
       if (!changedPath || changedPath.startsWith('--')) throw new Error(usage)
       changedPaths.push(changedPath)
       index += 2
+    } else if (option === '--base-lock' || option === '--current-lock') {
+      const lockPath = args[index + 1]
+      if (!lockPath || lockPath.startsWith('--')) throw new Error(`${option} requires a JSON file path`)
+      if (option === '--base-lock') {
+        if (baseLockPath) throw new Error('--base-lock may be specified only once')
+        baseLockPath = lockPath
+      } else {
+        if (currentLockPath) throw new Error('--current-lock may be specified only once')
+        currentLockPath = lockPath
+      }
+      index += 2
     } else {
       throw new Error(usage)
     }
   }
-  return { projectRoot, options: { allowlistedPairs, changedPaths } }
+  if (Boolean(baseLockPath) !== Boolean(currentLockPath)) {
+    throw new Error('Both --base-lock and --current-lock must be provided together')
+  }
+  return { projectRoot, options: { allowlistedPairs, changedPaths, baseLockPath, currentLockPath } }
 }
 
 const runCli = async () => {
   const args = process.argv.slice(2)
   const { projectRoot, options } = parseCliArgs(args)
-  const result = await auditSkills(projectRoot, options)
+  const { baseLockPath, currentLockPath, ...auditOptions } = options
+  const lockPair = baseLockPath
+    ? {
+        before: await readSkillLock(baseLockPath, 'base'),
+        after: await readSkillLock(currentLockPath, 'current')
+      }
+    : null
+  const result = await auditSkills(projectRoot, auditOptions)
+  if (lockPair) result.lockReview = await reviewSkillLockChanges(projectRoot, lockPair.before, lockPair.after)
   process.stdout.write(`${JSON.stringify(result, null, 2)}\n`)
 }
 

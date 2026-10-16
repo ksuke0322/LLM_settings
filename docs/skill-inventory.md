@@ -22,6 +22,28 @@
 - lock の `skillFolderHash` は `version` の `basis=skillFolderHash` と `value` に記録する。これはフォルダー内容の照合値であり、通常の製品バージョン番号ではない。
 - `verification` には参照した `SKILL.md`、frontmatter 等の根拠、lock の由来情報または不明理由を残す。`related` や `conflicts` の `null` は未確認を表し、関係や競合がないと断定するものではない。`status: unknown` も利用状況・所有者判断が確認できていない状態を表す。
 
+## 任意 routing metadata
+
+Skill レコードの任意の `routing` オブジェクトには、次の6項目を記録できる。
+
+| field | 意味 |
+| ----- | ---- |
+| `role` / `applyWhen` | 責務 / 適用条件 |
+| `relatedDirectories` | 関連する skill ディレクトリ |
+| `decision` / `basis` | 判断 / 判断根拠 |
+| `verification` | 実際に確認した内容 |
+
+未確認値は `unknown` のまま保ち、trigger の重なりや loader の挙動を推測で補わない。
+
+routing metadata は人が候補を絞るための記録であり、実行時にどの Skill が同時に読み込まれるかを保証・制御するものではない。現在の候補メモは次のとおり。
+
+- `playwright-skill`: 一時的なブラウザー操作。
+- `web_e2e_test`: 継続的に保守する E2E テストの作成。
+- `coding_typescript`: より広い作業 skill に重ねる JavaScript / TypeScript の記法 overlay。
+- ルートの `swiftui-pro`: SwiftUI 作業の標準候補。`swiftui-expert-skill` は補助候補。
+
+これらは routing 上の候補で、trigger の排他性を確定したものではない。実際の loader と lock の対応は Issue #33 で未確認であり、代表依頼と negative case の詳細も Issue #21 の記録待ちとして扱う。確認が済むまで同時発動や除外を断定せず、`decision`、`basis`、`verification` に判断根拠と未確認事項を残す。
+
 ## 追加・更新・削除
 
 Skill を追加・更新するときは、直下の `skills/*/SKILL.md`、該当する `.skill-lock.json` の項目、台帳のレコードを突き合わせる。名前・trigger・責務は実際の Skill ファイルに照らし、由来と版は lock の値を照合する。根拠のない値は埋めず、unknown/null と理由を維持する。追加・更新後は次を実行する。

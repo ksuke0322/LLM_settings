@@ -12,6 +12,7 @@ description: ローカル skill 群の重複、矛盾、責務境界、trigger �
 - まず読み取り専用で `~/.agents/skills/*/SKILL.md` を確認する。
 - 監査時は `~/.agents/.skill-lock.json` を確認し、記録されている skill を `npx skills add` などでインストールされた外部由来 skill として扱う。
 - `~/.agents/.skill-lock.json` に記録がない skill は自作 skill 候補として扱う。ただし判断できない場合はユーザーに確認する。
+- lock の skill key はローカルのディレクトリ名であり、ローカル文書はリポジトリ内の `skills/<key>/SKILL.md` を読む。lock の `skills.<key>.skillPath` は上流リポジトリ内の相対パスであり、ローカル文書の場所として扱わない。
 - 外部由来 skill は更新追従性を保つため、原則として編集しない。
 - 外部由来 skill と自作 skill の間に競合がある場合、競合解消は自作 skill 側の修正、参照化、description 調整、またはラッパー skill の追加で行う。
 - 外部由来 skill 自体に問題がある場合は、直接修正ではなく、上流更新待ち、issue/PR 提案、自作 skill 側での回避策として扱う。
@@ -19,6 +20,32 @@ description: ローカル skill 群の重複、矛盾、責務境界、trigger �
 - 重複は即削除せず、再利用・参照・責務分離で解消できるかを先に検討する。
 - 削除、統合、大幅な description 変更は個別にユーザー承認を得る。
 - 既存 skill の意図が不明な場合は、推測で修正せず open question として残す。
+
+## 外部 Skill の導入・更新レビュー
+
+外部 Skill を追加・更新する前に、lock 差分を確認し、導入候補の内容を人がレビューする。差分表示や `review-required` は確認対象を示すだけで、導入可否を自動判定しない。判断材料が不足する項目は `unknown` として理由を残す。
+
+確認項目:
+
+- **Trigger / strong rules**: description と本文全体の `MUST` / `MUST NOT` / `NEVER` / `ALWAYS` を読み、既存 trigger と承認・Git・TDD・ファイル・network・browser の規則に照らす。
+- **範囲と資材**: 言語、応答文体、利用者、責務、参照先、`scripts/`、依存関係、副作用を既存 skill と比較する。
+- **価値と境界**: 固有の価値があり、責務と trigger を分けて共存できるか確認する。境界を示せない場合は重複として記録する。
+- **変更方法**: 外部 Skill を直接編集せず、必要なローカル差分は wrapper skill / local policy で扱う。未確認事項は `unknown` と理由を残す。
+
+導入判断では次を比較し、選択理由を台帳に記録する。
+
+| 選択肢 | 判断の目安 | 記録する理由 |
+| ------ | ---------- | ------------ |
+| 併存 | 責務と trigger を分離できる | 分離境界と固有価値 |
+| wrapper / local policy | 外部 Skill を保ち、ローカル規則を補う | 補う規則と直接編集を避ける理由 |
+| 既存を deprecated | 新 Skill へ移行できる | 対象、移行条件、廃止根拠 |
+| 導入却下 | 価値がない、衝突が解けない、根拠が足りない | 却下または保留の根拠 |
+
+台帳記録の雛形:
+
+| lock key | action / fields | local path | upstream `skillPath` | candidates | decision | basis / verification | unknown |
+| -------- | -------------- | ---------- | -------------------- | ---------- | -------- | -------------------- | ------- |
+| <key> | <added / updated / removed> | <local path> | <upstream path> | <candidate keys> | <choice> | <reason and checks> | <unknown or none> |
 
 ## 監査観点
 
@@ -50,6 +77,14 @@ description: ローカル skill 群の重複、矛盾、責務境界、trigger �
    ```sh
    node bin/audit-skills-consistency.mjs . --changed skills/skill-a/SKILL.md --allow-pair skills/skill-a/SKILL.md skills/skill-b/SKILL.md
    ```
+
+   lock の追加・更新・削除差分も確認する場合は、基準 lock と現在 lock を両方指定する。
+
+   ```sh
+   node bin/audit-skills-consistency.mjs . --base-lock /path/to/base/.skill-lock.json --current-lock .skill-lock.json
+   ```
+
+   両 option は対で指定する。`lockReview` は追加・更新を `review-required`、削除を `reported-only` として報告する。オブジェクトのキー順・配列要素順は差分としない。株式関連8ディレクトリは対象外。exit 0 は実行成功を表し、人の導入判断の完了を意味しない。ローカル文書は `skills/<key>/SKILL.md`、lock の `skillPath` は上流側の相対パスなので混同しない。不足情報は `unknown` とする。ローカル文書がある候補は `localSkillPath` を `--changed` に渡す。未配置ならその状態を記録し、上流 `skillPath` の候補本文を別途確認する。
 
    出力は JSON で、各項目は次の意味を持つ。
    - `inventory`: 発見した全 SKILL.md の path/name/description。

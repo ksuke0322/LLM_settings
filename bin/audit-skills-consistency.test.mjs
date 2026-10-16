@@ -5,7 +5,7 @@ import path from 'node:path'
 import { spawnSync } from 'node:child_process'
 import test from 'node:test'
 import { fileURLToPath } from 'node:url'
-import { auditSkills } from './audit-skills-consistency.mjs'
+import { auditSkills, compareSkillLocks } from './audit-skills-consistency.mjs'
 
 const makeProject = async (t) => {
   const projectRoot = await mkdtemp(path.join(os.tmpdir(), 'skill-audit-'))
@@ -17,6 +17,19 @@ const addSkill = async (projectRoot, folder, { name, description, body = '' }) =
   const filePath = path.join(projectRoot, 'skills', folder, 'SKILL.md')
   await mkdir(path.dirname(filePath), { recursive: true })
   await writeFile(filePath, `---\nname: ${name}\ndescription: ${description}\n---\n${body}`)
+}
+
+const writeLock = async (projectRoot, fileName, lock) => {
+  const filePath = path.join(projectRoot, fileName)
+  await writeFile(filePath, JSON.stringify(lock))
+  return filePath
+}
+
+const lockFor = (skills) => ({ version: 1, skills })
+
+const runCli = (projectRoot, args) => {
+  const scriptPath = new URL('./audit-skills-consistency.mjs', import.meta.url)
+  return spawnSync(process.execPath, [scriptPath.pathname, projectRoot, ...args], { encoding: 'utf8' })
 }
 
 test('finds recursive candidates and reports advisory wording and folder mismatches', async (t) => {
@@ -196,4 +209,98 @@ test('candidate evidence points to inline and block description lines', async (t
 
   assert.equal(candidates.length, 1)
   assert.deepEqual([candidates[0].leftLine, candidates[0].rightLine], [3, 4])
+})
+
+test('compareSkillLocks ignores object key and array order changes', () => {
+  const before = lockFor({
+    alpha: {
+      skillPath: 'alpha/SKILL.md',
+      nested: { first: 1, second: 2 },
+      labels: ['one', 'two']
+    }
+  })
+  const after = lockFor({
+    alpha: {
+      labels: ['two', 'one'],
+      nested: { second: 2, first: 1 },
+      skillPath: 'alpha/SKILL.md'
+    }
+  })
+
+  assert.deepEqual(compareSkillLocks(before, after), [])
+})
+
+test('compareSkillLocks reports added, updated, and removed keys with field names', () => {
+  const before = lockFor({
+    updated: { source: 'registry', skillPath: 'updated/SKILL.md', sourceUrl: 'https://old.example' },
+    removed: { source: 'registry', skillPath: 'removed/SKILL.md' }
+  })
+  const after = lockFor({
+    updated: { source: 'registry', skillPath: 'updated/SKILL.md', sourceUrl: 'https://new.example', updatedAt: '2026-10-17' },
+    added: { source: 'github', skillPath: 'added/SKILL.md' }
+  })
+
+  assert.deepEqual(compareSkillLocks(before, after), [
+    { action: 'added', key: 'added', changedFields: ['skillPath', 'source'] },
+    { action: 'removed', key: 'removed', changedFields: ['skillPath', 'source'] },
+    { action: 'updated', key: 'updated', changedFields: ['sourceUrl', 'updatedAt'] }
+  ])
+})
+
+test('CLI adds review-only lock rows and excludes stock keys and paths', async (t) => {
+  const projectRoot = await makeProject(t)
+  await addSkill(projectRoot, 'updated', { name: 'updated', description: 'Review local skill changes' })
+  await addSkill(projectRoot, 'removed', { name: 'removed', description: 'Review removed lock entry' })
+  const baseLock = await writeLock(projectRoot, 'base-lock.json', lockFor({
+    updated: { source: 'registry', sourceUrl: 'https://old.example', skillPath: 'updated/SKILL.md' },
+    removed: { source: 'registry', skillPath: 'removed/SKILL.md' },
+    'high-beta-daily-flow': { skillPath: 'high-beta-daily-flow/SKILL.md' },
+    ordinary: { skillPath: 'stock-shared/SKILL.md' }
+  }))
+  const currentLock = await writeLock(projectRoot, 'current-lock.json', lockFor({
+    updated: { source: 'registry', sourceUrl: 'https://new.example', skillPath: 'updated/SKILL.md' },
+    added: { source: 'github', skillPath: 'added/SKILL.md' },
+    'high-beta-daily-flow': { skillPath: 'high-beta-daily-flow/SKILL.md', updatedAt: '2026-10-17' },
+    ordinary: { skillPath: 'stock-shared/SKILL.md', updatedAt: '2026-10-17' }
+  }))
+
+  const run = runCli(projectRoot, ['--base-lock', baseLock, '--current-lock', currentLock])
+
+  assert.equal(run.status, 0, run.stderr)
+  const { lockReview } = JSON.parse(run.stdout)
+  assert.deepEqual(lockReview.map(({ action, key }) => [action, key]), [
+    ['added', 'added'],
+    ['removed', 'removed'],
+    ['updated', 'updated']
+  ])
+  const added = lockReview.find(({ key }) => key === 'added')
+  assert.equal(added.status, 'review-required')
+  assert.deepEqual(added.changedFields, ['skillPath', 'source'])
+  assert.equal(added.localSkillPath, 'skills/added/SKILL.md')
+  assert.equal(added.exists, false)
+  assert.match(added.reason, /unknown/i)
+  const updated = lockReview.find(({ key }) => key === 'updated')
+  assert.equal(updated.status, 'review-required')
+  assert.deepEqual(updated.changedFields, ['sourceUrl'])
+  assert.equal(updated.exists, true)
+  const removed = lockReview.find(({ key }) => key === 'removed')
+  assert.equal(removed.status, 'reported-only')
+  assert.deepEqual(removed.changedFields, ['skillPath', 'source'])
+  assert.match(removed.reason, /unknown/i)
+  assert.ok(lockReview.every(({ key }) => !['high-beta-daily-flow', 'ordinary'].includes(key)))
+  assert.equal(run.stderr, '')
+})
+
+test('CLI reports a clear error for a partial lock pair or invalid lock schema', async (t) => {
+  const projectRoot = await makeProject(t)
+  const baseLock = await writeLock(projectRoot, 'base-lock.json', lockFor({}))
+  const invalidLock = await writeLock(projectRoot, 'invalid-lock.json', { version: 1, skills: [] })
+
+  const partial = runCli(projectRoot, ['--base-lock', baseLock])
+  assert.equal(partial.status, 1)
+  assert.match(partial.stderr, /both --base-lock and --current-lock/i)
+
+  const invalid = runCli(projectRoot, ['--base-lock', invalidLock, '--current-lock', baseLock])
+  assert.equal(invalid.status, 1)
+  assert.match(invalid.stderr, /invalid.*lock schema/i)
 })
