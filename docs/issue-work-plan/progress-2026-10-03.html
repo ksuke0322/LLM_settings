@@ -35,12 +35,12 @@
 <body>
   <header>
     <h1>LLM_settings Issue 着手計画</h1>
-    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34（#24は対象外）と先行する検証基盤タスク／ 最終更新: 2026年10月16日 23:58 JST</p>
+    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34（#24は対象外）と先行する検証基盤タスク／ 最終更新: 2026年10月17日 00:15 JST</p>
     <div class="summary" aria-label="進捗の要約">
-      <div><strong>4 / 19</strong><span>完了 / 対象タスク（Issue 18件・検証基盤 1件）</span></div>
-      <div><strong>次は #16</strong><span>4件完了・実施待ち15件。開始承認済み、1件ずつ実施</span></div>
+      <div><strong>5 / 19</strong><span>完了 / 対象タスク（Issue 18件・検証基盤 1件）</span></div>
+      <div><strong>次は #18</strong><span>5件完了・実施待ち14件。開始承認済み、1件ずつ実施</span></div>
     </div>
-    <p class="note">#24を除く18件と検証基盤1件、計19タスクを対象とします。検証基盤はPR #113、#17はPR #114、#20はPR #115、#34はPR #118のマージと後片付けまで完了しました。残る15件は開始承認済みで、次は#16です。1件ずつ調査・実装をgpt-6-luna/maxへ委任し、検証・マージ・記録後に次へ進みます。非Archify変更は、全件実行で非Archify通過、同条件の現行mainからArchifyの失敗名・原因・スキップの増加や変化がないことを記録します。Archify本体・共有資産・テスト基盤の変更には例外を適用しません。タスク上の<code>done</code>と最終完了は別段階で、最終完了にはmainマージ後の内容保全・clean確認とworktreeの通常削除を含みます。株式系Skillと共有参照は除外し、全Skill共通のworktree後片付け方針のみ適用対象に含めます。</p>
+    <p class="note">#24を除く18件と検証基盤1件、計19タスクを対象とします。開始承認済みの一覧を1件ずつ進めます。調査・実装はgpt-6-luna/maxへ小さく委任し、検証・マージ・記録後に次へ進みます。非Archify変更は、全件実行で非Archify通過、同条件の現行mainからArchifyの失敗名・原因・スキップの増加や変化がないことを記録します。Archify本体・共有資産・テスト基盤の変更には例外を適用しません。最終完了にはmainマージ後の内容保全・clean確認とworktreeの通常削除を含みます。株式系Skillと共有参照は除外し、全Skill共通のworktree後片付け方針のみ適用対象に含めます。</p>
   </header>
   <main>
     <section aria-labelledby="decided">
@@ -61,8 +61,8 @@
     </section>
     <section aria-labelledby="blocked">
       <h2 id="blocked">承認済みの実施待ち／現在作業中</h2>
-      <p>2026年10月16日の開始指示で再開し、#34を完了しました。次は一覧順の#16です。表の「再開待ち」は開始承認済みの実施待ちを表します。以下の詳細には過去の調査結果が残り、各再開条件は実装時の照合・検証項目です。同じ方針の再承認は求めません。新たな判断は理由と再開条件を記録し、対象をskipして次へ進みます。</p>
-      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/16">#16</a> 承認・開始・方針変更はAGENTS.mdの安全境界に従う方針が決定済みです。保存済み候補4ファイルは未コミットです。再開時に現行mainとの整合を確認し、関連・非Archify・全件テストと二段階完了を検証します。</p>
+      <p>2026年10月16日の開始指示で再開しました。現在の進捗と次の対象は上部と一覧に示します。表の「再開待ち」は開始承認済みの実施待ちです。以下の詳細には過去の調査結果が残り、各再開条件は実装時の照合・検証項目です。同じ方針の再承認は求めません。新たな判断は理由と再開条件を記録し、対象をskipして次へ進みます。</p>
+      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/16">#16</a> 完了。正本表・優先順位・開始と承認境界・通常後片付け・二段階完了を<a href="https://github.com/ksuke0322/LLM_settings/pull/120">PR #120</a>で整合しました。関連3件、非Archify68件通過。全件は参照998件/候補1001件でArchify内69失敗・23スキップの名前/原因/項目が一致。故意の破損で見つかった検証不足を修正し、最終故障検出と復元済みです。main同期と今回の専用/参照worktreeの通常削除まで終了。旧候補は未コミット差分のため保全。<a href="issue-16-review.md">確認記録</a></p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/18">#18</a> 参照を計測し、外部依存とrepository-local欠落を分ける方針が決定済みです。前回の外部未確認53件・欠落候補76件には誤検出が含まれます。再開時にクエリ付きリンクを修正し、実際の欠落を確認して警告・失敗境界を適用します。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/23">#23</a> 上流tree SHAとローカルdigestを分けて記録する方針が決定済みです。前回の上流照合は18件中11件一致・6件不一致・1件パス不在で、ローカルdigestとの直接比較はできません。再開時に比較基準・カスタマイズ宣言・警告条件を具体化します。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/19">#19</a> 外部Skillの採用・併存条件を人が確認できる表にし、lock差分や重複をレビューする方針が決定済みです。台帳のPlaywright・web-e2e・SwiftUIの関係は未検証です。再開時に代表依頼と台帳記録を確認します。</p>
@@ -93,7 +93,7 @@
     <section aria-labelledby="phase-1">
       <h2 id="phase-1">1. 先行</h2>
       <div class="table-wrap"><table><caption>正本・台帳・安全境界</caption><thead><tr><th scope="col">ID</th><th scope="col">状態</th><th scope="col">タスク名</th></tr></thead><tbody>
-        <tr data-issue="16" data-status="再開待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/16">#16</a></td><td><span class="status">再開待ち</span></td><td>方針決定済み。承認・開始・方針変更はAGENTS.mdの安全境界を優先</td></tr>
+        <tr data-issue="16" data-status="完了"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/16">#16</a></td><td><span class="status">完了</span></td><td>正本と優先順位を整合。PR #120マージ・main同期・通常後片付け済み</td></tr>
         <tr data-issue="17" data-status="完了"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/17">#17</a></td><td><span class="status">完了</span></td><td>非株式 Skill 39件の台帳を<a href="https://github.com/ksuke0322/LLM_settings/pull/114">PR #114</a>で導入し後片付け完了</td></tr>
         <tr data-issue="24" data-status="対象外"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/24">#24</a></td><td><span class="status">対象外</span></td><td>株式判断の状態・例外順序を定義し、fail-close を契約テストで確認</td></tr>
       </tbody></table></div>
