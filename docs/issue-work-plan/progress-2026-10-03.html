@@ -35,12 +35,12 @@
 <body>
   <header>
     <h1>LLM_settings Issue 着手計画</h1>
-    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34（#24は対象外）と先行する検証基盤タスク／ 最終更新: 2026年10月16日 23:54 JST</p>
+    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34（#24は対象外）と先行する検証基盤タスク／ 最終更新: 2026年10月16日 23:58 JST</p>
     <div class="summary" aria-label="進捗の要約">
-      <div><strong>3 / 19</strong><span>完了 / 対象タスク（Issue 18件・検証基盤 1件）</span></div>
-      <div><strong>#34 作業中</strong><span>3件完了・未着手15件・作業中1件。開始承認済み、1件ずつ実施</span></div>
+      <div><strong>4 / 19</strong><span>完了 / 対象タスク（Issue 18件・検証基盤 1件）</span></div>
+      <div><strong>次は #16</strong><span>4件完了・実施待ち15件。開始承認済み、1件ずつ実施</span></div>
     </div>
-    <p class="note">#24を除く18件と検証基盤1件、計19タスクを対象とします。検証基盤はPR #113、#17はPR #114、#20はPR #115のマージと後片付けまで完了しました。現在は#34を作業中で、残る15件も開始承認済みです。1件ずつ調査・実装をgpt-6-luna/maxへ委任し、検証・マージ・記録後に次へ進みます。非Archify変更は、全件実行で非Archify通過、同条件の現行mainからArchifyの失敗名・原因・スキップの増加や変化がないことを記録します。Archify本体・共有資産・テスト基盤の変更には例外を適用しません。タスク上の<code>done</code>と最終完了は別段階で、最終完了にはmainマージ後の内容保全・clean確認とworktreeの通常削除を含みます。株式系Skillと共有参照は除外し、全Skill共通のworktree後片付け方針のみ適用対象に含めます。</p>
+    <p class="note">#24を除く18件と検証基盤1件、計19タスクを対象とします。検証基盤はPR #113、#17はPR #114、#20はPR #115、#34はPR #118のマージと後片付けまで完了しました。残る15件は開始承認済みで、次は#16です。1件ずつ調査・実装をgpt-6-luna/maxへ委任し、検証・マージ・記録後に次へ進みます。非Archify変更は、全件実行で非Archify通過、同条件の現行mainからArchifyの失敗名・原因・スキップの増加や変化がないことを記録します。Archify本体・共有資産・テスト基盤の変更には例外を適用しません。タスク上の<code>done</code>と最終完了は別段階で、最終完了にはmainマージ後の内容保全・clean確認とworktreeの通常削除を含みます。株式系Skillと共有参照は除外し、全Skill共通のworktree後片付け方針のみ適用対象に含めます。</p>
   </header>
   <main>
     <section aria-labelledby="decided">
@@ -61,7 +61,7 @@
     </section>
     <section aria-labelledby="blocked">
       <h2 id="blocked">承認済みの実施待ち／現在作業中</h2>
-      <p>2026年10月16日の開始指示で再開しました。#34を終了後、一覧の順序に戻ります。表の「再開待ち」は開始承認済みの実施待ちを表します。以下の詳細には過去の調査結果が残り、各再開条件は実装時の照合・検証項目です。同じ方針の再承認は求めません。新たな判断は理由と再開条件を記録し、対象をskipして次へ進みます。</p>
+      <p>2026年10月16日の開始指示で再開し、#34を完了しました。次は一覧順の#16です。表の「再開待ち」は開始承認済みの実施待ちを表します。以下の詳細には過去の調査結果が残り、各再開条件は実装時の照合・検証項目です。同じ方針の再承認は求めません。新たな判断は理由と再開条件を記録し、対象をskipして次へ進みます。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/16">#16</a> 承認・開始・方針変更はAGENTS.mdの安全境界に従う方針が決定済みです。保存済み候補4ファイルは未コミットです。再開時に現行mainとの整合を確認し、関連・非Archify・全件テストと二段階完了を検証します。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/18">#18</a> 参照を計測し、外部依存とrepository-local欠落を分ける方針が決定済みです。前回の外部未確認53件・欠落候補76件には誤検出が含まれます。再開時にクエリ付きリンクを修正し、実際の欠落を確認して警告・失敗境界を適用します。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/23">#23</a> 上流tree SHAとローカルdigestを分けて記録する方針が決定済みです。前回の上流照合は18件中11件一致・6件不一致・1件パス不在で、ローカルdigestとの直接比較はできません。再開時に比較基準・カスタマイズ宣言・警告条件を具体化します。</p>
@@ -77,7 +77,7 @@
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/31">#31</a> descriptionは発動条件と役割を短く示し、詳細を参照に移す方針が決定済みです。前回の計測では非株式Skill39件中300文字超が9件でした。再開時に#21のroutingと#23の上流差分を照合します。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/32">#32</a> 対象に最も近いpackageの設定を先に確認し、実行可能例と概念例を区別する方針が決定済みです。再開時に設定がない場合の扱いと最小fixtureを確認します。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/33">#33</a> rootの<code>swiftui-pro</code>を正本候補とし、入れ子版を探索から除外する方向が決定済みです。有効版とlockの対応は未確認です。再開時にroutingと上流を照合し、削除が必要なら個別承認の対象とします。</p>
-      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/34">#34</a> 作業中。保存済みのコミット済み2行修正を現行mainと照合しました。内容のない「本章では…」のみ禁止し具体的説明は許す方針の明記と確認記録をLuna/maxへ委任中です。<code>/grilling</code>は外部未確認、<code>pr-create</code>はgitへのfallbackあり、原則数の指摘は現行mainで再現しません。main参照の全件検証は998件・Archify内69失敗・23スキップ。候補比較は未実施です。</p>
+      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/34">#34</a> 完了。文書修正と確認記録を<a href="https://github.com/ksuke0322/LLM_settings/pull/118">PR #118</a>でマージし、main同期・内容保全・clean確認・専用と参照worktreeの通常削除まで終了しました。非Archify65件通過、全998件は両側Archify内69失敗・23スキップで失敗名・原因・スキップ一致。親の手動故障検出も実施しました。外部未確認と現行mainで再現しない指摘は<a href="issue-34-review.md">確認記録</a>に区別して残しています。</p>
     </section>
     <section aria-labelledby="excluded">
       <h2 id="excluded">対象外</h2>
@@ -126,7 +126,7 @@
         <tr data-issue="31" data-status="再開待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/31">#31</a></td><td><span class="status">再開待ち</span></td><td>方針決定済み。description 300文字はレビュー目安</td></tr>
         <tr data-issue="32" data-status="再開待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/32">#32</a></td><td><span class="status">再開待ち</span></td><td>方針決定済み。近いpackage/runnerの実行方式を優先</td></tr>
         <tr data-issue="33" data-status="再開待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/33">#33</a></td><td><span class="status">再開待ち</span></td><td>方針決定済み。root v1.1を標準候補にし入れ子は削除保留</td></tr>
-        <tr data-issue="34" data-status="作業中"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/34">#34</a></td><td><span class="status">作業中</span></td><td>保存済み候補を照合済み。文書矛盾の最小修正と確認記録を委任中</td></tr>
+        <tr data-issue="34" data-status="完了"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/34">#34</a></td><td><span class="status">完了</span></td><td>文書矛盾を解消。PR #118マージ・main同期・通常後片付け済み</td></tr>
       </tbody></table></div>
     </section>
   </main>
