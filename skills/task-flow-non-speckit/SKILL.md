@@ -15,9 +15,9 @@ description: "`specs/flow` で管理する作業タスクに限定して利用�
   - 1つのブランチ名に複数の目的や複数領域を無理に含める必要がある場合は、タスク分割を再検討する。
   - 目的が複数ある場合や、フロント/バックなど複数領域にまたがる場合は分割を前提にする。
 - **ステータス**: `未着手` / `done` のみ。
-- **done定義**: そのタスクで定義した期待値がすべて完了し、ユーザー確認依頼を行い、approve 後にタスク状態を done に更新し、その状態でコミットし、リモートレポジトリがある場合は PR を作成し、作業 worktree の削除まで完了している状態。PR の確認・マージはユーザーが手動で行うため、main/master への反映は done 条件に含めない。
+- **done定義**: タスクファイルの `done` と lifecycle の最終完了を区別する。期待値達成後にユーザー確認を依頼し、approve 後にタスク状態を `done` に更新してコミットし、リモートレポジトリがある場合は PR に含める。この `done` はPRに提案するタスク記録であり、最終完了を意味しない。最終完了は期待値の達成、ユーザー approve、`done` を含むコミット、PR作成、main/masterへのマージ確認、作業内容の保全、clean確認、branchを保持した作業worktreeの削除が揃った状態とする。承認・merge・cleanupの手順は `skills/git/SKILL.md` に従う。
 - **PR要件**: PRの必須項目は `single-task-pr-policy` と `git-workflow-safety` の規定に準拠。
-- **worktree運用**: specs/flow 管理タスクでは専用の作業 worktree を作成し、その worktree 上で実施する。
+- **worktree運用**: `specs/flow` 管理タスクでは専用の作業 worktree を作成し、その worktree 上で実施する。終了時のmergeとcleanupは `skills/git/SKILL.md` を正本とする。
 - **命名規則**: 作業ブランチ名と作業 worktree 名の命名は `branch-worktree-naming` skill に従う。
 
 ## specs/flow ファイルの最低限構成
@@ -36,10 +36,10 @@ description: "`specs/flow` で管理する作業タスクに限定して利用�
 - 各タスクの着手前に main/master を確認し、タスク用ブランチと専用の作業 worktree を作成する。
 - タスク作業は必ずその作業 worktree 上で行い、対象タスク以外の変更を混ぜない。
 - タスクの期待値を満たした時点で、まずユーザーに確認依頼を投げる。
-- ユーザーに approve されたら、タスク状態を done に更新し、その状態でコミットする。
-- リモートレポジトリが存在する場合は PR を作成する。PR の確認・マージはユーザーが手動で行う。
-- 未コミット差分がないことを確認してから作業 worktree を削除する。PR ブランチは削除しない。
-- done化の判断は「期待値の全達成」「ユーザー approve」「タスク更新」「承認後のコミット」「リモートレポジトリがある場合の PR 作成」「作業 worktree の削除」の全完了を基準とする。抜けがある場合は done にしない。
+- ユーザーに approve されたら、タスク状態を `done` に更新してコミットする。タスクファイルの `done` はPRに提案する状態であり、PRが未マージなら lifecycle は完了していない。
+- リモートレポジトリが存在する場合は PR を作成する。PRの確認・mergeは、同一PRの事前承認がなければユーザーの明示的な承認を待ち、事前承認があれば `skills/git/SKILL.md` の検証条件に従う。
+- main/masterへのmerge確認後、作業内容を保全してworktreeがcleanであることを確認し、branchを保持したまま通常の作業worktreeを削除する。詳細と停止条件は `skills/git/SKILL.md` に従う。
+- lifecycle 最終完了は「期待値の全達成」「ユーザー approve」「`done` 更新を含むコミット」「リモートレポジトリがある場合のPR」「main/masterへのmerge確認」「作業内容の保全とclean確認」「PR branchを保持した作業worktreeの削除」の全完了を基準とする。抜けがある場合は最終完了にしない。
 - 既存のタスク分割が過大/過小な場合、`specs/flow/` で分割提案を先に行う。
 
 ## タスクファイルテンプレート
