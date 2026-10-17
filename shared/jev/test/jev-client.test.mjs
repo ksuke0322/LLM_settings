@@ -5,14 +5,16 @@ import { askJev, createJevGateway } from '../src/jev-client.mjs';
 
 const createRecordingClient = () => {
   const calls = [];
+  const optionsCalls = [];
   const client = {
-    systemOne: async (request) => {
+    systemOne: async (request, options) => {
       calls.push(request);
+      optionsCalls.push(options);
       return { answers: {} };
     },
   };
 
-  return { calls, client };
+  return { calls, optionsCalls, client };
 };
 
 test('default askJev export is a function', () => {
@@ -45,6 +47,31 @@ test('askJev preserves the state and questions references', async () => {
 
   assert.strictEqual(calls[0].state, state);
   assert.strictEqual(calls[0].questions, questions);
+});
+
+test('askJev forwards options to client.systemOne by reference', async () => {
+  const { calls, optionsCalls, client } = createRecordingClient();
+  const { askJev } = createJevGateway({ client });
+  const request = { state: {}, questions: {} };
+  const options = { headers: { 'TypeSafe-Danger-Zone-Images': 'true' } };
+
+  await askJev(request, options);
+
+  assert.equal(calls.length, 1);
+  assert.strictEqual(calls[0], request);
+  assert.strictEqual(optionsCalls[0], options);
+});
+
+test('askJev passes undefined options when omitted', async () => {
+  const { calls, optionsCalls, client } = createRecordingClient();
+  const { askJev } = createJevGateway({ client });
+  const request = { state: {}, questions: {} };
+
+  await askJev(request);
+
+  assert.equal(calls.length, 1);
+  assert.strictEqual(calls[0], request);
+  assert.strictEqual(optionsCalls[0], undefined);
 });
 
 test('askJev omits model when it is not specified', async () => {

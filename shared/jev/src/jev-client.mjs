@@ -1,7 +1,7 @@
 import { TypeSafeClient } from '@typesafe-ai/sdk';
 
 export const createJevGateway = ({ client }) => {
-  const askJev = (request) => client.systemOne(request);
+  const askJev = (request, options) => client.systemOne(request, options);
 
   return { askJev };
 };
@@ -13,4 +13,4 @@ const getDefaultGateway = () => {
   return defaultGateway;
 };
 
-export const askJev = (request) => getDefaultGateway().askJev(request);
+export const askJev = (request, options) => getDefaultGateway().askJev(request, options);
