@@ -210,10 +210,10 @@
       "routing": {
         "role": "JavaScript / TypeScript 記法の補助",
         "applyWhen": "JavaScript / TypeScript を実装・修正するとき。作業種別の担当Skillに重ねる。",
-        "relatedDirectories": ["playwright-skill", "web_e2e_test"],
+        "relatedDirectories": ["playwright-skill", "web_e2e_test", "web_unit_test", "web_integration_test"],
         "decision": "併存: 記法の補助と作業の責務を分離する",
         "basis": "#19の承認済み方針。テスト配置や実行環境は担当Skillと最も近いpackage設定を確認する。",
-        "verification": "文書の責務を照合。実行例の環境適合は#32で未確認。"
+        "verification": "#21の代表依頼表でJS/TS変更時のみの補助と確認。Swift単独・文書単独では非適用。実行例の環境適合は#32で未確認。"
       },
       "origin": "unknown",
       "source": null,
@@ -710,7 +710,7 @@
         "relatedDirectories": ["web_e2e_test", "coding_typescript"],
         "decision": "併存: 一時操作と永続テストを分離し、外部本文は直接編集しない",
         "basis": "#19の承認済み方針。Playwrightの実行手段とテスト種別の規則は役割が異なる。",
-        "verification": "descriptionと責務を照合。代表依頼・非適用条件の詳細は#21、実行例は#32で未確認。"
+        "verification": "#21の代表依頼表で一時操作と永続E2Eを分離。実行例は#32、実loaderは#33で未確認。"
       },
       "origin": "external",
       "source": "lackeyjb/playwright-skill",
@@ -863,12 +863,12 @@
       "name": "swiftui-expert-skill",
       "directory": "swiftui-expert-skill",
       "routing": {
-        "role": "SwiftUIの個別調査を補う候補",
-        "applyWhen": "状態管理・性能・Instruments trace等で標準候補だけでは不足する観点を補うとき。",
+        "role": "SwiftUIの個別調査を補う候補・trace単独解析の候補",
+        "applyWhen": "通常のSwiftUI実装・レビューでは状態管理・性能等の不足する観点を補う。Instruments traceだけの解析では単独の候補とし、通常のソースレビューも依頼された場合にswiftui-proを加える。",
         "relatedDirectories": ["swiftui-pro"],
-        "decision": "併存: swiftui-proを標準候補とし、必要な観点だけ補助する",
+        "decision": "併存: 通常作業はswiftui-pro標準・expert補助。trace単独解析ではexpertを候補としproを必須にしない",
         "basis": "#19の承認済み方針。外部本文は直接編集せずローカルの役割記録で分離する。",
-        "verification": "責務を照合。代表依頼は#21、実際のloaderとlockの対応は#33で未確認。同時発動は保証しない。"
+        "verification": "#21の代表依頼表で通常実装の補助とtrace単独解析の候補を区別。実際のloaderとlockの対応は#33で未確認。同時発動は保証しない。"
       },
       "origin": "external",
       "source": "avdlee/swiftui-agent-skill",
@@ -913,7 +913,7 @@
         "relatedDirectories": ["swiftui-expert-skill"],
         "decision": "併存: 標準候補と補助候補を分離する",
         "basis": "#19の承認済み方針。ルートを正本候補として扱い、入れ子の削除は行わない。",
-        "verification": "責務を照合。代表依頼は#21、ルート・入れ子・loader・lockの対応は#33で未確認。"
+        "verification": "#21の代表依頼表で通常SwiftUI実装・レビューの標準候補と確認。trace単独解析では必須にしない。ルート・入れ子・loader・lockの対応は#33で未確認。"
       },
       "origin": "external",
       "source": "twostraws/swiftui-agent-skill",
@@ -1086,8 +1086,16 @@
         "basis": "skillFolderHash",
         "value": "bace396b4bd89d610971646687dc1951c2e210b6"
       },
-      "verification": {
-        "skillFile": "skills/test-driven-development/SKILL.md",
+    "routing": {
+      "role": "コード変更におけるTDDの詳細手順",
+      "applyWhen": "機能実装・不具合修正で失敗確認から最小実装へ進むとき。分析・文書のみでは原則非適用。",
+      "relatedDirectories": ["workflow", "test-fixing", "web_test_common"],
+      "decision": "併用: workflowから参照するTDD詳細として扱う",
+      "basis": "#21の承認済みTesting整理。安全境界・承認・開始はAGENTS.mdを優先する。",
+      "verification": "代表依頼表でコード変更と分析・文書のみを区別。loaderの読み込み順は#33で未確認。"
+    },
+    "verification": {
+      "skillFile": "skills/test-driven-development/SKILL.md",
         "nameEvidence": "frontmatter.name",
         "triggerEvidence": "frontmatter.description",
         "responsibilityEvidence": "SKILL.md のタイトルと冒頭説明",
@@ -1123,8 +1131,16 @@
         "basis": "skillFolderHash",
         "value": "d40869c07ef66ece9b34c28683b4be8667c415d3"
       },
-      "verification": {
-        "skillFile": "skills/test-fixing/SKILL.md",
+    "routing": {
+      "role": "既存テスト失敗の原因整理と修正",
+      "applyWhen": "テスト失敗が存在する、または失敗修正を依頼されたとき。失敗のない通常実装には非適用。",
+      "relatedDirectories": ["workflow", "test-driven-development", "web_test_common"],
+      "decision": "併用: 失敗修正を担当し、変更するコード・テストの規則を参照する",
+      "basis": "#21の承認済みTesting整理。失敗修正は既存の安全境界や検証条件を緩和しない。",
+      "verification": "代表依頼表で実装変更時のworkflow/TDD、Webテスト変更時の共通・種別規則を確認。loaderは#33で未確認。"
+    },
+    "verification": {
+      "skillFile": "skills/test-fixing/SKILL.md",
         "nameEvidence": "frontmatter.name",
         "triggerEvidence": "frontmatter.description",
         "responsibilityEvidence": "SKILL.md のタイトルと冒頭説明",
@@ -1190,7 +1206,7 @@
         "relatedDirectories": ["playwright-skill", "coding_typescript", "web_test_common"],
         "decision": "併存: 永続テストを担当し、一時操作と記法の補助を分離する",
         "basis": "#19の承認済み方針。__e2e__配置とテスト種別の規則を担当し、Playwrightは実行手段として利用できる。",
-        "verification": "文書の責務を照合。代表依頼とTesting併用順は#21、実行環境は#32で未確認。"
+        "verification": "#21の代表依頼表で永続Web E2Eを担当し、共通規則を先に参照すると確認。一時操作は非適用。実行環境は#32、loaderは#33で未確認。"
       },
       "origin": "unknown",
       "source": null,
@@ -1235,8 +1251,16 @@
       "updatePolicy": "由来が未確認のため不明。編集前に由来と更新方針を確認する。",
       "status": "unknown",
       "version": null,
-      "verification": {
-        "skillFile": "skills/web_integration_test/SKILL.md",
+    "routing": {
+      "role": "複数ユニットとUI操作のWeb結合テスト",
+      "applyWhen": "複数ユニットの組合せ・UI状態遷移をテストするとき。単体ロジックや全ユーザーフローのみなら該当種別を選ぶ。",
+      "relatedDirectories": ["workflow", "test-driven-development", "web_test_common", "coding_typescript"],
+      "decision": "併用: Web共通規則を参照し結合テストの責務を担当する",
+      "basis": "#21の承認済みTesting整理。種別選択と記法overlayを分離する。",
+      "verification": "代表依頼表でunit・integration・E2Eの非適用条件を確認。参照順はruntime順の保証ではない。"
+    },
+    "verification": {
+      "skillFile": "skills/web_integration_test/SKILL.md",
         "nameEvidence": "frontmatter.name",
         "triggerEvidence": "frontmatter.description",
         "responsibilityEvidence": "SKILL.md のタイトルと冒頭説明",
@@ -1264,8 +1288,16 @@
       "updatePolicy": "由来が未確認のため不明。編集前に由来と更新方針を確認する。",
       "status": "unknown",
       "version": null,
-      "verification": {
-        "skillFile": "skills/web_test_common/SKILL.md",
+    "routing": {
+      "role": "Webテスト作成・変更に共通する規則",
+      "applyWhen": "永続Webテストを作成・変更するとき。テストを追加しない一時ブラウザー操作には非適用。",
+      "relatedDirectories": ["workflow", "test-driven-development", "web_unit_test", "web_integration_test", "web_e2e_test"],
+      "decision": "併用: 種別別Webテスト規則より先に参照する共通規則",
+      "basis": "#21の承認済みTesting整理。共通規則とunit・integration・E2Eの責務を分離する。",
+      "verification": "代表依頼表で3種別との意図的併用を確認。参照順はruntime順の保証ではない。"
+    },
+    "verification": {
+      "skillFile": "skills/web_test_common/SKILL.md",
         "nameEvidence": "frontmatter.name",
         "triggerEvidence": "frontmatter.description",
         "responsibilityEvidence": "SKILL.md のタイトルと冒頭説明",
@@ -1295,8 +1327,16 @@
       "updatePolicy": "由来が未確認のため不明。編集前に由来と更新方針を確認する。",
       "status": "unknown",
       "version": null,
-      "verification": {
-        "skillFile": "skills/web_unit_test/SKILL.md",
+    "routing": {
+      "role": "最小ロジック単位のWeb単体テスト",
+      "applyWhen": "utility・Hook・Reducer等の単位をテストするとき。複数ユニットのUI操作や全ユーザーフローのみなら該当種別を選ぶ。",
+      "relatedDirectories": ["workflow", "test-driven-development", "web_test_common", "coding_typescript"],
+      "decision": "併用: Web共通規則を参照し単体テストの責務を担当する",
+      "basis": "#21の承認済みTesting整理。種別選択と記法overlayを分離する。",
+      "verification": "代表依頼表でunit・integration・E2Eの非適用条件を確認。参照順はruntime順の保証ではない。"
+    },
+    "verification": {
+      "skillFile": "skills/web_unit_test/SKILL.md",
         "nameEvidence": "frontmatter.name",
         "triggerEvidence": "frontmatter.description",
         "responsibilityEvidence": "SKILL.md のタイトルと冒頭説明",
@@ -1327,8 +1367,16 @@
       "updatePolicy": "由来が未確認のため不明。編集前に由来と更新方針を確認する。",
       "status": "unknown",
       "version": null,
-      "verification": {
-        "skillFile": "skills/workflow/SKILL.md",
+    "routing": {
+      "role": "コード変更の開発・TDD・検証手順",
+      "applyWhen": "コードを実装・修正するとき。分析・文書のみではTDD詳細やテスト種別を原則追加しない。",
+      "relatedDirectories": ["test-driven-development", "test-fixing", "web_test_common"],
+      "decision": "併用: 開発手順からTDD詳細・Web共通・種別別規則へ参照する",
+      "basis": "#21の承認済みTesting整理。AGENTS.mdが安全境界・承認・開始・方針変更の正本である。",
+      "verification": "代表依頼表でコード変更時の参照関係を確認。文書のみでも既存セッションの全件検証要求は維持。loaderは#33で未確認。"
+    },
+    "verification": {
+      "skillFile": "skills/workflow/SKILL.md",
         "nameEvidence": "frontmatter.name",
         "triggerEvidence": "frontmatter.description",
         "responsibilityEvidence": "SKILL.md のタイトルと冒頭説明",

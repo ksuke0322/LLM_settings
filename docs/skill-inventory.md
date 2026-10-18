@@ -42,7 +42,24 @@ routing metadata は人が候補を絞るための記録であり、実行時に
 - `coding_typescript`: より広い作業 skill に重ねる JavaScript / TypeScript の記法 overlay。
 - ルートの `swiftui-pro`: SwiftUI 作業の標準候補。`swiftui-expert-skill` は補助候補。
 
-これらは routing 上の候補で、trigger の排他性を確定したものではない。実際の loader と lock の対応は Issue #33 で未確認であり、代表依頼と negative case の詳細も Issue #21 の記録待ちとして扱う。確認が済むまで同時発動や除外を断定せず、`decision`、`basis`、`verification` に判断根拠と未確認事項を残す。
+### 代表依頼の routing 例
+
+次表は Skill の責務に基づく人向けの標準・補助・非適用の整理である。`workflow → test-driven-development → web_test_common → 種別別 Web test Skill` は責務を確認する参照順を示し、runtime loader の読み込み順や同時発動を保証しない。上位 `AGENTS.md` の安全境界・承認・開始・方針変更規則は常に優先し、Skill はこれを緩和しない。
+
+| 依頼 | 標準 | 補助 | 非適用 |
+| ----- | ---- | ---- | ------- |
+| 通常の SwiftUI 実装・レビュー | SwiftUI の標準候補は `swiftui-pro`。実装を伴う場合は `workflow → test-driven-development` も適用する。 | 状態・データフロー、view の無効化・性能、深い topic の確認に `swiftui-expert-skill` を加える。JS/TS 作業を含む場合だけ `coding_typescript` を記法 overlay として加える。 | `playwright-skill` と Web test の共通・種別 Skill。Swift の作業に `coding_typescript`。 |
+| SwiftUI の trace 単独解析 | trace 固有の分析手順を持つ `swiftui-expert-skill`。 | 通常の SwiftUI ソースレビューや実装修正も依頼された場合、その範囲に `swiftui-pro` を加える。 | 分析だけなら `test-driven-development` と Web test Skill。実装修正も依頼された場合はコード変更の規則を適用する。 |
+| 一時的な browser 操作 | `playwright-skill`。 | 操作用の JS/TS スクリプトを書く場合は `coding_typescript` を記法 overlay として加える。 | 永続テスト作成が目的でない場合の `web_e2e_test` と Web test 共通・種別 Skill。 |
+| リポジトリで保守する Web E2E | `workflow → test-driven-development → web_test_common → web_e2e_test`。 | JS/TS のテストや実装を編集する場合は `coding_typescript` を記法 overlay として加える。 | 一時操作用の `playwright-skill`、およびこの依頼で扱わない Web test 種別 Skill。 |
+| Web 単体テスト | `workflow → test-driven-development → web_test_common → web_unit_test`。 | JS/TS のテストや実装を編集する場合は `coding_typescript` を記法 overlay として加える。 | `web_integration_test`、`web_e2e_test`、一時操作用の `playwright-skill`。 |
+| Web 結合テスト | `workflow → test-driven-development → web_test_common → web_integration_test`。 | JS/TS のテストや実装を編集する場合は `coding_typescript` を記法 overlay として加える。 | `web_unit_test`、`web_e2e_test`、一時操作用の `playwright-skill`。 |
+| 既存のテスト失敗を直す | `test-fixing` で失敗を分類し修正する。Web test 自体を変更する場合は `web_test_common` と該当する種別 Skill も適用する。 | 実装コードを変更する場合は `workflow → test-driven-development` も適用する。JS/TS を変更する場合は `coding_typescript` を記法 overlay として加える。 | 失敗の対象と無関係な Web test 種別 Skill。 |
+| 文書のみの変更 | 文書固有の規則と上位 `AGENTS.md` の安全境界。 | 同じ作業の中でコード変更も行う場合に限り、そのコード変更に `workflow → test-driven-development` と該当する test Skill を適用する。 | 文書のみなら TDD のテスト種別 Skill は原則不要。ただし既存セッションで全件検証が要求されている場合、その要求は免除しない。 |
+
+`workflow` はコード変更の基本手順、`test-driven-development` はその TDD 詳細、`web_test_common` は Web test 作成・変更の共通規則、種別別 Skill は unit / integration / E2E 各テストの責務を扱う。`coding_typescript` は JS/TS 記法の overlay であり、テスト種別を選ばない。ここでの併用指定は責務の重なりを意図している。
+
+実 loader と root/nested Skill および lock の対応は Issue #33 で未確認である。Playwright の CommonJS 例と ESM 優先の `coding_typescript` の実行環境適合は Issue #32 で未確認である。この表は loader の実挙動、trigger の排他性、実行例の互換性を保証しない。追記は routing 判断だけを記録し、台帳の由来・版・`unknown` / `null` や外部 Skill 本文を変更しない。
 
 ## 追加・更新・削除
 
