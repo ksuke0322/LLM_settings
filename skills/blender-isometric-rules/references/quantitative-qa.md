@@ -6,14 +6,34 @@
 
 数値は手で JSON に転記してはならない。scene snapshot は Blender の実シーン、timeline snapshot は実 F-Curve から抽出する。設計値だけを validator に渡すことは禁止する。
 
+## 承認済み自動補正の境界
+
+この節は `AGENTS.md` と既存workflowが定める実行者権限を拡大・代替しない。自動補正を実行できるのは既存ルールで許可された実行者に限る。個別計画の実行者欄は新たな権限付与と解釈しない。
+
+検査で問題を検出できることは、その問題を修正する許可を意味しない。自動補正は、作業開始前に承認された個別計画に次のすべてが明記されている場合だけ実行する。
+
+- 対象の check ID と object-property
+- 決定的な操作と承認済みの目標値
+- 許容変更幅
+- 有限の最大試行数
+- 実行者
+
+いずれかが未設定なら補正せず、親へ判断を戻す。ここで共通の数値上限は定めない。座標・接地・既存材質設定の復元は候補になり得るが、決定的な承認済み目標値がある場合に限る。材質の美観、設計、作り込み、物理的妥当性、署名ディテール、オブジェクトの存在理由、全体品質の判断は人間レビューに残し、自動補正しない。
+
+各試行では、補正前後の値、入力revisionとfingerprint、実測証跡、試行回数、結果を記録する。補正後はrevisionを更新して定量 QA の既存手順を最初から全件再実行する。必要なレンダーやスクリーンショットを更新し、証跡と人間レビューを同一revisionに揃える。定量PASS後の人間レビューとワークフローのStep 9承認は必須であり、自動補正やPASSで省略しない。
+
+最大試行数への到達、同一fingerprintでの同じ問題の連続再発、補正による入力revision/fingerprintの不変、許可範囲外の変更、新たな判断の必要性のいずれかで停止し、親へ判断を戻す。再承認なしに試行上限をリセットしない。
+
+状態遷移: `QA → FAIL → (個別計画が全条件を満たし、上限内) 承認済み補正 → 証跡保存・revision更新 → QA全順序を再実行`。条件不足または停止条件該当時は `STOP → 親判断`。`QA PASS → 同一revisionの証跡 → 人間レビュー → Step 9承認`。
+
 ## 実行順
 
 1. `audit_assets.py` を実行し、種類単位の材質・作り込み・接地を棚卸しする。
 2. 各クールの完成フレームで scene snapshot を抽出する。
 3. `isometric-story-workflow/scripts/validate_scene_contract.py` と、クール間では `validate_cool_continuity.py` を実行する。
 4. F-Curve を timeline snapshot として抽出し、`validate_timeline.py` を実行する。
-5. FAIL を直して 1 に戻る。WARN は数値根拠と採否をレビュー・パケットへ残す。
-6. ここまで PASS した成果物だけを `review-checklist.md` の人間レビューへ渡す。
+5. FAILがある場合は上記の自動補正条件を確認する。条件を満たさなければ停止して親へ判断を戻す。承認済み補正を行った場合は証跡とrevisionを更新し、1から全件を再実行する。WARNは数値根拠と採否をレビュー・パケットへ残す。
+6. ここまでPASSした同一revisionの成果物だけを `review-checklist.md` の人間レビューへ渡し、ワークフローのStep 9承認を受ける。
 
 ## 実行コマンドとCustom Property
 
@@ -37,7 +57,7 @@ python3 run_blender_quantitative_qa.py \
   --video /absolute/cool1.mp4 --output-dir /absolute/evidence/cool1
 ```
 
-`quantitative_qa_report.json`、`quantitative_qa_report.md`、および`raw/`配下の3 snapshotが成果物である。WARNは`--waivers /absolute/waivers.json`でcheck idをキー、理由を値とするwaiverを渡さない限りFAILになる。GitHub Actionsなどの常時CIは使わず、スキル更新時と各成果物レビュー前にローカルで実行する。
+`quantitative_qa_report.json`、`quantitative_qa_report.md`、および`raw/`配下の3 snapshotが成果物である。WARNは`--waivers /absolute/waivers.json`でcheck IDをキー、理由を値とする既存形式のwaiverを渡さない限りFAILになる。WARNをwaiveした場合も、CLI形式は変更せず、別のレビュー・パケットに`approved_by`、`reason`、`impact`（check ID、revision、対象範囲）を記録する。waiverはFAILや人間レビュー・Step 9承認を免除しない。GitHub Actionsなどの常時CIは使わず、スキル更新時と各成果物レビュー前にローカルで実行する。
 
 ## scene snapshot の必須証跡
 
