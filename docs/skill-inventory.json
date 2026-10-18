@@ -708,9 +708,9 @@
         "role": "一時的なブラウザー操作・短い確認",
         "applyWhen": "一度限りの操作や一時スクリプトによる確認。永続E2Eの配置・保守はweb_e2e_testへ分離する。",
         "relatedDirectories": ["web_e2e_test", "coding_typescript"],
-        "decision": "併存: 一時操作と永続テストを分離し、外部本文は直接編集しない",
-        "basis": "#19の承認済み方針。Playwrightの実行手段とテスト種別の規則は役割が異なる。",
-        "verification": "#21の代表依頼表で一時操作と永続E2Eを分離。実行例は#32、実loaderは#33で未確認。"
+        "decision": "併存: 一時操作と永続テストを分離し、外部本文は直接編集しない。ローカル実行はdocs/playwright-local-runner.mdの入口を明示的に呼ぶ",
+        "basis": "#19の承認済み方針。Playwrightの実行手段とテスト種別の規則は役割が異なる。#27で準備工程と通常実行を分離。",
+        "verification": "#21の代表依頼表で一時操作と永続E2Eを分離。#27のローカル入口はfixtureで検証。外部Skillからの自動切替は行わず、実ブラウザー・実行例は#32、実loaderは#33で未確認。"
       },
       "origin": "external",
       "source": "lackeyjb/playwright-skill",
