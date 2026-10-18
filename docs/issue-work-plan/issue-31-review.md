@@ -23,3 +23,4 @@
 - 実際のdescription短縮・詳細分割、および実runtimeでの過剰発動抑制は未完了・未確認。ローカルroutingの追加だけでIssue #31を完了として閉じない。
 - おすすめは、今回のローカル入口方針を明示参照し、外部本文の短縮・分割はupstream提案へ分離すること。別案は、更新追従方法と差分保全を決めたうえで明示承認したlocal forkを採用すること。外部本文の直接改変には自動で進まない。
 - 上流への連絡・提案送信は未実施。判断箇所を保留して次の #32 へ進む。stock系・#24の除外と#22保留は維持する。
+- PR #145はmerge commit `7e0bb86f795afb8adfe6dfd43dfa9f76ce3bbb07` でmainへマージ済み。実装commit `8424cac` の包含、実装/参照worktreeのraw cleanを確認し通常削除、branchは保持した。Issue #31はOPENのまま。アプリ添付は100件上限で失敗し、GitHub/mainは別途確認した。
