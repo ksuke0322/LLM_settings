@@ -71,6 +71,14 @@
     {
       "name": "auditing-wcag",
       "directory": "auditing-wcag",
+      "routing": {
+        "role": "証拠付きの正式WCAG適合監査",
+        "applyWhen": "正式監査ではdocs/skill-capabilities.mdを明示参照し、対象基準をPass/Fail/NT/NAと根拠で記録する。",
+        "relatedDirectories": ["reviewing-a11y"],
+        "decision": "外部本文を変更せず、動的ツール能力と対象での実行証拠を別に確認する",
+        "basis": "#28承認済み方針。不能な検査は具体的理由と次owner付きNT。CLIだけで全適合としない。",
+        "verification": "文書と代表fixtureで確認。実監査・実loaderの自動適用は未確認。"
+      },
       "origin": "external",
       "source": "masuP9/a11y-specialist-skills",
       "category": "accessibility",
@@ -786,6 +794,14 @@
     {
       "name": "reviewing-a11y",
       "directory": "reviewing-a11y",
+      "routing": {
+        "role": "アクセシビリティの問題発見と改善レビュー",
+        "applyWhen": "docs/skill-capabilities.mdを明示参照し、ページ・コード・デザインで実際に確認できる範囲を区別する。",
+        "relatedDirectories": ["auditing-wcag"],
+        "decision": "外部本文を変更せず、通常レビューを正式適合判定へ読み替えない",
+        "basis": "#28承認済み方針。画像・DOMはキーボードの実操作証拠に置き換えない。",
+        "verification": "文書と代表fixtureで確認。実ブラウザー・外部接続・実loaderは未確認。"
+      },
       "origin": "external",
       "source": "masuP9/a11y-specialist-skills",
       "category": "accessibility",
@@ -825,6 +841,14 @@
     {
       "name": "ship-learn-next",
       "directory": "ship-learn-next",
+      "routing": {
+        "role": "学習内容から実行計画の草案を作る",
+        "applyWhen": "docs/skill-capabilities.mdを明示参照し、草案提示と承認済み保存先への書き込み・読み戻し確認を分ける。",
+        "relatedDirectories": [],
+        "decision": "外部本文を変更せず、Read/Write宣言を実行経路や保存完了の証拠と同一視しない",
+        "basis": "#28承認済み方針。保存できない・読み戻せない場合は保存済みと報告しない。",
+        "verification": "文書と代表fixtureで確認。実利用者の計画保存・実loaderは未確認。"
+      },
       "origin": "external",
       "source": "michalparkola/tapestry-skills-for-claude-code",
       "category": "learning",
