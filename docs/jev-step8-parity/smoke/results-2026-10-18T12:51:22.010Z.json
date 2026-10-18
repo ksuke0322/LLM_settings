@@ -1,0 +1,271 @@
+{
+  "timestamp": "2026-10-18T12:51:22.010Z",
+  "results": [
+    {
+      "id": "content-A-yes",
+      "check": "content",
+      "answers": {
+        "answer": {
+          "type": "noul",
+          "noul": 0.86
+        }
+      },
+      "model": "jev-1.13.0",
+      "usage": {
+        "input_tokens": 3371,
+        "output_tokens": 20
+      },
+      "error": null
+    },
+    {
+      "id": "content-A-no",
+      "check": "content",
+      "answers": {
+        "answer": {
+          "type": "noul",
+          "noul": 0.01
+        }
+      },
+      "model": "jev-1.13.0",
+      "usage": {
+        "input_tokens": 3367,
+        "output_tokens": 20
+      },
+      "error": null
+    },
+    {
+      "id": "content-B-yes",
+      "check": "content",
+      "answers": {
+        "answer": {
+          "type": "noul",
+          "noul": 0.95
+        }
+      },
+      "model": "jev-1.13.0",
+      "usage": {
+        "input_tokens": 3062,
+        "output_tokens": 20
+      },
+      "error": null
+    },
+    {
+      "id": "content-B-no",
+      "check": "content",
+      "answers": {
+        "answer": {
+          "type": "noul",
+          "noul": 0.11
+        }
+      },
+      "model": "jev-1.13.0",
+      "usage": {
+        "input_tokens": 3063,
+        "output_tokens": 20
+      },
+      "error": null
+    },
+    {
+      "id": "no-image-A-yes",
+      "check": "no-image",
+      "answers": {
+        "answer": {
+          "type": "noul",
+          "noul": 0.06
+        }
+      },
+      "model": "jev-1.13.0",
+      "usage": {
+        "input_tokens": 297,
+        "output_tokens": 20
+      },
+      "error": null
+    },
+    {
+      "id": "no-image-B-yes",
+      "check": "no-image",
+      "answers": {
+        "answer": {
+          "type": "noul",
+          "noul": 0.05
+        }
+      },
+      "model": "jev-1.13.0",
+      "usage": {
+        "input_tokens": 296,
+        "output_tokens": 20
+      },
+      "error": null
+    },
+    {
+      "id": "language-A-yes",
+      "check": "language",
+      "answers": {
+        "answer": {
+          "type": "noul",
+          "noul": 0.94
+        }
+      },
+      "model": "jev-1.13.0",
+      "usage": {
+        "input_tokens": 3359,
+        "output_tokens": 20
+      },
+      "error": null
+    },
+    {
+      "id": "language-A-no",
+      "check": "language",
+      "answers": {
+        "answer": {
+          "type": "noul",
+          "noul": 0
+        }
+      },
+      "model": "jev-1.13.0",
+      "usage": {
+        "input_tokens": 3360,
+        "output_tokens": 20
+      },
+      "error": null
+    },
+    {
+      "id": "language-B-yes",
+      "check": "language",
+      "answers": {
+        "answer": {
+          "type": "noul",
+          "noul": 0.99
+        }
+      },
+      "model": "jev-1.13.0",
+      "usage": {
+        "input_tokens": 3055,
+        "output_tokens": 20
+      },
+      "error": null
+    },
+    {
+      "id": "language-B-no",
+      "check": "language",
+      "answers": {
+        "answer": {
+          "type": "noul",
+          "noul": 0.03
+        }
+      },
+      "model": "jev-1.13.0",
+      "usage": {
+        "input_tokens": 3052,
+        "output_tokens": 20
+      },
+      "error": null
+    },
+    {
+      "id": "size-beehive-c1-8b-r13-min-01",
+      "check": "size",
+      "answers": null,
+      "model": null,
+      "usage": null,
+      "error": "400 Invalid image dimensions."
+    },
+    {
+      "id": "repeat-1",
+      "check": "repeat",
+      "answers": {
+        "answer": {
+          "type": "noul",
+          "noul": 0.87
+        }
+      },
+      "model": "jev-1.13.0",
+      "usage": {
+        "input_tokens": 3371,
+        "output_tokens": 20
+      },
+      "error": null
+    },
+    {
+      "id": "repeat-2",
+      "check": "repeat",
+      "answers": {
+        "answer": {
+          "type": "noul",
+          "noul": 0.88
+        }
+      },
+      "model": "jev-1.13.0",
+      "usage": {
+        "input_tokens": 3371,
+        "output_tokens": 20
+      },
+      "error": null
+    },
+    {
+      "id": "repeat-3",
+      "check": "repeat",
+      "answers": {
+        "answer": {
+          "type": "noul",
+          "noul": 0.87
+        }
+      },
+      "model": "jev-1.13.0",
+      "usage": {
+        "input_tokens": 3371,
+        "output_tokens": 20
+      },
+      "error": null
+    }
+  ],
+  "evaluation": {
+    "checks": [
+      {
+        "name": "content A",
+        "pass": false,
+        "detail": "yes=0.860 (>= 0.900), no=0.010 (<= 0.100)"
+      },
+      {
+        "name": "content B",
+        "pass": false,
+        "detail": "yes=0.950 (>= 0.900), no=0.110 (<= 0.100)"
+      },
+      {
+        "name": "image/no-image A",
+        "pass": true,
+        "detail": "image=0.860, no-image=0.060, difference=0.800 (>= 0.300)"
+      },
+      {
+        "name": "image/no-image B",
+        "pass": true,
+        "detail": "image=0.950, no-image=0.050, difference=0.900 (>= 0.300)"
+      },
+      {
+        "name": "language A",
+        "pass": true,
+        "detail": "yes: JA=yes, EN=yes; no: JA=no, EN=no"
+      },
+      {
+        "name": "language B",
+        "pass": true,
+        "detail": "yes: JA=yes, EN=yes; no: JA=no, EN=no"
+      },
+      {
+        "name": "size",
+        "pass": false,
+        "detail": "error: 400 Invalid image dimensions."
+      },
+      {
+        "name": "repeat",
+        "pass": true,
+        "detail": "probabilities=0.870, 0.880, 0.870, spread=0.010 (<= 0.100)"
+      }
+    ],
+    "usage": {
+      "inputTokens": 36395,
+      "outputTokens": 260,
+      "calls": 14
+    },
+    "pass": false
+  }
+}
