@@ -44,6 +44,8 @@ routing metadata は人が候補を絞るための記録であり、実行時に
 
 ### 代表依頼の routing 例
 
+`auditing-wcag`、`reviewing-a11y`、`ship-learn-next` を使う際は、[要求能力と実行確認](skill-capabilities.md)も明示参照する。外部本文の `allowed-tools` はこの環境の実行成功や保存完了を保証しない。正式監査の理由付きNT、通常レビュー、条件付きCLI、草案と保存を分ける。台帳からのリンクは実loaderによる自動適用を意味しない。
+
 次表は Skill の責務に基づく人向けの標準・補助・非適用の整理である。`workflow → test-driven-development → web_test_common → 種別別 Web test Skill` は責務を確認する参照順を示し、runtime loader の読み込み順や同時発動を保証しない。上位 `AGENTS.md` の安全境界・承認・開始・方針変更規則は常に優先し、Skill はこれを緩和しない。
 
 | 依頼 | 標準 | 補助 | 非適用 |
