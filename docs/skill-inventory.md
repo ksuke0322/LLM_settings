@@ -37,6 +37,8 @@ Skill レコードの任意の `routing` オブジェクトには、次の6項�
 
 routing metadata は人が候補を絞るための記録であり、実行時にどの Skill が同時に読み込まれるかを保証・制御するものではない。現在の候補メモは次のとおり。
 
+`context-engineering` と `prompt-engineering` の入口判断は[Context と指示設計の入口](skill-entry-policy.md)を明示参照する。依頼に「prompt」「agent」「skill」という語があるだけでは、両方を選ぶ根拠にならない。
+
 - `playwright-skill`: 一時的なブラウザー操作。
 - `web_e2e_test`: 継続的に保守する E2E テストの作成。
 - `coding_typescript`: より広い作業 skill に重ねる JavaScript / TypeScript の記法 overlay。

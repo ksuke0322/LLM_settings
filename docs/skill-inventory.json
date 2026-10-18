@@ -286,6 +286,16 @@
       "category": "agent systems",
       "trigger": "Understand the components, mechanics, and constraints of context in agent systems. Use when writing, editing, or optimizing commands, skills, or sub-agents prompts.",
       "responsibility": "エージェント実行時の context の構成・機構・制約を説明し、commands・skills・subagent prompts の設計を支援する。",
+      "routing": {
+        "role": "実行時 context の容量、参照、検索、段階読込、圧縮、分離の課題を扱う人向け候補。",
+        "applyWhen": "課題が実行時に渡す情報の選択、取得、整理、圧縮にあるとき。指示構造、テンプレート、例、評価が中心なら prompt-engineering を標準候補にし、混在する依頼は課題ごとに併用する。",
+        "relatedDirectories": [
+          "prompt-engineering"
+        ],
+        "decision": "context の管理を標準候補とし、指示構造、テンプレート、例、評価は prompt-engineering を標準候補とする。混在する依頼は課題ごとに併用する。",
+        "basis": "両 Skill の frontmatter description、タイトル、見出しを確認し、責務の境界を整理した。",
+        "verification": "外部本文は未変更。runtime loader による自動適用・選択は未確認。人が docs/skill-entry-policy.md を明示参照する。"
+      },
       "related": null,
       "conflicts": null,
       "updatePolicy": "外部由来として記録し、原則直接編集せず upstream 追従またはローカル側の回避策を使う。",
@@ -762,6 +772,16 @@
       "category": "agent systems",
       "trigger": "Use this skill when you writing commands, hooks, skills for Agent, or prompts for sub agents or any other LLM interaction, including optimizing prompts, improving LLM outputs, or designing production prompt templates.",
       "responsibility": "commands・hooks・skills・subagent prompts など、LLM への指示を設計・改善する手法を示す。",
+      "routing": {
+        "role": "LLM への指示の構造、テンプレート、例、評価の課題を扱う人向け候補。",
+        "applyWhen": "課題が commands、hooks、skills、subagent などの指示構造、テンプレート、例、出力評価にあるとき。context window、検索、段階読込、圧縮、情報分離が中心なら context-engineering を標準候補にし、混在する依頼は課題ごとに併用する。",
+        "relatedDirectories": [
+          "context-engineering"
+        ],
+        "decision": "指示構造、テンプレート、例、評価を標準候補とし、実行時 context の管理は context-engineering を標準候補とする。混在する依頼は課題ごとに併用する。",
+        "basis": "両 Skill の frontmatter description、タイトル、見出しを確認し、責務の境界を整理した。",
+        "verification": "外部本文は未変更。runtime loader による自動適用・選択は未確認。人が docs/skill-entry-policy.md を明示参照する。"
+      },
       "related": null,
       "conflicts": null,
       "updatePolicy": "外部由来として記録し、原則直接編集せず upstream 追従またはローカル側の回避策を使う。",
