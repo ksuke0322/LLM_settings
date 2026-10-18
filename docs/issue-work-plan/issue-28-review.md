@@ -27,4 +27,6 @@
 - 実ページの正式監査、keyboard操作、a11y CLI、画像/PDF/Figma取得、利用者の学習計画保存を実行したとは扱わない。
 - 外部 `allowed-tools` と実loaderを変更していない。台帳リンクからの明示参照が必要で、自動読込み・強制適用は未確認（#33）。
 - stock系、Archify、#24は対象外。#22の判断保留は維持する。
-- PR・main同期・内容保全・clean・branch保持・通常worktree削除の結果は実施後追記する。
+- PR #139 は merge commit `983f4c16a62fc583eb3eb6c94d6f6fa39d85cd26` でmainへマージ済み。main同期、実装commit `7db048c` の包含、実装/参照worktreeのraw cleanを確認した。
+- 2026-10-18 10:34 JST、実装/参照worktreeを通常削除し、`docs/clarify-skill-capabilities` branchを保持した。TODO/HTMLを13/19完了・次#29へ同期した。
+- アプリのPR添付は100件の上限で失敗した。GitHubのPRマージ・Issue完了・mainへの反映は別途確認し、既存添付は削除していない。
