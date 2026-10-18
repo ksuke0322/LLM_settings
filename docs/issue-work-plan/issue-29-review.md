@@ -25,4 +25,6 @@
 
 - 既存品質ゲートの値や実行者権限を変えていない。実成果物への自動適用・runtimeでの強制力を追加したとは扱わない。
 - stock系、Archify、#24は対象外。#22の判断保留は維持する。
-- 全件検証の比較、PR・マージ、main同期、clean確認・通常後片付けは後続の確認後に記録する。
+- PR #141はmerge commit `a5ad7467525b1743b87eafde84b2dee8f90b135c` でmainへマージ済み。main同期、実装commit `7e4b598` の包含、実装/参照worktreeのraw cleanを確認した。
+- 2026-10-18 21:35 JST、実装/参照worktreeを通常削除し、`docs/bound-blender-auto-corrections` branchを保持した。TODO/HTMLを14/19完了・次#30へ更新。
+- アプリへのPR添付は100件上限で失敗した。既存添付を削除せず、GitHubのマージとmain反映を別途確認した。
