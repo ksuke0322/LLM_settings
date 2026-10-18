@@ -41,7 +41,7 @@ routing metadata は人が候補を絞るための記録であり、実行時に
 
 - `playwright-skill`: 一時的なブラウザー操作。
 - `web_e2e_test`: 継続的に保守する E2E テストの作成。
-- `coding_typescript`: より広い作業 skill に重ねる JavaScript / TypeScript の記法 overlay。
+- `coding_typescript`: より広い作業 skill に重ねる JavaScript / TypeScript の記法 overlay。ローカルで適用する場合は[JS/TS のローカル適用方針](js-ts-environment-policy.md)を人が明示参照し、対象環境を確認する。
 - ルートの `swiftui-pro`: SwiftUI 作業の標準候補。`swiftui-expert-skill` は補助候補。
 
 ### 代表依頼の routing 例
@@ -63,7 +63,7 @@ routing metadata は人が候補を絞るための記録であり、実行時に
 
 `workflow` はコード変更の基本手順、`test-driven-development` はその TDD 詳細、`web_test_common` は Web test 作成・変更の共通規則、種別別 Skill は unit / integration / E2E 各テストの責務を扱う。`coding_typescript` は JS/TS 記法の overlay であり、テスト種別を選ばない。ここでの併用指定は責務の重なりを意図している。
 
-実 loader と root/nested Skill および lock の対応は Issue #33 で未確認である。Playwright の CommonJS 例と ESM 優先の `coding_typescript` の実行環境適合は Issue #32 で未確認である。この表は loader の実挙動、trigger の排他性、実行例の互換性を保証しない。追記は routing 判断だけを記録し、台帳の由来・版・`unknown` / `null` や外部 Skill 本文を変更しない。
+実 loader と root/nested Skill および lock の対応は Issue #33 で未確認である。Issue #32 で[ローカル適用方針と最小例](js-ts-environment-policy.md)を整備し、ESM / CommonJS / TypeScript の fixture を Node v22.12.0 で実行確認した。TypeScript は型消去のみで、型検査は確認していない。この確認は loader の自動適用、trigger の排他性、他の Node 版での互換性を保証しない。追記は routing 判断だけを記録し、台帳の由来・版・`unknown` / `null` や外部 Skill 本文を変更しない。
 
 ## 追加・更新・削除
 
