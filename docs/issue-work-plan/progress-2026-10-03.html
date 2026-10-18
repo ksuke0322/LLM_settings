@@ -35,10 +35,10 @@
 <body>
   <header>
     <h1>LLM_settings Issue 着手計画</h1>
-    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34（#24は対象外）と先行する検証基盤タスク／ 最終更新: 2026年10月18日 09:46 JST</p>
+    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34（#24は対象外）と先行する検証基盤タスク／ 最終更新: 2026年10月18日 10:03 JST</p>
     <div class="summary" aria-label="進捗の要約">
-      <div><strong>10 / 19</strong><span>完了 / 対象タスク（Issue 18件・検証基盤 1件）</span></div>
-      <div><strong>現在#26</strong><span>10件完了・残り9件。#22は判断保留でskip、1件ずつ継続</span></div>
+      <div><strong>11 / 19</strong><span>完了 / 対象タスク（Issue 18件・検証基盤 1件）</span></div>
+      <div><strong>現在#27</strong><span>11件完了・残り8件。#22は判断保留でskip、1件ずつ継続</span></div>
     </div>
     <p class="note">#24を除く18件と検証基盤1件、計19タスクを対象とします。開始承認済みの一覧を1件ずつ進めます。調査・実装はgpt-6-luna/maxへ小さく委任し、検証・マージ・記録後に次へ進みます。非Archify変更は、全件実行で非Archify通過、同条件の現行mainからArchifyの失敗名・原因・スキップの増加や変化がないことを記録します。Archify本体・共有資産・テスト基盤の変更には例外を適用しません。最終完了にはmainマージ後の内容保全・clean確認とworktreeの通常削除を含みます。株式系Skillと共有参照は除外し、全Skill共通のworktree後片付け方針のみ適用対象に含めます。</p>
   </header>
@@ -69,7 +69,7 @@
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/21">#21</a> は<a href="https://github.com/ksuke0322/LLM_settings/pull/130">PR #130</a>で完了。代表8依頼の標準・補助・非適用とTestingの責務参照関係を記録し、台帳routing 11件を整合しました。関連4件・非Archify95件成功。全件は基準再確認・候補とも1,028件、936成功、Archify69失敗・23スキップで、失敗名・診断・スキップ内容が一致。基準初回の追加失敗1件は単独19件と全件再確認で再現せず、解決済みとは扱いません。独立レビューと手動の誤案内3件の検出、main同期・内容保全・clean確認・実装/参照worktreeの通常削除まで完了しました。実loaderは#33、実行例は#32で未確認です。<a href="issue-21-review.md">確認記録</a></p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/pull/132">#25完了・PR #132</a> 8状態・遷移条件・次担当を整理し、成果受入れとGit/PR/cleanup・最終完了を分離しました。関連6件・非Archify98件成功。全件は参照1,028件/936成功、候補1,031件/939成功で、Archify69失敗の名前・診断と23スキップは一致。故障検出3種類を最終確認し、main同期・内容保全・clean確認・実装/参照worktree通常削除を完了、branchは保持しました。詳細は<a href="issue-25-review.md">確認記録</a>。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/22">#22 判断待ち・skip</a> 分割対象の本文に、上位AGENTSの読み替えによる権限例外と旧委任経路が残っています。おすすめは現行の上位規約へ整合させてから分割することです。この修正範囲を確認後に再開します。本文は未変更。<a href="issue-22-review.md">概要・おすすめ・他選択肢と再開条件</a>。外部Archifyと株式系Skillは対象外です。</p>
-      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/26">#26</a> 動作変更にはTDD、文書変更には内容に合う検証を適用する方針が決定済みです。再開時に対象packageのテストコマンドを確認し、JS/TS・Pythonのfixtureで検証します。外部Skillは直接編集しません。</p>
+      <p><a href="https://github.com/ksuke0322/LLM_settings/pull/135">#26完了・PR #135</a> ローカルworkflowでTDD範囲・AGENTSの承認境界・コマンド根拠と失敗分類を整合。関連6件・非Archify101件成功。全件は参照1,031件/939成功、候補1,034件/942成功で、Archify69失敗の名前・診断と23スキップが一致。故障検出2種類と独立fixture評価、JS/Pythonの失敗→修正→同一コマンド成功を確認。main同期・内容保全・clean確認・実装/参照worktree通常削除済み、branch保持。外部本文は未変更。<a href="issue-26-review.md">確認記録と制約</a>。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/27">#27</a> 依存導入を明示的な準備工程に分け、実行単位の一時領域を使う方針が決定済みです。既存の外部runnerには自動導入と一時ファイル削除の懸念があり起動していません。再開時にlocal runnerを隔離検証します。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/28">#28</a> 現行ツール能力を測り、実行不能な監査項目は理由付きNTとする方針が決定済みです。再開時に正式監査・通常レビュー・計画作成の対応表と保存条件を確認します。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/29">#29</a> 自動修正は対象・変更幅・試行回数を限定し、WARNの例外は理由と責任者を記録して人のレビューを通す方針が決定済みです。再開時に許可項目と修正後証跡を検証します。</p>
@@ -118,8 +118,8 @@
       <h2 id="phase-4">4. 後段</h2>
       <div class="table-wrap"><table><caption>個別 Skill と文書の整合</caption><thead><tr><th scope="col">ID</th><th scope="col">状態</th><th scope="col">タスク名</th></tr></thead><tbody>
         <tr data-issue="22" data-status="判断待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/22">#22</a></td><td><span class="status">判断待ち</span></td><td>skip。旧権限例外・委任経路と上位規約の整合範囲を確認</td></tr>
-        <tr data-issue="26" data-status="作業中"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/26">#26</a></td><td><span class="status">作業中</span></td><td>着手前確認。変更種別と対象packageでTDD・検証を選ぶ</td></tr>
-        <tr data-issue="27" data-status="再開待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/27">#27</a></td><td><span class="status">再開待ち</span></td><td>方針決定済み。依存導入を別工程にし一時ファイルを保護</td></tr>
+        <tr data-issue="26" data-status="完了"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/26">#26</a></td><td><span class="status">完了</span></td><td>PR #135。TDD範囲とコマンド根拠、main同期・通常削除済み</td></tr>
+        <tr data-issue="27" data-status="作業中"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/27">#27</a></td><td><span class="status">作業中</span></td><td>着手前確認。依存導入を別工程にし一時ファイルを保護</td></tr>
         <tr data-issue="28" data-status="再開待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/28">#28</a></td><td><span class="status">再開待ち</span></td><td>方針決定済み。ツール能力を照合し不能な検査はNT</td></tr>
         <tr data-issue="29" data-status="再開待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/29">#29</a></td><td><span class="status">再開待ち</span></td><td>方針決定済み。自動修正を限定し人間レビューを維持</td></tr>
         <tr data-issue="30" data-status="再開待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/30">#30</a></td><td><span class="status">再開待ち</span></td><td>方針決定済み。操作ごと再取得、報酬1箇所、5分上限</td></tr>
