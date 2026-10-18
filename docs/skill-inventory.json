@@ -957,7 +957,7 @@
         "relatedDirectories": ["swiftui-expert-skill"],
         "decision": "併存: 標準候補と補助候補を分離する",
         "basis": "#19の承認済み方針。ルートを正本候補として扱い、入れ子の削除は行わない。",
-        "verification": "#21の代表依頼表で通常SwiftUI実装・レビューの標準候補と確認。trace単独解析では必須にしない。ルート・入れ子・loader・lockの対応は#33で未確認。"
+        "verification": "配置確認: ルートv1.1と入れ子v1.0のname/descriptionと9参照パス名が一致することを確認。本文は異なる。.skill-lock.jsonのskillPathはルートを指し、台帳はルートを1件記録する。runtime確認: 実効skills.config、loaderの読み込み、同名Skillのruntimeでの扱いは未確認。skillFolderHashはローカル変更の比較基準ではない。"
       },
       "origin": "external",
       "source": "twostraws/swiftui-agent-skill",

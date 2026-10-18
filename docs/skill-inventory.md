@@ -13,7 +13,7 @@
 - `stock-investment-position-review`
 - `stock-shared`
 
-`skills/swiftui-pro/SKILL.md` が台帳の1件で、配下の `skills/swiftui-pro/skills/swiftui-pro/SKILL.md` は別レコードにしない。JSON のトップレベルは `schemaVersion`、`scope`、Skill 配列 `skills`。各レコードには名称・ディレクトリ・由来・適用条件・責務・関係・更新方針・状態・版・検証根拠を記録する。
+`skills/swiftui-pro/SKILL.md` が台帳の1件で、配下の `skills/swiftui-pro/skills/swiftui-pro/SKILL.md` は別レコードにしない。両ファイル、lock の対応と残るruntime確認は[SwiftUI Skill の配置と確認状況](swiftui-skill-canonical.md)に記録する。JSON のトップレベルは `schemaVersion`、`scope`、Skill 配列 `skills`。各レコードには名称・ディレクトリ・由来・適用条件・責務・関係・更新方針・状態・版・検証根拠を記録する。
 
 ## 由来・版・不明値
 
@@ -63,7 +63,7 @@ routing metadata は人が候補を絞るための記録であり、実行時に
 
 `workflow` はコード変更の基本手順、`test-driven-development` はその TDD 詳細、`web_test_common` は Web test 作成・変更の共通規則、種別別 Skill は unit / integration / E2E 各テストの責務を扱う。`coding_typescript` は JS/TS 記法の overlay であり、テスト種別を選ばない。ここでの併用指定は責務の重なりを意図している。
 
-実 loader と root/nested Skill および lock の対応は Issue #33 で未確認である。Issue #32 で[ローカル適用方針と最小例](js-ts-environment-policy.md)を整備し、ESM / CommonJS / TypeScript の fixture を Node v22.12.0 で実行確認した。TypeScript は型消去のみで、型検査は確認していない。この確認は loader の自動適用、trigger の排他性、他の Node 版での互換性を保証しない。追記は routing 判断だけを記録し、台帳の由来・版・`unknown` / `null` や外部 Skill 本文を変更しない。
+Issue #33 で root/nested Skill の配置と lock の `skillPath` は静的に確認した。実効設定、loaderの読み込み、同名Skillのruntimeでの扱いは未確認であり、設定資料のpath/enabled仕様から推定しない。詳細と残る確認条件は[SwiftUI Skill の配置と確認状況](swiftui-skill-canonical.md)を参照する。Issue #32 で[ローカル適用方針と最小例](js-ts-environment-policy.md)を整備し、ESM / CommonJS / TypeScript の fixture を Node v22.12.0 で実行確認した。TypeScript は型消去のみで、型検査は確認していない。この確認は loader の自動適用、trigger の排他性、他の Node 版での互換性を保証しない。追記は routing 判断だけを記録し、台帳の由来・版・`unknown` / `null` や外部 Skill 本文を変更しない。
 
 ## 追加・更新・削除
 
