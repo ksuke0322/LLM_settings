@@ -50,7 +50,7 @@ routing metadata は人が候補を絞るための記録であり、実行時に
 | ----- | ---- | ---- | ------- |
 | 通常の SwiftUI 実装・レビュー | SwiftUI の標準候補は `swiftui-pro`。実装を伴う場合は `workflow → test-driven-development` も適用する。 | 状態・データフロー、view の無効化・性能、深い topic の確認に `swiftui-expert-skill` を加える。JS/TS 作業を含む場合だけ `coding_typescript` を記法 overlay として加える。 | `playwright-skill` と Web test の共通・種別 Skill。Swift の作業に `coding_typescript`。 |
 | SwiftUI の trace 単独解析 | trace 固有の分析手順を持つ `swiftui-expert-skill`。 | 通常の SwiftUI ソースレビューや実装修正も依頼された場合、その範囲に `swiftui-pro` を加える。 | 分析だけなら `test-driven-development` と Web test Skill。実装修正も依頼された場合はコード変更の規則を適用する。 |
-| 一時的な browser 操作 | `playwright-skill`。 | 操作用の JS/TS スクリプトを書く場合は `coding_typescript` を記法 overlay として加える。 | 永続テスト作成が目的でない場合の `web_e2e_test` と Web test 共通・種別 Skill。 |
+| 一時的な browser 操作 | `playwright-skill`。ローカル実行は[準備済み依存だけを使う入口](playwright-local-runner.md)を明示的に呼ぶ。 | 操作用の JS/TS スクリプトを書く場合は `coding_typescript` を記法 overlay として加える。 | 永続テスト作成が目的でない場合の `web_e2e_test` と Web test 共通・種別 Skill。 |
 | リポジトリで保守する Web E2E | `workflow → test-driven-development → web_test_common → web_e2e_test`。 | JS/TS のテストや実装を編集する場合は `coding_typescript` を記法 overlay として加える。 | 一時操作用の `playwright-skill`、およびこの依頼で扱わない Web test 種別 Skill。 |
 | Web 単体テスト | `workflow → test-driven-development → web_test_common → web_unit_test`。 | JS/TS のテストや実装を編集する場合は `coding_typescript` を記法 overlay として加える。 | `web_integration_test`、`web_e2e_test`、一時操作用の `playwright-skill`。 |
 | Web 結合テスト | `workflow → test-driven-development → web_test_common → web_integration_test`。 | JS/TS のテストや実装を編集する場合は `coding_typescript` を記法 overlay として加える。 | `web_unit_test`、`web_e2e_test`、一時操作用の `playwright-skill`。 |
