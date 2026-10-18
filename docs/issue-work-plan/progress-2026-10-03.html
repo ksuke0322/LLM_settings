@@ -35,10 +35,10 @@
 <body>
   <header>
     <h1>LLM_settings Issue 着手計画</h1>
-    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34（#24は対象外）と先行する検証基盤タスク／ 最終更新: 2026年10月18日 10:03 JST</p>
+    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34（#24は対象外）と先行する検証基盤タスク／ 最終更新: 2026年10月18日 10:22 JST</p>
     <div class="summary" aria-label="進捗の要約">
-      <div><strong>11 / 19</strong><span>完了 / 対象タスク（Issue 18件・検証基盤 1件）</span></div>
-      <div><strong>現在#27</strong><span>11件完了・残り8件。#22は判断保留でskip、1件ずつ継続</span></div>
+      <div><strong>12 / 19</strong><span>完了 / 対象タスク（Issue 18件・検証基盤 1件）</span></div>
+      <div><strong>現在#28</strong><span>12件完了・残り7件。#22は判断保留でskip、1件ずつ継続</span></div>
     </div>
     <p class="note">#24を除く18件と検証基盤1件、計19タスクを対象とします。開始承認済みの一覧を1件ずつ進めます。調査・実装はgpt-6-luna/maxへ小さく委任し、検証・マージ・記録後に次へ進みます。非Archify変更は、全件実行で非Archify通過、同条件の現行mainからArchifyの失敗名・原因・スキップの増加や変化がないことを記録します。Archify本体・共有資産・テスト基盤の変更には例外を適用しません。最終完了にはmainマージ後の内容保全・clean確認とworktreeの通常削除を含みます。株式系Skillと共有参照は除外し、全Skill共通のworktree後片付け方針のみ適用対象に含めます。</p>
   </header>
@@ -119,8 +119,8 @@
       <div class="table-wrap"><table><caption>個別 Skill と文書の整合</caption><thead><tr><th scope="col">ID</th><th scope="col">状態</th><th scope="col">タスク名</th></tr></thead><tbody>
         <tr data-issue="22" data-status="判断待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/22">#22</a></td><td><span class="status">判断待ち</span></td><td>skip。旧権限例外・委任経路と上位規約の整合範囲を確認</td></tr>
         <tr data-issue="26" data-status="完了"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/26">#26</a></td><td><span class="status">完了</span></td><td>PR #135。TDD範囲とコマンド根拠、main同期・通常削除済み</td></tr>
-        <tr data-issue="27" data-status="作業中"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/27">#27</a></td><td><span class="status">作業中</span></td><td>着手前確認。依存導入を別工程にし一時ファイルを保護</td></tr>
-        <tr data-issue="28" data-status="再開待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/28">#28</a></td><td><span class="status">再開待ち</span></td><td>方針決定済み。ツール能力を照合し不能な検査はNT</td></tr>
+        <tr data-issue="27" data-status="完了"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/27">#27</a></td><td><span class="status">完了</span></td><td>PR #137。準備分離・限定cleanup・成果物保全。main同期・clean確認・通常削除済み。<a href="issue-27-review.md">確認記録</a></td></tr>
+        <tr data-issue="28" data-status="作業中"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/28">#28</a></td><td><span class="status">作業中</span></td><td>着手前確認。ツール能力を照合し不能な検査は理由付きNT</td></tr>
         <tr data-issue="29" data-status="再開待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/29">#29</a></td><td><span class="status">再開待ち</span></td><td>方針決定済み。自動修正を限定し人間レビューを維持</td></tr>
         <tr data-issue="30" data-status="再開待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/30">#30</a></td><td><span class="status">再開待ち</span></td><td>方針決定済み。操作ごと再取得、報酬1箇所、5分上限</td></tr>
         <tr data-issue="31" data-status="再開待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/31">#31</a></td><td><span class="status">再開待ち</span></td><td>方針決定済み。description 300文字はレビュー目安</td></tr>
