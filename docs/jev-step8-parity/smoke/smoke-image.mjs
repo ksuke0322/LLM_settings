@@ -8,17 +8,19 @@ import { buildCases, evaluate } from './smoke-lib.mjs';
 
 const smokeDirectory = dirname(fileURLToPath(import.meta.url));
 const questionsPath = resolve(smokeDirectory, '../questions.jsonl');
+const usage = 'Usage: node smoke-image.mjs [--dry-run | --live] [--model <id>]';
 const imagePaths = {
   A: '/Users/sawairikeisuke/Documents/Blender/isometric/pomodoro_assets/creature-watching_story-02-beehive-opus5/evidence/step8/cu_hive.png',
   B: '/Users/sawairikeisuke/Documents/Blender/isometric/pomodoro_assets/windmill-hill_story-01-windmill_opus5/output/cu3_cart.png'
 };
 
-const summarizeDryRun = async () => {
+const summarizeDryRun = async ({ model }) => {
   const cases = await buildCases({
     questionsPath,
     imagePaths,
     image: imagePath => ({ smokeImagePath: imagePath }),
-    noul: instructions => ({ smokeNoulInstructions: instructions })
+    noul: instructions => ({ smokeNoulInstructions: instructions }),
+    model
   });
   const imageList = [...new Set(cases.flatMap(({ request }) =>
     Object.values(request.state)
@@ -28,6 +30,7 @@ const summarizeDryRun = async () => {
 
   return {
     mode: 'dry-run',
+    requested_model: model ?? null,
     cases: cases.map(({ id, check }) => ({ id, check })),
     checks: [
       { name: 'content', threshold: 'yes >= 0.9 and no <= 0.1', cases: cases.filter(item => item.check === 'content').length },
@@ -40,7 +43,7 @@ const summarizeDryRun = async () => {
   };
 };
 
-const runLive = async () => {
+const runLive = async ({ model }) => {
   const jevRequire = createRequire(new URL('../../../shared/jev/package.json', import.meta.url));
   const sdkPath = jevRequire.resolve('@typesafe-ai/sdk');
   const [{ askJev }, sdk] = await Promise.all([
@@ -51,7 +54,8 @@ const runLive = async () => {
     questionsPath,
     imagePaths,
     image: async imagePath => sdk.image(await openAsBlob(imagePath)),
-    noul: sdk.noul
+    noul: sdk.noul,
+    model
   });
   const results = [];
 
@@ -76,7 +80,7 @@ const runLive = async () => {
     error: error ?? null
   }));
 
-  await writeFile(resultPath, `${JSON.stringify({ timestamp, results: savedResults, evaluation: summary }, null, 2)}\n`);
+  await writeFile(resultPath, `${JSON.stringify({ timestamp, requested_model: model ?? null, results: savedResults, evaluation: summary }, null, 2)}\n`);
   console.log(JSON.stringify(summary, null, 2));
   console.error(`Results saved to ${resultPath}`);
   if (!summary.pass) process.exitCode = 1;
@@ -84,12 +88,41 @@ const runLive = async () => {
 
 const run = async () => {
   const args = process.argv.slice(2);
-  const live = args.includes('--live');
-  const dryRun = args.includes('--dry-run');
-  const invalidArgs = args.some(argument => !['--live', '--dry-run'].includes(argument));
+  let live = false;
+  let dryRun = false;
+  let model;
 
-  if (invalidArgs || (live && dryRun)) {
-    console.error('Usage: node smoke-image.mjs [--dry-run | --live]');
+  for (let index = 0; index < args.length; index += 1) {
+    const argument = args[index];
+    if (argument === '--live') {
+      live = true;
+      continue;
+    }
+    if (argument === '--dry-run') {
+      dryRun = true;
+      continue;
+    }
+    if (argument === '--model') {
+      const value = args[index + 1];
+      if (!value || value.startsWith('--')) {
+        console.error('Missing value for --model.');
+        console.error(usage);
+        process.exitCode = 2;
+        return;
+      }
+      model = value;
+      index += 1;
+      continue;
+    }
+
+    console.error(`Unknown flag: ${argument}`);
+    console.error(usage);
+    process.exitCode = 2;
+    return;
+  }
+
+  if (live && dryRun) {
+    console.error(usage);
     process.exitCode = 2;
     return;
   }
@@ -101,11 +134,11 @@ const run = async () => {
   }
 
   if (live) {
-    await runLive();
+    await runLive({ model });
     return;
   }
 
-  console.log(JSON.stringify(await summarizeDryRun(), null, 2));
+  console.log(JSON.stringify(await summarizeDryRun({ model }), null, 2));
 };
 
 await run();

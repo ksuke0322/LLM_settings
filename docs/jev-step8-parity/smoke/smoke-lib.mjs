@@ -58,6 +58,7 @@ export const buildCases = async ({
   imagePaths,
   image,
   noul,
+  model,
   readFile = defaultReadFile,
   statSync = defaultStatSync
 }) => {
@@ -150,6 +151,10 @@ export const buildCases = async ({
       check: 'repeat',
       expect: { ...firstContentCase.expect }
     });
+  }
+
+  if (typeof model === 'string' && model.length > 0) {
+    for (const item of cases) item.request.model = model;
   }
 
   return cases;

@@ -173,3 +173,17 @@ test('evaluate captures case errors as failed checks without throwing', async ()
   assert.equal(evaluation.checks.find(({ name }) => name === 'size').pass, false);
   assert.match(evaluation.checks.find(({ name }) => name === 'size').detail, /payload too large/);
 });
+
+test('buildCases sets a requested model on every case only when given', async () => {
+  const pinnedCases = await buildCases({
+    questionsPath: '/fixture/questions.jsonl',
+    imagePaths,
+    ...dependencies,
+    model: 'jev-1.14.0'
+  });
+  const unpinnedCases = await makeCases();
+
+  assert.equal(pinnedCases.length, 14);
+  for (const item of pinnedCases) assert.equal(item.request.model, 'jev-1.14.0', item.id);
+  for (const item of unpinnedCases) assert.equal(Object.hasOwn(item.request, 'model'), false, item.id);
+});
