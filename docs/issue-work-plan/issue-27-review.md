@@ -37,4 +37,5 @@
 
 - 実ブラウザーの起動・サイト操作・実依存導入、signal 無視スクリプト、任意絶対パスへの書き込み制限は検証していない。
 - local CLI は自動選択・強制適用されない。外部 Skill 直呼びの既存副作用を変更したとは扱わない。実行例の環境適合は #32、実 loader の選択は #33 の確認範囲とする。
-- マージ・main 同期・clean 確認・branch 保持・通常 worktree 削除の結果は、実施後に main の TODO / HTML と当記録へ追記する。
+- PR #137 は merge commit `9439a2406742b051d46768a0bd46fe5d9d150328` で main へマージ済み。main を同期し、実装 commit `8e0f382` の包含・実装/参照 worktree の raw clean を確認した。
+- 2026-10-18 10:22 JST、実装/参照 worktree を通常削除済み。`feature/prepared-playwright-runner` branch を保持した。TODO / HTML を12/19完了・次#28へ更新した。
