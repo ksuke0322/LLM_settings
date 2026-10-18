@@ -25,3 +25,4 @@
 - 読み取り調査ではユーザーconfigにswiftui-pro対象指定はなく、repo/project configも見つからない。今回、個人configの変更やアプリ再起動は実施していない。現在のセッション一覧には同名2件が見える。探索除外・実効状態・実runtime選択は未確認。
 - rootを人向け正本とする承認は維持する。残りは、適用対象と復旧方法を固定した除外設定の反映、その後の新セッション一覧readbackと代表依頼の確認。nested削除は別承認のまま、削除せず進める案を推奨する。
 - Issue #33はOPENのまま、設定反映・検証待ちとしてskipする。stock系・#24除外、#22・#31判断待ち、#30実機検証待ちは維持する。
+- PR #149はmerge commit `c81de037708f3dd6ef0d6d47a83e8d01cd518d05` でmainへマージ済み。実装commit `4bb32e5` の包含、実装/参照worktreeのraw cleanを確認し通常削除、branch保持。Issue #33はOPENを確認。アプリ添付は100件上限で失敗し、GitHub/mainは別途確認した。
