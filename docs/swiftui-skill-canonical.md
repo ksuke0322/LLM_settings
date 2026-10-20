@@ -26,6 +26,8 @@
 
 [公式 Configuration Reference](https://learn.chatgpt.com/docs/config-file/config-reference?translationFallback=ja-JP) は `skills.config` の `path` を `SKILL.md` を含むSkillフォルダーのパス、`enabled` を参照Skillの有効・無効設定として説明している。これは設定項目の仕様であり、この作業環境でどの設定が有効か、同名Skillがruntimeでどう扱われるかの確認ではない。
 
-この作業セッションで見えるSkills一覧には `swiftui-pro:swiftui-pro` が同名で2件表示されている。ただし、設定による探索対象の除外を含む全探索、実効設定での有効状態、同名Skillの同時読込・trigger選択は確認していない。設定例を推測して作らず、設定も変更していない。
+2026-10-20、了承済みのnested無効化を個人設定 `/Users/sawairikeisuke/.codex/config.toml` に反映した。[公式 Build skills](https://learn.chatgpt.com/docs/build-skills#enable-or-disable-local-codex-skills) の例に従い、`[[skills.config]]` の `path` は `/Users/sawairikeisuke/.agents/skills/swiftui-pro/skills/swiftui-pro/SKILL.md`、`enabled` は `false` とした。Config Referenceはfolderと説明しているため、この文書差を実環境で解消済みとは扱わない。rootや外部本文・lockは変更せず、両ファイルは残した。復旧は追加した対象テーブル1件だけを除く。構文と対象の独立readbackは確認済み。詳細は[確認記録](issue-work-plan/issue-33-review.md)。
+
+変更前の作業セッション一覧には `swiftui-pro:swiftui-pro` が同名で2件表示されていた。アプリ再起動は行っておらず、現セッションの一覧を変更後の実効状態の証拠にしない。公式手順に沿った再起動後、新セッションでrootだけが残ることと代表依頼を確認するまで、探索除外・同時読込・trigger選択は未確認とする。
 
 残る確認は、承認された設定変更後に新しいセッションでSkills一覧を読み返し、実装・レビュー・API移行の代表依頼をそれぞれ実行して結果を確認すること。Issue #33はruntime確認が終わるまで閉じない。
