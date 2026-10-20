@@ -38,10 +38,10 @@
   </aside>
   <header>
     <h1>LLM_settings Issue 着手計画</h1>
-    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34（#24は対象外）と先行する検証基盤タスク／ 最終更新: 2026年10月20日 22:40 JST</p>
+    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34（#24は対象外）と先行する検証基盤タスク／ 最終更新: 2026年10月20日 22:48 JST</p>
     <div class="summary" aria-label="進捗の要約">
       <div><strong>16 / 19</strong><span>完了 / 対象タスク（Issue 18件・検証基盤 1件）</span></div>
-      <div><strong>#22完了・順次再開</strong><span>16件完了・残り3件。次は#31、#30は次の周回依頼待ち</span></div>
+      <div><strong>#22完了・順次再開</strong><span>16件完了・残り3件。#31は未送信草案を準備済み、次は#33。#30は次の周回依頼待ち</span></div>
     </div>
     <p class="note">#24を除く18件と検証基盤1件、計19タスクを対象とします。開始承認済みの一覧を1件ずつ進めます。調査・実装はgpt-6-luna/maxへ小さく委任し、検証・マージ・記録後に次へ進みます。非Archify変更は、全件実行で非Archify通過、同条件の現行mainからArchifyの失敗名・原因・スキップの増加や変化がないことを記録します。Archify本体・共有資産・テスト基盤の変更には例外を適用しません。最終完了にはmainマージ後の内容保全・clean確認とworktreeの通常削除を含みます。株式系Skillと共有参照は除外し、全Skill共通のworktree後片付け方針のみ適用対象に含めます。</p>
   </header>
@@ -77,7 +77,7 @@
       <p><a href="https://github.com/ksuke0322/LLM_settings/pull/139">#28完了・PR #139</a> ツール能力対応表、理由と担当者付きNT、CLI結果と正式監査の区別、承認済み保存先への書込みとreadbackを整理。手動fixture8件、関連7件・非Archify112件成功、全件の既知失敗比較、main同期・clean確認・通常後片付け済み。外部本文は変更していません。<a href="issue-28-review.md">確認記録</a>。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/pull/141">#29完了・PR #141</a> 承認済み補正の対象・変更幅・有限回数、反復停止、revision更新とQA再実行、同一revisionの人間レビュー・承認を明記。手動fixture9件、既存Python115件・関連Node7件・非Archify112件成功。全件は参照/候補とも1,045件・953成功・69失敗・23skipで失敗名・診断・skip一致。main同期・内容保全・clean確認・通常後片付け済み、branch保持。実Blender操作は未実施。<a href="issue-29-review.md">確認記録</a>。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/pull/143">#30 文書整合済み・実機検証待ち（skip）</a> 各操作前後に最新画像、報酬候補1箇所、5分上限、既存の補正・fallback上限をプレイブックに集約しました。仮状態10件、関連7件・非Archify112件成功。初回全件は既存runnerのJSON読取で一過性失敗が1件あり、該当1件の再実行と全件1回の再確認は通過し既知Archify69失敗・23skipが参照と一致。原因は未確定で記録を保持。main同期・clean確認・通常後片付け済み、branch保持。実機の対象クエスト・ソロ・デッキ・スタミナと代表遷移は未確認のため、IssueはOPENを維持し完了件数に含めません。ゲーム操作の明示依頼と選定経路での実機確認後に再開します。<a href="issue-30-review.md">確認記録・再開条件</a>。</p>
-      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/31">#31 方針決定済み・開始待ち</a> はPR #145でローカル入口方針・6例・台帳2件のroutingを反映。関連7件・非Archify112件成功、全件69失敗・23skipは参照側と名前・診断まで一致しました。main同期・clean確認・通常削除済み。2026年10月19日、ローカル入口を維持し、外部本文改善はupstream提案へ分離する方針を了承。直接編集・local forkは行わず、外部投稿は別途明示依頼が必要です。本文改善とruntime効果は未完了・未確認。300コードポイントはレビュー目安で、Archifyを除く非株式38件中8件が超過しました。<a href="issue-31-review.md">判断時の確認記録</a></p>
+      <p><a href="https://github.com/ksuke0322/LLM_settings/pull/154">#31 未送信提案草案を準備済み</a> ローカル入口を維持し、外部本文改善を<a href="issue-31-upstream-proposal.md">upstream提案草案</a>へ分離。関連7件・非Archify118件成功。全件1051件、959成功・69失敗・23skipは参照と名前・診断・skipが一致。main同期・保全・clean・通常削除済み。外部本文は未変更。投稿は別途明示依頼待ちとしてskipし、上流採用・runtime効果は未確認、IssueはOPENを維持します。300文字はレビュー目安のみです。<a href="issue-31-review.md">確認記録</a></p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/pull/147">#32完了・PR #147</a> 最寄りpackage/tsconfig/runner優先、旧一律変換の非採用、概念例と実行例をローカル適用方針で区別。ESM/CJS/TS実行とexport契約の5件、関連12件・非Archify117件成功。2つのexport変異は追加テストで検出し復元済み。全件は候補1,050件・958成功・69失敗・23skipで失敗名・診断・skipが参照と一致。main同期・clean確認・通常削除済み、branch保持。外部本文は保持し、TS型検査・他Node版・loader自動適用は未確認です。<a href="issue-32-review.md">確認記録</a>。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/pull/149">#33 配置・静的検出を反映、設定反映・検証待ち</a> root v1.1／nested v1.0とlockのroot対応、参照9件の内容一致を確認。同名Skillの全配置をwarningに出す監査を追加し、実repoでも2パスを報告しました。2変異検出・関連18件・非Archify118件成功。全件は候補1,051件・959成功・69失敗・23skipで、失敗名・診断・skipは参照と一致。main同期・clean確認・通常削除済み、branch保持。個人設定は未変更で、現セッション一覧には同名2件が見えます。探索除外・実runtime選択は未確認、IssueはOPENを維持。nestedを削除せず、除外設定の対象と復旧方法を固定した反映後、新セッション一覧と代表依頼を確認します。<a href="issue-33-review.md">確認記録・再開条件</a>。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/34">#34</a> 完了。文書修正と確認記録を<a href="https://github.com/ksuke0322/LLM_settings/pull/118">PR #118</a>でマージし、main同期・内容保全・clean確認・専用と参照worktreeの通常削除まで終了しました。非Archify65件通過、全998件は両側Archify内69失敗・23スキップで失敗名・原因・スキップ一致。親の手動故障検出も実施しました。外部未確認と現行mainで再現しない指摘は<a href="issue-34-review.md">確認記録</a>に区別して残しています。</p>
@@ -126,7 +126,7 @@
         <tr data-issue="28" data-status="完了"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/28">#28</a></td><td><span class="status">完了</span></td><td>PR #139。能力表・理由付きNT・保存readback。main同期・clean確認・通常削除済み。<a href="issue-28-review.md">確認記録</a></td></tr>
         <tr data-issue="29" data-status="完了"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/29">#29</a></td><td><span class="status">完了</span></td><td>PR #141。承認済み補正・反復停止・同一revisionのQAと人間承認。main同期・clean確認・通常削除済み。<a href="issue-29-review.md">確認記録</a></td></tr>
         <tr data-issue="30" data-status="検証待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/30">#30</a></td><td><span class="status">検証待ち・次の周回依頼待ち</span></td><td>通常の周回依頼時に実機検証する方針を了承。クエスト・ソロ・デッキを確認、スタミナ不足で終了し回復しない。<a href="issue-30-review.md">再開条件</a></td></tr>
-        <tr data-issue="31" data-status="開始待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/31">#31</a></td><td><span class="status">方針決定済み・開始待ち</span></td><td>ローカル入口を維持し、外部本文改善はupstream提案へ分離。投稿は別途依頼。<a href="issue-31-review.md">確認記録</a></td></tr>
+        <tr data-issue="31" data-status="依頼待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/31">#31</a></td><td><span class="status">外部投稿の依頼待ち・skip</span></td><td>PR #154で<a href="issue-31-upstream-proposal.md">未送信提案草案</a>反映。main同期・保全・clean・通常削除済み。採用/runtime未確認</td></tr>
         <tr data-issue="32" data-status="完了"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/32">#32</a></td><td><span class="status done">完了</span></td><td>PR #147。関連12件・非Archify117件、main同期・通常後片付け済み</td></tr>
         <tr data-issue="33" data-status="開始待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/33">#33</a></td><td><span class="status">方針決定済み・開始待ち</span></td><td>nestedを削除せず設定で無効化。復旧方法を固定後に反映し、新セッションで検証。<a href="issue-33-review.md">確認記録</a></td></tr>
         <tr data-issue="34" data-status="完了"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/34">#34</a></td><td><span class="status">完了</span></td><td>文書矛盾を解消。PR #118マージ・main同期・通常後片付け済み</td></tr>
