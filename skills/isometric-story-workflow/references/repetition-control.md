@@ -1,6 +1,6 @@
 # Repetition Control v1
 
-Step 7d/7.5、Step 8のCodex MCP画像一次解析、Step 9.5、Step 10で、同一入力の再実行と同一指摘の無制限反復を防ぐ共通規約である。
+Step 7d/7.5、Step 8の画像一次確認、Step 9.5、Step 10で、同一入力の再実行と同一指摘の無制限反復を防ぐ共通規約である。
 
 ## 共通規則
 
@@ -11,7 +11,7 @@ Step 7d/7.5、Step 8のCodex MCP画像一次解析、Step 9.5、Step 10で、同
 - cache missや入力revision変更は`rerun_allowed`として通常実行へ進める。timeout、低信頼、JSON不正、画像・動画未読は`needs_parent_decision`またはfail-closeにする。
 - 同じfinding fingerprintが連続2回発生したら3回目を自動起動せず`needs_parent_decision`にする。
 - Blender exporter、ffprobe、ffmpeg decode、snapshot/JSON読込などの実行失敗も、可能な場合は安定したerror fingerprintと失敗証跡をledgerへ記録し、同じ失敗を2回繰り返した時点で親へ戻す。
-- Codex MCP画像一次解析の成功レポートを記録する場合は、各`observation`に`item`、絶対パスの`evidence_image`、`confidence`、`note`を必須とする。confidenceは数値なら0.6以上、ラベルなら`medium`または`high`だけを許可する。
+- 画像一次確認の成功レポートを記録する場合は、各`observation`に`item`、絶対パスの`evidence_image`、`confidence`、`note`を必須とする。confidenceは数値なら0.6以上、ラベルなら`medium`または`high`だけを許可する。
 - キャッシュやledgerは品質gateのpass、waiver、正本ownershipを変更しない。
 
 ## ledger種別
@@ -21,7 +21,7 @@ Step 7d/7.5、Step 8のCodex MCP画像一次解析、Step 9.5、Step 10で、同
 - `render_validation`: 動画SHA-256、`through`、validatorとffprobe/ffmpegのrevision。manifest構造は毎回検証する。
 - `motion_qa`: blend/video、前cool動画、QA基準、frame sample revision、指摘fingerprint。
 
-定型CLIは、quantitative QAの`run_blender_quantitative_qa.py --ledger`、動画検証の`validate_story_package.py --through render --ledger`、Codex MCP画像一次解析の`validate_preflight_cache.py`、ledger検証の`validate_repetition_ledger.py --key-file <current-key.json>`である。Codex MCP画像一次解析の成功後は`--record-report`で固定JSONレポートをledgerへ記録する。
+定型CLIは、quantitative QAの`run_blender_quantitative_qa.py --ledger`、動画検証の`validate_story_package.py --through render --ledger`、画像一次確認の`validate_preflight_cache.py`、ledger検証の`validate_repetition_ledger.py --key-file <current-key.json>`である。画像一次確認の成功後は`--record-report`で固定JSONレポートをledgerへ記録する。
 
 ## 親の責務
 
