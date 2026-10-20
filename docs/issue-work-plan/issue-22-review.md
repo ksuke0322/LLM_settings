@@ -1,5 +1,21 @@
 # Issue #22 着手前確認・判断保留
 
+## 2026-10-20 再開・分割の確認
+
+- 2026-10-19の了承と2026-10-20の開始指示に従い、上位規約との矛盾修正を含めて再開。開始revisionは`2d378d48`。
+- native gpt-6-luna / maxへ、読み取り6分、実装10分、独立レビュー5分、欠落修正3分の上限で順次委任。各委任は対象1つ・問い3つ以下、再委任禁止。委任中のworktree更新を行わず、親が分解・差分確認・最終品質判定・Git・本記録を担当。
+- 入口を工程routingと常時必須原則に整理し、設計Steps1–5を`design-workflow.md`、制作6–7.5を`production-workflow.md`、レビュー公開8–12を`review-publication.md`へ移した。既存schema・品質・Step8・反復の専門正本を参照し、frontmatterのtriggerは保持した。
+- 旧Codex MCP・旧モデル固定とAGENTS読み替えによる権限例外を、上位AGENTS・delegate-flow・delegate-policyの参照へ置換。経路不能時は親へ戻し、別経路への自動切替や品質緩和を許さない。
+- 独立レビューで画像失敗時の元セット保持と委任前後の保全・候補採用条件の欠落を検出。1ファイル修正で復元し、親が画像保持・8B/8C入力境界、mtime/SHA確認、想定外変更時の停止・保全、全工程gate通過後の採用条件を確認した。
+- 手動の代表報告10件は受入5件・拒否5件。設計/制作/独立レビュー/動画/公開のroutingと人間承認停止点を確認した。これは文書上の境界確認であり、実機制作や自動ミューテーションの成績ではない。
+- 肥大候補は既存の[Skill台帳](../skill-inventory.md)のサイズ・責務を参照。今回はisometric-story-workflowを分割し、Archify・外部Skill・株式系は対象外。今後の導入・更新レビューでは行数だけでなく責務、参照数、常時読込の必要性を確認し、工程固有の詳細は条件付き参照へ分ける。新たな数値gateや自動採用判定は導入しない。
+- Pythonコマンドは親が指定した`python3 -B -m unittest discover -s skills/isometric-story-workflow/tests`。比較元・候補とも115件成功。既存文書契約テストは工程の移動先と上位規約へ整合。文書未作成によるFileNotFoundErrorは起動/入力不足であり、振る舞いのREDとは扱わない。
+- 親が旧権限例外文字列を一時再挿入して既存契約テストの失敗を確認し、復元後にPython115件成功を確認。関連Node16件・非Archify118件成功。文書内コード表記の参照56件は欠落なし。`git diff --check`も確認する。
+- Blender操作、レンダー、描画品質、実運用の委任能力は未検証。許可外の`validate_preflight_cache.py`説明文に旧呼称が1件残るが、実行経路の契約ではなく今回は変更しない。
+- 全件Nodeは比較元・候補とも1,051件、959成功・69失敗・23スキップ、終了コード1。worktreeルート・時間・一時validatorディレクトリ名だけを正規化し、失敗名/診断とskip内容が一致。非Archifyの本変更に限る承認済み例外を適用し、全件成功とは扱わない。ログは`/tmp/issue22-{baseline,candidate,nonarch,related}.tap`、Pythonと変異確認は`/tmp/issue22-*.log`。
+
+以下は了承前の履歴。現在の修正範囲は上記了承・開始指示に従う。
+
 確認時刻: 2026-10-18 09:46 JST。参照revision: `b4754b6`。
 
 ## 結果
