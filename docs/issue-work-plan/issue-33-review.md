@@ -10,6 +10,7 @@
 - 復旧は今回追加した上記pathのテーブル1件だけを除く。他のテーブルを消したり設定全体を上書きしない。復旧後もtomllibで構文を確認し、再起動後の新セッションで読み返す。
 - 検証は専用候補・参照worktree（双方 `5dc1afc`）のNode v22.12.0で実行。関連18件・非Archify118件成功。全件は双方1,051件、959成功・Archify69失敗・23skip、exit 1。完了後に失敗名・正規化診断・skipの一致を確認し、承認済みの非Archify限定例外を適用した。ログ `/tmp/issue33-oct20-{related,nonarch,baseline,candidate}.tap`。これらはrepo検証であり、個人設定のruntime実効性を検査していない。今回の設定保存に自動mutationテストは追加せず、独立readbackと既存設定保持を確認した。
 - 公式手順は設定変更後のCodex再起動を求める。この作業では実行していない。新セッションでrootだけが一覧に残ること、実装・レビュー・API移行の代表依頼3つでrootを参照することを確認するまでIssue #33はOPEN、検証待ちとしてskipする。設定保存の成功をruntimeの成功と扱わない。
+- PR #156をmerge commit `09c7c16c01ec59e487d299804f8abc6812d3f13c` でmainへ反映。実装commit `97b4662` のmain包含・対象2文書一致・候補/参照raw clean・branch保持を確認し、両worktreeを通常削除した。アプリ添付は100件上限で失敗、GitHubのMERGEDとmain同期は別途確認済み。
 
 ## 2026-10-18 の反映（履歴）
 
