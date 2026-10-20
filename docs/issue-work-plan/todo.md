@@ -1,11 +1,11 @@
 # Issue やることリスト
 
-最終更新: 2026-10-20 22:58 JST。#22完了、#31草案準備、#33のnested無効化設定を保存しPR #156で記録。完了 **16 / 19**。
+最終更新: 2026-10-20 23:28 JST。#22完了、#31草案準備。#33はnested無効化設定を保存し、一覧root 1件を確認。代表依頼の標準候補との一致は1/3で、Issue OPEN・要是正のため完了数を維持。完了 **16 / 19**。
 表示用HTML: [進捗表](progress-2026-10-03.html)。このファイルとHTMLをmainで同期する。
 
 ## 順序と状態
 
-#22はPR #152で完了。#31はPR #154で未送信のupstream提案草案を準備。#33はnestedだけの無効化設定を保存しPR #156で記録、main同期・保全・clean確認・実装/参照worktree通常削除済み。残る3件は条件待ちとしてskipする。#30は次の周回依頼、#31は外部投稿の明示依頼、#33はCodex再起動後の新セッション一覧と代表依頼3件の検証で再開。今すぐ追加で実施可能な未完了タスクはない。
+#22はPR #152で完了。#31はPR #154で未送信のupstream提案草案を準備。#33はnestedだけの無効化設定を保存しPR #156で記録、main同期・保全・clean確認・実装/参照worktree通常削除済み。今回のSkills一覧ではrootの`swiftui-pro`が1件だけだったが、代表依頼は実装=`swiftui-expert-skill`、レビュー=root `swiftui-pro`、API移行=`swiftui-expert-skill`で標準候補と1/3一致。アプリ再起動後の一覧ではないため、その範囲を限定して記録する。IssueはOPEN、完了数16/19を維持し、routing差異の確認・是正と3依頼の再検証までskipする。#30は次の周回依頼、#31は外部投稿の明示依頼待ち。#33の次の作業はrouting選択条件の確認・是正方針の合意後に同じ3依頼を再実行すること。
 
 ## 2026-10-19 了承済み方針
 
@@ -34,7 +34,7 @@
 | #30 | 検証待ち（skip） | PR #143で文書整合・main同期・clean確認・通常削除済み。実機の対象確認と代表画面遷移は未確認、ゲーム操作の明示依頼と実機経路確認後に再開。[確認記録](issue-30-review.md) |
 | #31 | 外部投稿の依頼待ち（skip） | PR #154で[未送信の提案草案](issue-31-upstream-proposal.md)を反映。main同期・保全・clean確認・通常削除済み。外部本文未変更。投稿は別途明示依頼待ち、採用/runtime未確認。[確認記録](issue-31-review.md) |
 | #32 | 完了 | PR #147。最寄り設定優先・概念例の区別、ESM/CJS/TSの実行とexport検証5件。main同期・clean確認・通常削除済み。[確認記録](issue-32-review.md) |
-| #33 | 新セッション検証待ち（skip） | PR #156。個人設定にnested SKILL.mdのみenabled=falseを保存、構文・対象の独立readback確認。root/外部本文/lockは保持。main同期・保全・clean・実装/参照worktree通常削除済み。再起動後の一覧と実装・レビュー・API移行3依頼での実効確認は未実施、OPEN維持。[対象・復旧方法](issue-33-review.md) |
+| #33 | routing差異・是正と再検証待ち（OPEN・skip） | PR #156。nested SKILL.mdのみenabled=falseを保存、対象の独立readback済み。このセッションの一覧はroot 1件。実装・レビュー・API移行の標準候補との一致は1/3。Issue OPEN・完了数16/19維持。routing差異の確認・是正後に再実行する。[対象・復旧方法・確認結果](issue-33-review.md) |
 | #34 | 完了 | PR #118、main同期・内容保全・clean確認・専用と参照worktreeの通常削除済み |
 
 #24は対象外で分母に含めない。株式系Skillとstock-sharedは横断調査からも除外する。

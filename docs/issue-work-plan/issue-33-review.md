@@ -12,6 +12,23 @@
 - 公式手順は設定変更後のCodex再起動を求める。この作業では実行していない。新セッションでrootだけが一覧に残ること、実装・レビュー・API移行の代表依頼3つでrootを参照することを確認するまでIssue #33はOPEN、検証待ちとしてskipする。設定保存の成功をruntimeの成功と扱わない。
 - PR #156をmerge commit `09c7c16c01ec59e487d299804f8abc6812d3f13c` でmainへ反映。実装commit `97b4662` のmain包含・対象2文書一致・候補/参照raw clean・branch保持を確認し、両worktreeを通常削除した。アプリ添付は100件上限で失敗、GitHubのMERGEDとmain同期は別途確認済み。
 
+## 2026-10-20 Skills一覧・代表依頼の確認
+
+- 2026-10-20 23:28 JST（個人設定をtomllibで再読込）。nestedの対象pathは1件で`enabled=false`、root pathを無効化する設定は0件。設定値だけでruntime全体の挙動を保証しない。
+- このセッションに表示されたSkills一覧では`swiftui-pro`はrootの`/Users/sawairikeisuke/.agents/skills/swiftui-pro/SKILL.md`の1件のみ。nested項目は表示されていない。別のCodex画面や全sessionに対する一般化はしない。
+- この作業ではCodexデスクトップアプリの再起動を行っていない。上記は現在のセッション一覧の観測であり、公式手順どおりのアプリ再起動を経た一覧の証拠ではない。
+- Codex CLI 0.159.0のephemeral・read-only実行を代表依頼ごとに1回ずつ行い、選択Skill名とpathを確認した。
+
+| 代表依頼 | 観測した参照先 | Issue #21の標準候補との照合 |
+| --- | --- | --- |
+| SwiftUI画面と状態更新の実装 | `swiftui-expert-skill`と`test-driven-development`。rootの`swiftui-pro`は選ばれなかった | 不一致 |
+| 既存SwiftUI画面の無効化・性能レビュー | rootの`swiftui-pro` | 一致 |
+| 旧SwiftUI APIから現行APIへの移行 | `swiftui-expert-skill`。rootの`swiftui-pro`は選ばれなかった | 不一致 |
+
+- 3依頼の標準候補との一致は1/3。Skills一覧でrootだけが見えることは確認できたが、代表依頼のroutingは標準方針と2件ずれているため、Issue #33を完了扱いにしない。routing挙動は変更せず、方針・選択条件の確認と是正後の再実行を残す。
+- CLI出力には`features.skills`がunknown/ignoredという設定警告、一部MCP handshakeとicon pathの警告があった。これらが選択結果へ影響した証拠はないが、結果はこの3回のCLI実行範囲に限る。
+- GitHub上のIssue #33はOPENを再確認した。完了数16/19を維持し、一覧の一般化や未確認のruntime挙動を完了根拠にしない。
+
 ## 2026-10-18 の反映（履歴）
 
 - 2026-10-18 22:34 JST（shell `date`）。承認済みの「rootを正本候補、nested探索除外、削除は別承認」のうち、配置・lock対応と静的検出を進めた。探索除外完了とは扱わない。
