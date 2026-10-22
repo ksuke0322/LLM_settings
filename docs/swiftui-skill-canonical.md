@@ -28,11 +28,13 @@
 
 2026-10-20、了承済みのnested無効化を個人設定 `/Users/sawairikeisuke/.codex/config.toml` に反映した。[公式 Build skills](https://learn.chatgpt.com/docs/build-skills#enable-or-disable-local-codex-skills) の例に従い、`[[skills.config]]` の `path` は `/Users/sawairikeisuke/.agents/skills/swiftui-pro/skills/swiftui-pro/SKILL.md`、`enabled` は `false` とした。Config Referenceはfolderと説明しているため、この文書差を実環境で解消済みとは扱わない。rootや外部本文・lockは変更せず、両ファイルは残した。復旧は追加した対象テーブル1件だけを除く。構文と対象の独立readbackは確認済み。詳細は[確認記録](issue-work-plan/issue-33-review.md)。
 
-設定変更前の作業セッション一覧には `swiftui-pro:swiftui-pro` が同名で2件表示されていた。設定変更直後にはアプリ再起動を行っていないため、その時点の一覧は設定反映の証拠にしない。後続のセッション一覧と代表依頼の確認結果は次節に記録する。公式手順に沿ったアプリ再起動後の状態や、別sessionを含む探索除外・同時読込までは確認していない。
+設定変更前の作業セッション一覧には `swiftui-pro:swiftui-pro` が同名で2件表示されていた。設定変更直後にはアプリ再起動を行っていないため、その時点の一覧は設定反映の証拠にしない。後続の確認はユーザーによる再起動後の実行だったと訂正された。別sessionを含む探索除外・同時読込まで一般化しない。
 
 ## 2026-10-20 の確認結果
 
-このセッションに表示されたSkills一覧では、`swiftui-pro`はrootの `skills/swiftui-pro/SKILL.md` の1件だけだった。個人設定のreadbackではnested pathの `enabled = false` を1件確認し、root pathを無効化する設定はなかった。Codexデスクトップアプリは再起動していない。この確認は現在のセッション一覧と設定値に限り、別sessionやすべてのloader状態を保証しない。
+このセッションに表示されたSkills一覧では、`swiftui-pro`はrootの `skills/swiftui-pro/SKILL.md` の1件だけだった。個人設定のreadbackではnested pathの `enabled = false` を1件確認し、root pathを無効化する設定はなかった。ユーザー確認により再起動後の実行と訂正した（2026-10-22）。この確認は観測したセッション一覧と設定値に限り、別sessionやすべてのloader状態を保証しない。
+
+2026-10-22の明示参照読解確認では、既存方針を指定した実装・レビュー・API移行の3件ともrootを標準とする回答だった。これは同一native応答での読解確認で、自動選択の改善は示さない。当面は依頼文に「本書を適用し、rootの`skills/swiftui-pro/SKILL.md`を標準として使用」を明記する。明示参照を完了条件として採用するかは判断待ちであり、IssueはOPENのまま。
 
 Codex CLI 0.159.0のephemeral・read-only実行で、代表依頼から選ばれたSkillを確認した。
 
