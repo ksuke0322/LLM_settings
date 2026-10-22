@@ -1,5 +1,7 @@
 # Proposal: clarify routing descriptions for two related skills
 
+> Local status (2026-10-22): Cancelled at the user's request. Never submitted. Retained as historical draft; do not post an issue or pull request.
+
 ## Summary
 
 Could we refine the descriptions for `context-engineering` and `prompt-engineering` so their distinct primary tasks and their boundary are clearer when choosing a skill?
