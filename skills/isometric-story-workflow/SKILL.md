@@ -12,6 +12,7 @@ description: アイソメトリックポモドーロアプリ用に新しいテ�
 - 用語の階層はテーマ > ストーリー > クール > 映像。クール1はゼロから完成させ、同じストーリー内の次クールは前クールの完成形を引き継いで発展させる。
 - 物語・animatic・Acceptance Matrix・Motion QA・App Integration QAの詳細は `references/quality-gates.md` を参照する。クール成果物manifestは `references/manifest-schema.md` に従い、`scripts/validate_story_package.py`で検証する。
 - `story_contract.json`の構造と更新規則は `references/story-contract-schema.md` を正本とする。Step 8の独立レビュー返却、親baseline、再実行台帳は `references/step8-review-control.md` と `scripts/validate_step8_review.py` を正本とする。
+- Step 8のJev影判定(独立レビューと並行して記録するだけで、ゲートには使わない)は `references/jev-shadow-review.md` を正本とする。
 - 画像・動画をユーザーに提示するときは絶対パスを記し、表示できる場合は会話内に表示する。
 
 ## 工程の案内

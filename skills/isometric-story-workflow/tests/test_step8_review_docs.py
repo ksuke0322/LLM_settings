@@ -46,6 +46,21 @@ class Step8ReviewDocumentationTests(unittest.TestCase):
         self.assertIn("8B・8Cに生成参考画像を渡さない", prompts)
         self.assertIn("作業経緯・既知の課題・過去の指摘履歴", prompts)
 
+    def test_jev_shadow_review_is_record_only_and_kept_from_reviewers(self):
+        skill = self._read("SKILL.md")
+        review = self._read("references/review-publication.md")
+        prompts = self._read("references/step8-review-prompts.md")
+        shadow = self._read("references/jev-shadow-review.md")
+        self.assertIn("jev-shadow-review.md", skill)
+        self.assertIn("jev-shadow-review.md", review)
+        self.assertIn("影判定はゲートではない", shadow)
+        self.assertIn("独立レビューへ渡さない", shadow)
+        self.assertIn("ゲートではなく", review)
+        self.assertIn("Jev 影判定の問い・結果・比較表", prompts)
+        for name in ("validate-questions.mjs", "run-jev-shadow.mjs", "compare-jev-shadow.mjs", "summarize-jev-shadow.mjs"):
+            self.assertIn(name, shadow)
+            self.assertTrue((SKILL_DIR / "scripts" / "jev_shadow" / name).is_file(), name)
+
     def test_review_contract_documents_closed_fields_and_manifest_bindings(self):
         control = self._read("references/step8-review-control.md")
         prompts = self._read("references/step8-review-prompts.md")

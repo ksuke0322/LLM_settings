@@ -34,6 +34,8 @@
 - 同じ固定画像・model/config・prompt/schemaの成功済み一次解析は`scripts/validate_preflight_cache.py`で再利用可否を確認する。cache missや入力変更は通常の再解析へ進み、画像未読・timeout・JSON不正・低確信度は停止する。成功した短いJSONは`--record-report`でledgerへ記録する。記録時は`observations[]`の`item`・`evidence_image`・`confidence`・`note`を必須とし、confidenceは数値なら0.6以上、ラベルなら`medium`/`high`だけを許可する。
 - 8A/8B/8Cへ渡す寸法・接触面・px換算は、`scripts/emit_measured_facts.py --blend <cool.blend> --contract <story_contract.json> --output <evidence/cool<N>_measured_facts.md>`の出力をそのまま使う。親が実測値を手入力してはならない。出力にはworld bbox、回転を打ち消したlocal断面、接触面z、px換算、散布代表個体を含める。
 
+**Jev 影判定(段階1・記録のみ)**: render setとbaselineを固定した後、独立レビューの起動前に、親が`references/jev-shadow-review.md`に従ってJevへの問いを作り、同じrender setで影判定を実行する。多数決の記録後に比較表を作り、親が台帳へ採点する。影判定はゲートではなく、8A/8B/8Cの合否・指摘の採否・修正対象・収束判断・waiverに使わない。Jevの問い・結果・比較表は`isometric-story-review`の起動プロンプト・入力画像・添付に含めない(独立性の維持)。影判定の失敗はStep 8を止めず、失敗として記録する。
+
 **多数決 v1を既定とする**: 8A/8B/8Cは同一レンダー・同一入力・同一プロンプトで独立3本を実施し、項目単位で2/3以上が挙げた指摘だけを確定する。8Aはrequired_match項目、8Bはhigh/medium項目、8Cはkind単位で集計する。多数決の記録は`references/step8-review-control.md`の様式に従い、`evidence/cool<N>_step8_majority.md`へ保存する。レンダーが変わったら再集計し、異なるレンダーを混ぜない。
 
 **修正対象の制限**: 修正してよいのは、多数決で確定した指摘と、親が実測で裏付けた指摘だけである。1本のrunだけが挙げた指摘は、実測で真偽を確定できる場合を除き修正しない。8Aの`improvable`、8Bの`minor`、8Cのnote欄はゲート条件ではなく、その場で修正してはならない。`evidence/cool<N>_step8_advisories.md`へ記録し、ステップ9の人間レビュー用パケットへ含めて採否を決める。
