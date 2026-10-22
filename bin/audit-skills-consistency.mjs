@@ -308,12 +308,19 @@ export const auditSkills = async (projectRoot = process.cwd(), {
   const inventory = []
   const skills = []
   const warnings = []
+  const namePlacements = new Map()
 
   for (const filePath of files) {
     const source = await readFile(filePath, 'utf8')
     const relativePath = path.relative(resolvedRoot, filePath).split(path.sep).join('/')
     const metadata = parseFrontmatter(source)
     inventory.push({ path: relativePath, name: metadata.name, description: metadata.description })
+    const name = metadata.name.trim()
+    if (name) {
+      const placements = namePlacements.get(name) ?? []
+      placements.push({ path: relativePath, line: metadata.nameLine })
+      namePlacements.set(name, placements)
+    }
     if (metadata.description.trim()) {
       skills.push({ path: relativePath, name: metadata.name, description: metadata.description, descriptionLine: metadata.descriptionLine })
     }
@@ -344,6 +351,20 @@ export const auditSkills = async (projectRoot = process.cwd(), {
           text: text.trim()
         })
       }
+    })
+  }
+
+  for (const [name, placements] of namePlacements) {
+    if (placements.length < 2) continue
+    const relatedPaths = placements.map(({ path: skillPath }) => skillPath).sort((left, right) => left.localeCompare(right))
+    const firstPlacement = placements.find(({ path: skillPath }) => skillPath === relatedPaths[0])
+    warnings.push({
+      kind: 'duplicate-skill-name',
+      path: relatedPaths[0],
+      line: firstPlacement.line,
+      reason: 'same non-empty frontmatter name appears in multiple static Skill placements; review placement only, runtime duplicate activation is not established',
+      name,
+      relatedPaths
     })
   }
 

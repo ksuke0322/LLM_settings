@@ -33,12 +33,15 @@
   </style>
 </head>
 <body>
+  <aside aria-label="2026年10月20日の検証記録">
+    <p><strong>#33は合意したroot明示指定運用で完了。</strong>配置/lock、nested設定readback、再起動後root 1件一覧、明示参照3例を記録しました。自然文の自動選択1/3は未解消として区別します。#31は外部Issue・PR提案を取りやめ、ローカル入口方針で運用。#30は次の通常の周回依頼待ちです。</p>
+  </aside>
   <header>
     <h1>LLM_settings Issue 着手計画</h1>
-    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34（#24は対象外）と先行する検証基盤タスク／ 最終更新: 2026年10月18日 21:35 JST</p>
+    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34（#24は対象外）と先行する検証基盤タスク／ 最終更新: 2026年10月22日 13:48 JST</p>
     <div class="summary" aria-label="進捗の要約">
-      <div><strong>14 / 19</strong><span>完了 / 対象タスク（Issue 18件・検証基盤 1件）</span></div>
-      <div><strong>現在#30</strong><span>14件完了・残り5件。#22は判断保留でskip、1件ずつ継続</span></div>
+      <div><strong>17 / 19</strong><span>完了 / 対象タスク（Issue 18件・検証基盤 1件）</span></div>
+      <div><strong>残り2件</strong><span>17件完了。#30は周回依頼待ち、#31は外部改善見送り・ローカル運用</span></div>
     </div>
     <p class="note">#24を除く18件と検証基盤1件、計19タスクを対象とします。開始承認済みの一覧を1件ずつ進めます。調査・実装はgpt-6-luna/maxへ小さく委任し、検証・マージ・記録後に次へ進みます。非Archify変更は、全件実行で非Archify通過、同条件の現行mainからArchifyの失敗名・原因・スキップの増加や変化がないことを記録します。Archify本体・共有資産・テスト基盤の変更には例外を適用しません。最終完了にはmainマージ後の内容保全・clean確認とworktreeの通常削除を含みます。株式系Skillと共有参照は除外し、全Skill共通のworktree後片付け方針のみ適用対象に含めます。</p>
   </header>
@@ -53,30 +56,30 @@
       <h2 id="test-gate">非Archifyタスクの検証完了条件</h2>
       <ol>
         <li>差分が<code>skills/archify/</code>、Archifyが使う共有資産、共通テスト実行基盤を変更しないことを確認する。該当する変更には例外を適用せず、個別に検証する。</li>
-        <li>対象タスクの関連テストと故障検出を確認し、同じ依存・Node版・コマンドで実行した非Archifyの全テストを通す。最新の#29では112件通過。件数は各タスクの実行時に再計測する。</li>
+        <li>対象タスクの関連テストと故障検出を確認し、同じ依存・Node版・コマンドで実行した非Archifyの全テストを通す。最新の#33では118件通過。件数は各タスクの実行時に再計測する。</li>
         <li>現行mainを分離した参照worktreeと候補worktreeで全Nodeテストを同じ条件で実行し、Archifyの失敗をテスト名・原因・スキップ状態で照合する。候補側に新規・悪化・未説明の失敗やスキップがあれば止める。失敗件数だけの一致では通過としない。</li>
         <li>PRごとに対象差分、両revision、Node版、実行コマンド、関連テスト、全件実行結果、既知例外との差分を記録する。PR・マージと最終完了は、従来どおり変更内容の確認とmainマージ後のworktree後片付けまで含める。</li>
       </ol>
       <p>検証基盤タスク自体は、この判定を再現可能に記録し、通知テスト修正を専用PRでマージし、main同期と専用worktreeの通常削除まで確認した時点で完了とします。隔離検証で残った8件は診断記録として保持し、Archify本体の欠陥8件とは扱いません。</p>
     </section>
     <section aria-labelledby="blocked">
-      <h2 id="blocked">判断保留／承認済みの実施待ち／現在作業中</h2>
+      <h2 id="blocked">実施記録と残る判断・検証条件</h2>
       <p>2026年10月18日の開始指示で#21から再開しました。1件ずつ検証・マージ・後片付けとmainの記録を終えてから次へ進みます。表の「再開待ち」は方針承認済みの実施待ちです。過去の調査結果は実装時に照合し、同じ方針の再承認は求めません。新たな判断は理由と再開条件を記録しskipします。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/16">#16</a> 完了。正本表・優先順位・開始と承認境界・通常後片付け・二段階完了を<a href="https://github.com/ksuke0322/LLM_settings/pull/120">PR #120</a>で整合しました。関連3件、非Archify68件通過。全件は参照998件/候補1001件でArchify内69失敗・23スキップの名前/原因/項目が一致。故意の破損で見つかった検証不足を修正し、最終故障検出と復元済みです。main同期と今回の専用/参照worktreeの通常削除まで終了。旧候補は未コミット差分のため保全。<a href="issue-16-review.md">確認記録</a></p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/18">#18</a> 完了。参照監査CLIと外部依存registry、9件のfixtureを<a href="https://github.com/ksuke0322/LLM_settings/pull/122">PR #122</a>で導入。実測402参照、明確なMarkdownリンク欠落0、未確認警告168。関連9件・非Archify77件通過。全件は参照1001件/候補1010件で双方Archify内69失敗・23スキップの名前/原因/項目が一致。親の3種の故障検出と復元、main同期・内容保全・clean確認・今回の専用/参照worktree通常削除まで終了。旧候補は保全し、警告を解決済みにしません。<a href="issue-18-review.md">確認記録</a></p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/23">#23</a> 完了。公式installer固定commitでtree SHA仕様を確認し、local baseline・指定上流・lock変化・カスタマイズ宣言を分離する監査方法を<a href="https://github.com/ksuke0322/LLM_settings/pull/124">PR #124</a>で導入。関連12件・非Archify89件通過。全件参照1010件/候補1022件で双方Archify内69失敗・23スキップの名前/原因/項目が一致。親の3種の故障検出・復元、main同期・内容保全・clean確認・専用/参照worktree通常削除まで完了。実測18件はlocal再現一致17件・symlinkでunknown1件、上流未指定で上流照合18件unknownです。全Skillの整合性を確認済みとは扱いません。<a href="issue-23-review.md">確認記録</a></p>
-      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/19">#19</a> はPR #126で完了。導入チェックリスト、追加・更新のlock差分検出、台帳5件の役割分担を記録しました。関連14件・非Archify93件通過。全件のArchify69失敗の名前・診断と23スキップは参照mainと一致しました。main同期、内容保全・clean確認後の実装/参照worktree通常削除済み。区切りで停止後、2026年10月18日の開始指示で再開しました。代表依頼は#21で記録済み、実行例は#32、loaderとlockの対応は#33で未確認です。<a href="issue-19-review.md">確認記録</a></p>
-      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/21">#21</a> は<a href="https://github.com/ksuke0322/LLM_settings/pull/130">PR #130</a>で完了。代表8依頼の標準・補助・非適用とTestingの責務参照関係を記録し、台帳routing 11件を整合しました。関連4件・非Archify95件成功。全件は基準再確認・候補とも1,028件、936成功、Archify69失敗・23スキップで、失敗名・診断・スキップ内容が一致。基準初回の追加失敗1件は単独19件と全件再確認で再現せず、解決済みとは扱いません。独立レビューと手動の誤案内3件の検出、main同期・内容保全・clean確認・実装/参照worktreeの通常削除まで完了しました。実loaderは#33、実行例は#32で未確認です。<a href="issue-21-review.md">確認記録</a></p>
+      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/19">#19</a> はPR #126で完了。導入チェックリスト、追加・更新のlock差分検出、台帳5件の役割分担を記録しました。関連14件・非Archify93件通過。全件のArchify69失敗の名前・診断と23スキップは参照mainと一致しました。main同期、内容保全・clean確認後の実装/参照worktree通常削除済み。区切りで停止後、2026年10月18日の開始指示で再開しました。その後#21で代表依頼、#32で最小実行例、#33でroot/lock配置対応を確認済み。実loaderの除外・選択は未確認です。<a href="issue-19-review.md">確認記録</a></p>
+      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/21">#21</a> は<a href="https://github.com/ksuke0322/LLM_settings/pull/130">PR #130</a>で完了。代表8依頼の標準・補助・非適用とTestingの責務参照関係を記録し、台帳routing 11件を整合しました。関連4件・非Archify95件成功。全件は基準再確認・候補とも1,028件、936成功、Archify69失敗・23スキップで、失敗名・診断・スキップ内容が一致。基準初回の追加失敗1件は単独19件と全件再確認で再現せず、解決済みとは扱いません。独立レビューと手動の誤案内3件の検出、main同期・内容保全・clean確認・実装/参照worktreeの通常削除まで完了しました。その後#32の最小実行例は確認済み。#33の実loader除外・選択は未確認です。<a href="issue-21-review.md">確認記録</a></p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/pull/132">#25完了・PR #132</a> 8状態・遷移条件・次担当を整理し、成果受入れとGit/PR/cleanup・最終完了を分離しました。関連6件・非Archify98件成功。全件は参照1,028件/936成功、候補1,031件/939成功で、Archify69失敗の名前・診断と23スキップは一致。故障検出3種類を最終確認し、main同期・内容保全・clean確認・実装/参照worktree通常削除を完了、branchは保持しました。詳細は<a href="issue-25-review.md">確認記録</a>。</p>
-      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/22">#22 判断待ち・skip</a> 分割対象の本文に、上位AGENTSの読み替えによる権限例外と旧委任経路が残っています。おすすめは現行の上位規約へ整合させてから分割することです。この修正範囲を確認後に再開します。本文は未変更。<a href="issue-22-review.md">概要・おすすめ・他選択肢と再開条件</a>。外部Archifyと株式系Skillは対象外です。</p>
+      <p><a href="https://github.com/ksuke0322/LLM_settings/pull/152">#22 完了・PR #152</a> 入口と設計・制作・レビュー公開の3参照へ分割し、旧経路・権限例外を上位規約へ整合。独立レビューで見つけた画像保持・保全条件の欠落2点を復元。Python115件・関連Node16件・非Archify118件成功。全件1051件、959成功・69失敗・23skipは参照と失敗名・診断・skip内容が一致。main同期・保全・clean・実装/参照worktree通常削除済み。Blender実機は未検証。<a href="issue-22-review.md">確認記録</a>。外部Archifyと株式系Skillは対象外です。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/pull/135">#26完了・PR #135</a> ローカルworkflowでTDD範囲・AGENTSの承認境界・コマンド根拠と失敗分類を整合。関連6件・非Archify101件成功。全件は参照1,031件/939成功、候補1,034件/942成功で、Archify69失敗の名前・診断と23スキップが一致。故障検出2種類と独立fixture評価、JS/Pythonの失敗→修正→同一コマンド成功を確認。main同期・内容保全・clean確認・実装/参照worktree通常削除済み、branch保持。外部本文は未変更。<a href="issue-26-review.md">確認記録と制約</a>。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/pull/137">#27完了・PR #137</a> 準備済み依存のlocal入口・実行単位cleanup・明示成果物を実装し、関連11件・非Archify112件成功。故障検出と復元、全件の既知失敗比較、main同期・clean確認・通常後片付け済み。外部runnerは変更せず、自動導入しません。<a href="issue-27-review.md">確認記録</a>。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/pull/139">#28完了・PR #139</a> ツール能力対応表、理由と担当者付きNT、CLI結果と正式監査の区別、承認済み保存先への書込みとreadbackを整理。手動fixture8件、関連7件・非Archify112件成功、全件の既知失敗比較、main同期・clean確認・通常後片付け済み。外部本文は変更していません。<a href="issue-28-review.md">確認記録</a>。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/pull/141">#29完了・PR #141</a> 承認済み補正の対象・変更幅・有限回数、反復停止、revision更新とQA再実行、同一revisionの人間レビュー・承認を明記。手動fixture9件、既存Python115件・関連Node7件・非Archify112件成功。全件は参照/候補とも1,045件・953成功・69失敗・23skipで失敗名・診断・skip一致。main同期・内容保全・clean確認・通常後片付け済み、branch保持。実Blender操作は未実施。<a href="issue-29-review.md">確認記録</a>。</p>
-      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/30">#30</a> 各操作後に画面を確認し、報酬候補は一度に1箇所、5分で打ち切る方針が決定済みです。再開時に対象クエスト、現行UI経路、画面取得不能時の停止を実機で確認します。</p>
-      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/31">#31</a> descriptionは発動条件と役割を短く示し、詳細を参照に移す方針が決定済みです。前回の計測では非株式Skill39件中300文字超が9件でした。再開時に#21のroutingと#23の上流差分を照合します。</p>
-      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/32">#32</a> 対象に最も近いpackageの設定を先に確認し、実行可能例と概念例を区別する方針が決定済みです。再開時に設定がない場合の扱いと最小fixtureを確認します。</p>
-      <p><a href="https://github.com/ksuke0322/LLM_settings/issues/33">#33</a> rootの<code>swiftui-pro</code>を正本候補とし、入れ子版を探索から除外する方向が決定済みです。有効版とlockの対応は未確認です。再開時にroutingと上流を照合し、削除が必要なら個別承認の対象とします。</p>
+      <p><a href="https://github.com/ksuke0322/LLM_settings/pull/143">#30 文書整合済み・実機検証待ち（skip）</a> 各操作前後に最新画像、報酬候補1箇所、5分上限、既存の補正・fallback上限をプレイブックに集約しました。仮状態10件、関連7件・非Archify112件成功。初回全件は既存runnerのJSON読取で一過性失敗が1件あり、該当1件の再実行と全件1回の再確認は通過し既知Archify69失敗・23skipが参照と一致。原因は未確定で記録を保持。main同期・clean確認・通常後片付け済み、branch保持。実機の対象クエスト・ソロ・デッキ・スタミナと代表遷移は未確認のため、IssueはOPENを維持し完了件数に含めません。ゲーム操作の明示依頼と選定経路での実機確認後に再開します。<a href="issue-30-review.md">確認記録・再開条件</a>。</p>
+      <p><strong>#31 外部提案取りやめ・ローカル運用。</strong>ユーザー指示により外部Issue・PRは投稿しません。既存の入口方針を利用します。<a href="issue-31-upstream-issue-body.md">未送信草案</a>は履歴として保持。元の全条件未達のためIssue OPEN、完了数に含めません。<a href="issue-31-review.md">確認記録</a>。</p>
+      <p><a href="https://github.com/ksuke0322/LLM_settings/pull/147">#32完了・PR #147</a> 最寄りpackage/tsconfig/runner優先、旧一律変換の非採用、概念例と実行例をローカル適用方針で区別。ESM/CJS/TS実行とexport契約の5件、関連12件・非Archify117件成功。2つのexport変異は追加テストで検出し復元済み。全件は候補1,050件・958成功・69失敗・23skipで失敗名・診断・skipが参照と一致。main同期・clean確認・通常削除済み、branch保持。外部本文は保持し、TS型検査・他Node版・loader自動適用は未確認です。<a href="issue-32-review.md">確認記録</a>。</p>
+      <p><strong>#33 root明示指定運用で完了。</strong>ユーザー了承により完了条件を変更しました。root/lock対応、nested無効化のreadback、再起動後のroot 1件一覧、明示参照読解3例の記録を根拠とします。依頼文でrootの<code>skills/swiftui-pro/SKILL.md</code>を標準として明記します。自然文自動選択の前回1/3は未解消で、改善したとは扱いません。PRマージ・main同期・保全・clean・専用worktree通常削除まで実施する条件で17/19へ更新します。<a href="issue-33-review.md">対象・復旧方法・確認結果</a>。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/34">#34</a> 完了。文書修正と確認記録を<a href="https://github.com/ksuke0322/LLM_settings/pull/118">PR #118</a>でマージし、main同期・内容保全・clean確認・専用と参照worktreeの通常削除まで終了しました。非Archify65件通過、全998件は両側Archify内69失敗・23スキップで失敗名・原因・スキップ一致。親の手動故障検出も実施しました。外部未確認と現行mainで再現しない指摘は<a href="issue-34-review.md">確認記録</a>に区別して残しています。</p>
     </section>
     <section aria-labelledby="excluded">
@@ -117,15 +120,15 @@
     <section aria-labelledby="phase-4">
       <h2 id="phase-4">4. 後段</h2>
       <div class="table-wrap"><table><caption>個別 Skill と文書の整合</caption><thead><tr><th scope="col">ID</th><th scope="col">状態</th><th scope="col">タスク名</th></tr></thead><tbody>
-        <tr data-issue="22" data-status="判断待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/22">#22</a></td><td><span class="status">判断待ち</span></td><td>skip。旧権限例外・委任経路と上位規約の整合範囲を確認</td></tr>
+        <tr data-issue="22" data-status="完了"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/22">#22</a></td><td><span class="status done">完了</span></td><td>PR #152。工程別分割と委任境界整合。Python115・関連Node16・非Archify118件成功。main同期・保全・clean・通常削除済み</td></tr>
         <tr data-issue="26" data-status="完了"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/26">#26</a></td><td><span class="status">完了</span></td><td>PR #135。TDD範囲とコマンド根拠、main同期・通常削除済み</td></tr>
         <tr data-issue="27" data-status="完了"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/27">#27</a></td><td><span class="status">完了</span></td><td>PR #137。準備分離・限定cleanup・成果物保全。main同期・clean確認・通常削除済み。<a href="issue-27-review.md">確認記録</a></td></tr>
         <tr data-issue="28" data-status="完了"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/28">#28</a></td><td><span class="status">完了</span></td><td>PR #139。能力表・理由付きNT・保存readback。main同期・clean確認・通常削除済み。<a href="issue-28-review.md">確認記録</a></td></tr>
         <tr data-issue="29" data-status="完了"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/29">#29</a></td><td><span class="status">完了</span></td><td>PR #141。承認済み補正・反復停止・同一revisionのQAと人間承認。main同期・clean確認・通常削除済み。<a href="issue-29-review.md">確認記録</a></td></tr>
-        <tr data-issue="30" data-status="作業中"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/30">#30</a></td><td><span class="status">作業中</span></td><td>着手前確認。操作ごと再取得、報酬1箇所、5分上限</td></tr>
-        <tr data-issue="31" data-status="再開待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/31">#31</a></td><td><span class="status">再開待ち</span></td><td>方針決定済み。description 300文字はレビュー目安</td></tr>
-        <tr data-issue="32" data-status="再開待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/32">#32</a></td><td><span class="status">再開待ち</span></td><td>方針決定済み。近いpackage/runnerの実行方式を優先</td></tr>
-        <tr data-issue="33" data-status="再開待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/33">#33</a></td><td><span class="status">再開待ち</span></td><td>方針決定済み。root v1.1を標準候補にし入れ子は削除保留</td></tr>
+        <tr data-issue="30" data-status="検証待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/30">#30</a></td><td><span class="status">検証待ち・次の周回依頼待ち</span></td><td>通常の周回依頼時に実機検証する方針を了承。クエスト・ソロ・デッキを確認、スタミナ不足で終了し回復しない。<a href="issue-30-review.md">再開条件</a></td></tr>
+        <tr data-issue="31" data-status="見送り"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/31">#31</a></td><td><span class="status">外部改善見送り・ローカル運用</span></td><td>外部Issue・PR提案は取りやめ、投稿待ちではない。<a href="issue-31-upstream-issue-body.md">未送信草案</a>は履歴として保持。元の全条件未達のためOPEN、完了数に含めない</td></tr>
+        <tr data-issue="32" data-status="完了"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/32">#32</a></td><td><span class="status done">完了</span></td><td>PR #147。関連12件・非Archify117件、main同期・通常後片付け済み</td></tr>
+        <tr data-issue="33" data-status="完了"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/33">#33</a></td><td><span class="status">完了・root明示指定運用</span></td><td>合意した完了条件を反映。root/lock、nested readback、再起動後一覧、明示参照3例を確認。自動選択の前回1/3は未解消。PRマージ・main同期・保全・clean・通常cleanupまで実施。<a href="issue-33-review.md">対象・復旧方法・確認結果</a></td></tr>
         <tr data-issue="34" data-status="完了"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/34">#34</a></td><td><span class="status">完了</span></td><td>文書矛盾を解消。PR #118マージ・main同期・通常後片付け済み</td></tr>
       </tbody></table></div>
     </section>

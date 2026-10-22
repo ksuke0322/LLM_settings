@@ -154,6 +154,61 @@ test('excludes stock skill directories and stock-shared from the full audit and 
   })
 })
 
+test('reports duplicate non-empty skill names independently of descriptions and pair filters', async (t) => {
+  const projectRoot = await makeProject(t)
+  const skills = [
+    ['alpha', 'shared', 'Plan a local architecture'],
+    ['group/branch/shared', 'shared', 'Prepare a distant calendar'],
+    ['zeta', 'shared', 'Compose unrelated music'],
+    ['pair-a', 'pair', 'Compare local charts'],
+    ['pair-b', 'pair', 'Model weather conditions'],
+    ['nested-alias/skills/private-name', 'private-name', 'Audit privacy controls'],
+    ['empty-one', '', 'Write a unique description'],
+    ['empty-two', '', 'Read another unrelated description'],
+    ['stock-shared', 'shared', 'Excluded stock content']
+  ]
+  for (const [folder, name, description] of skills) {
+    await addSkill(projectRoot, folder, { name, description })
+  }
+
+  const result = await auditSkills(projectRoot, {
+    allowlistedPairs: [['skills/alpha/SKILL.md', 'skills/zeta/SKILL.md']],
+    changedPaths: ['skills/alpha/SKILL.md']
+  })
+  const duplicates = result.warnings.filter(({ kind }) => kind === 'duplicate-skill-name')
+
+  assert.deepEqual(Object.keys(result).sort(), ['candidates', 'inventory', 'warnings'])
+  assert.equal(duplicates.length, 2)
+  assert.deepEqual(duplicates[0], {
+    kind: 'duplicate-skill-name',
+    path: 'skills/alpha/SKILL.md',
+    line: 2,
+    reason: 'same non-empty frontmatter name appears in multiple static Skill placements; review placement only, runtime duplicate activation is not established',
+    name: 'shared',
+    relatedPaths: [
+      'skills/alpha/SKILL.md',
+      'skills/group/branch/shared/SKILL.md',
+      'skills/zeta/SKILL.md'
+    ]
+  })
+  assert.deepEqual(duplicates[1], {
+    kind: 'duplicate-skill-name',
+    path: 'skills/pair-a/SKILL.md',
+    line: 2,
+    reason: 'same non-empty frontmatter name appears in multiple static Skill placements; review placement only, runtime duplicate activation is not established',
+    name: 'pair',
+    relatedPaths: ['skills/pair-a/SKILL.md', 'skills/pair-b/SKILL.md']
+  })
+  assert.equal(result.candidates.length, 0)
+
+  const run = runCli(projectRoot, ['--allow-pair', 'skills/alpha/SKILL.md', 'skills/zeta/SKILL.md', '--changed', 'skills/alpha/SKILL.md'])
+  assert.equal(run.status, 0, run.stderr)
+  const cliResult = JSON.parse(run.stdout)
+  assert.deepEqual(Object.keys(cliResult).sort(), ['candidates', 'inventory', 'warnings'])
+  assert.deepEqual(cliResult.warnings.filter(({ kind }) => kind === 'duplicate-skill-name'), duplicates)
+  assert.equal(run.stderr, '')
+})
+
 test('CLI accepts explicit allow-pair and changed-path options', async (t) => {
   const projectRoot = await makeProject(t)
   for (const folder of ['alpha', 'beta', 'gamma']) {
