@@ -1,4 +1,15 @@
-# Issue #33 確認記録・探索除外の実効確認待ち
+# Issue #33 確認記録・root明示指定運用で完了
+
+## 2026-10-22 13:48 JST 合意した完了条件（shell date）
+
+- ユーザーが推奨案「依頼文にrootのswiftui-proを明記する運用を完了条件とする」を了承し、今回の開始指示を受領した。自動選択の改善を必須とする従来の条件は、この合意範囲で変更する。
+- 完了条件: root/lock対応を記録し、nestedを無効化した設定のreadback、ユーザー再起動後のroot 1件一覧、実装・レビュー・API移行の標準/補助方針と明示指定文を残すこと。既存確認記録と10月22日の明示参照読解3件で確認済み。
+- 使用文: 「docs/swiftui-skill-canonical.mdを適用し、rootのskills/swiftui-pro/SKILL.mdを標準として使用してください。依頼内容: …」。expertは個別の深い観点の補助として指定する。
+- 自然文だけの自動選択は前回1/3のまま未解消。明示3件は同一native応答の読解確認であり、自動選択修正・3独立CLI実行・全loader保証ではない。nested本文とlockは保持し、今回設定変更・削除はしない。
+- 本PRのマージ・main同期・内容保全・clean確認・専用worktree通常削除までを今回の完了処理とする。計画上は17/19へ更新し、PRマージによりIssueを閉じる。以下のOPEN/判断待ちは条件変更前の履歴。
+- #31の取りやめ記録はPR #161（32bd105）でmain同期済み。実装6698921の包含・対象文書一致・候補/参照clean・branch保持を確認し、両worktreeを通常削除した。
+- 復旧は今回の文書差分をrevertし、必要ならIssueを再開する。個人設定は今回変更しない。
+- Luna/maxのread-only調査2分・独立確認2分を順番に実施。委任中の対象worktree更新なし。親readbackでもnested false1件、root disable0件。関連18件・非Archify118件成功。専用候補/参照（32bd105）の全件は双方1051件、959成功・Archify69失敗・23skip、exit 1。終了後の失敗名・正規化診断・skip一致で、既承認の非Archify限定例外を適用した。ログ`/tmp/complete33-{related,nonarch,baseline,candidate}.tap`。リンク欠落0、HTML主要タグ・17/19行集計・diff check確認。自動mutationは追加していない。誤報「自動routing全部修正」「#31は投稿待ち」は独立レビューで受け入れなかった。
 
 ## 2026-10-20 設定反映・新セッション確認待ち
 

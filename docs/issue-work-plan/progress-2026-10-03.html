@@ -34,14 +34,14 @@
 </head>
 <body>
   <aside aria-label="2026年10月20日の検証記録">
-    <p><strong>#31の外部提案は取りやめ。</strong>ユーザー指示によりIssue・PRとも外部へ投稿せず、ローカル入口方針で運用します。草案は履歴として保持。#33はroot明示指定の運用を完了条件とする方針が了承され、開始指示済みです。#30は次の通常の周回依頼待ちです。</p>
+    <p><strong>#33は合意したroot明示指定運用で完了。</strong>配置/lock、nested設定readback、再起動後root 1件一覧、明示参照3例を記録しました。自然文の自動選択1/3は未解消として区別します。#31は外部Issue・PR提案を取りやめ、ローカル入口方針で運用。#30は次の通常の周回依頼待ちです。</p>
   </aside>
   <header>
     <h1>LLM_settings Issue 着手計画</h1>
-    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34（#24は対象外）と先行する検証基盤タスク／ 最終更新: 2026年10月22日 13:44 JST</p>
+    <p class="muted">対象: 2026年10月3日に確認した Issue #16–#34（#24は対象外）と先行する検証基盤タスク／ 最終更新: 2026年10月22日 13:48 JST</p>
     <div class="summary" aria-label="進捗の要約">
-      <div><strong>16 / 19</strong><span>完了 / 対象タスク（Issue 18件・検証基盤 1件）</span></div>
-      <div><strong>#33を次に処理</strong><span>16件完了。#30は周回依頼待ち、#31は外部改善見送り・ローカル運用、#33は開始指示済み</span></div>
+      <div><strong>17 / 19</strong><span>完了 / 対象タスク（Issue 18件・検証基盤 1件）</span></div>
+      <div><strong>残り2件</strong><span>17件完了。#30は周回依頼待ち、#31は外部改善見送り・ローカル運用</span></div>
     </div>
     <p class="note">#24を除く18件と検証基盤1件、計19タスクを対象とします。開始承認済みの一覧を1件ずつ進めます。調査・実装はgpt-6-luna/maxへ小さく委任し、検証・マージ・記録後に次へ進みます。非Archify変更は、全件実行で非Archify通過、同条件の現行mainからArchifyの失敗名・原因・スキップの増加や変化がないことを記録します。Archify本体・共有資産・テスト基盤の変更には例外を適用しません。最終完了にはmainマージ後の内容保全・clean確認とworktreeの通常削除を含みます。株式系Skillと共有参照は除外し、全Skill共通のworktree後片付け方針のみ適用対象に含めます。</p>
   </header>
@@ -79,7 +79,7 @@
       <p><a href="https://github.com/ksuke0322/LLM_settings/pull/143">#30 文書整合済み・実機検証待ち（skip）</a> 各操作前後に最新画像、報酬候補1箇所、5分上限、既存の補正・fallback上限をプレイブックに集約しました。仮状態10件、関連7件・非Archify112件成功。初回全件は既存runnerのJSON読取で一過性失敗が1件あり、該当1件の再実行と全件1回の再確認は通過し既知Archify69失敗・23skipが参照と一致。原因は未確定で記録を保持。main同期・clean確認・通常後片付け済み、branch保持。実機の対象クエスト・ソロ・デッキ・スタミナと代表遷移は未確認のため、IssueはOPENを維持し完了件数に含めません。ゲーム操作の明示依頼と選定経路での実機確認後に再開します。<a href="issue-30-review.md">確認記録・再開条件</a>。</p>
       <p><strong>#31 外部提案取りやめ・ローカル運用。</strong>ユーザー指示により外部Issue・PRは投稿しません。既存の入口方針を利用します。<a href="issue-31-upstream-issue-body.md">未送信草案</a>は履歴として保持。元の全条件未達のためIssue OPEN、完了数に含めません。<a href="issue-31-review.md">確認記録</a>。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/pull/147">#32完了・PR #147</a> 最寄りpackage/tsconfig/runner優先、旧一律変換の非採用、概念例と実行例をローカル適用方針で区別。ESM/CJS/TS実行とexport契約の5件、関連12件・非Archify117件成功。2つのexport変異は追加テストで検出し復元済み。全件は候補1,050件・958成功・69失敗・23skipで失敗名・診断・skipが参照と一致。main同期・clean確認・通常削除済み、branch保持。外部本文は保持し、TS型検査・他Node版・loader自動適用は未確認です。<a href="issue-32-review.md">確認記録</a>。</p>
-      <p><a href="https://github.com/ksuke0322/LLM_settings/pull/156">#33 nested無効化設定</a> 前回の確認はユーザーによる再起動後の実行だったと訂正しました。一覧はroot 1件。自動選択は前回1/3、正確な依頼文・コマンドは未保存です。今回、方針を明示参照する読解確認では3件ともrootが標準でしたが、自動選択改善の証拠にはしません。推奨は依頼文にrootを明記する運用。完了条件変更の判断待ちでOPEN・skip、16/19を維持します。<a href="issue-33-review.md">対象・復旧方法・確認結果</a>。</p>
+      <p><strong>#33 root明示指定運用で完了。</strong>ユーザー了承により完了条件を変更しました。root/lock対応、nested無効化のreadback、再起動後のroot 1件一覧、明示参照読解3例の記録を根拠とします。依頼文でrootの<code>skills/swiftui-pro/SKILL.md</code>を標準として明記します。自然文自動選択の前回1/3は未解消で、改善したとは扱いません。PRマージ・main同期・保全・clean・専用worktree通常削除まで実施する条件で17/19へ更新します。<a href="issue-33-review.md">対象・復旧方法・確認結果</a>。</p>
       <p><a href="https://github.com/ksuke0322/LLM_settings/issues/34">#34</a> 完了。文書修正と確認記録を<a href="https://github.com/ksuke0322/LLM_settings/pull/118">PR #118</a>でマージし、main同期・内容保全・clean確認・専用と参照worktreeの通常削除まで終了しました。非Archify65件通過、全998件は両側Archify内69失敗・23スキップで失敗名・原因・スキップ一致。親の手動故障検出も実施しました。外部未確認と現行mainで再現しない指摘は<a href="issue-34-review.md">確認記録</a>に区別して残しています。</p>
     </section>
     <section aria-labelledby="excluded">
@@ -128,7 +128,7 @@
         <tr data-issue="30" data-status="検証待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/30">#30</a></td><td><span class="status">検証待ち・次の周回依頼待ち</span></td><td>通常の周回依頼時に実機検証する方針を了承。クエスト・ソロ・デッキを確認、スタミナ不足で終了し回復しない。<a href="issue-30-review.md">再開条件</a></td></tr>
         <tr data-issue="31" data-status="見送り"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/31">#31</a></td><td><span class="status">外部改善見送り・ローカル運用</span></td><td>外部Issue・PR提案は取りやめ、投稿待ちではない。<a href="issue-31-upstream-issue-body.md">未送信草案</a>は履歴として保持。元の全条件未達のためOPEN、完了数に含めない</td></tr>
         <tr data-issue="32" data-status="完了"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/32">#32</a></td><td><span class="status done">完了</span></td><td>PR #147。関連12件・非Archify117件、main同期・通常後片付け済み</td></tr>
-        <tr data-issue="33" data-status="判断待ち"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/33">#33</a></td><td><span class="status">完了条件の判断待ち（OPEN・skip）</span></td><td>再起動後の一覧root 1件へ訂正。自動選択は前回1/3、明示参照読解は3件一致。推奨はrootを依頼文に明記する運用を完了条件とする案。自動選択の是正を求める案も残す。16/19維持。<a href="issue-33-review.md">対象・復旧方法・確認結果</a></td></tr>
+        <tr data-issue="33" data-status="完了"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/33">#33</a></td><td><span class="status">完了・root明示指定運用</span></td><td>合意した完了条件を反映。root/lock、nested readback、再起動後一覧、明示参照3例を確認。自動選択の前回1/3は未解消。PRマージ・main同期・保全・clean・通常cleanupまで実施。<a href="issue-33-review.md">対象・復旧方法・確認結果</a></td></tr>
         <tr data-issue="34" data-status="完了"><td><a href="https://github.com/ksuke0322/LLM_settings/issues/34">#34</a></td><td><span class="status">完了</span></td><td>文書矛盾を解消。PR #118マージ・main同期・通常後片付け済み</td></tr>
       </tbody></table></div>
     </section>
