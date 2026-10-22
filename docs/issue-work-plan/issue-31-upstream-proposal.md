@@ -1,6 +1,6 @@
 # Issue #31: upstream proposal draft
 
-**Status:** 草案。未送信・上流未採用・runtime 未検証。外部への投稿は別途明示依頼があるまで行わない。
+**Status:** 外部提案取りやめ（2026-10-22、ユーザー指示）。未送信の履歴資料として保持。Issue・PRとも投稿しない。上流未採用・runtime未検証。以下の提案後の計画は過去の検討内容。
 
 対象 upstream は、台帳に記録された [`NeoLabHQ/context-engineering-kit`](https://github.com/NeoLabHQ/context-engineering-kit)。初版はローカル資料だけに基づく。2026-10-22にGitHub APIで上流を確認し、投稿範囲をdescription 2件だけへ絞った[投稿用英語本文](issue-31-upstream-issue-body.md)を別途作成した。以下の本文分割案は将来の検討資料であり、今回の投稿案には含めない。
 
