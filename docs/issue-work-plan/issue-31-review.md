@@ -1,5 +1,16 @@
 # Issue #31 確認記録・upstream提案の投稿依頼待ち
 
+## 2026-10-22 上流再確認・投稿本文準備
+
+- 2026-10-22 13:03 JST（shell `date`）。#33の記録はPR #159、merge `1632964`でmainへ同期済み。実装commit `8e0a856`の包含、4文書一致、候補/参照のraw clean、branch保持を確認し、両worktreeを通常削除してから#31へ進んだ。
+- Luna/maxへ上流のread-only調査6分、[英語投稿本文](issue-31-upstream-issue-body.md)1ファイルのapproved-write作成4分を順番に委任した。絶対パス許可・再委任禁止・Git/外部投稿禁止。委任中に対象worktreeを更新していない。
+- GitHub APIで上流のdefault branchは`master`、HEADは`23e2428e809d77717f8acc9659c374a3a1fcb93e`、非archive・非disabled、Issues有効を確認。親も状態とHEADを独立readback。2つのdescriptionは既存草案と一致し、役割の重複は未解消。同じblobの他配置もあるが、今回ローカル外部本文は変更しない。
+- 類似の[上流PR #93](https://github.com/NeoLabHQ/context-engineering-kit/pull/93)はマージ済みだが今回の2件は含まない。検索語`in:title overlap skill`と`context-engineering prompt-engineering`では今回2件の既存Issueを確認できなかった。検索範囲外の不存在は保証しない。
+- 提案はdescription 2件の境界明確化、候補文、代表6例に限定。本文分割・300字gate・安全規則変更は要求しない。投稿先は`NeoLabHQ/context-engineering-kit`のIssues、タイトルは`Proposal: clarify routing descriptions for two related skills`。未送信であり、上流採用・runtime効果・Issue完了とは区別する。
+- 外部投稿には以前の取り決めどおり別途明示依頼が必要。おすすめは用意した英語本文を新規Issueとして1件投稿すること。判断待ちとしてOPEN・完了16/19維持。復旧は本PRの文書差分だけをrevertする。
+- 独立レビューで5文書整合を確認。親の故意の誤報「草案で投稿完了」「PR93が2件を修正済み」「300文字超なら不合格」は3件とも不採用。手動報告評価でありコードmutationではない。ローカルリンク欠落0、HTML主要タグ対応、通常タスクの行集計16/19を確認した。
+- 専用候補・参照は双方`1632964`。委任終了後、関連18件→非Archify118件→全件を実行。全件は双方1,051件、959成功・Archify69失敗・23skip、exit 1。失敗名・正規化診断・skip一致を完了後に確認し、既承認の非Archify限定例外を適用。全件成功とは扱わない。ログ`/tmp/issue31-oct22-{related,nonarch,baseline,candidate}.tap`。mainでは実行していない。
+
 ## 2026-10-20 再開・upstream提案への分離
 
 - 2026-10-19のおすすめ了承と10月20日の開始指示に従い、ローカル入口を維持し、外部本文改善を[未送信のupstream提案草案](issue-31-upstream-proposal.md)へ分離した。description候補2件、責務の境界、代表6例、詳細を必要時に読む案と確認計画を記載。

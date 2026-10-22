@@ -2,7 +2,9 @@
 
 **Status:** 草案。未送信・上流未採用・runtime 未検証。外部への投稿は別途明示依頼があるまで行わない。
 
-対象 upstream は、台帳に記録された [`NeoLabHQ/context-engineering-kit`](https://github.com/NeoLabHQ/context-engineering-kit.git)。この草案は既存のローカル記録と Skill ファイルだけに基づく。外部ページの取得・確認はしていない。
+対象 upstream は、台帳に記録された [`NeoLabHQ/context-engineering-kit`](https://github.com/NeoLabHQ/context-engineering-kit)。初版はローカル資料だけに基づく。2026-10-22にGitHub APIで上流を確認し、投稿範囲をdescription 2件だけへ絞った[投稿用英語本文](issue-31-upstream-issue-body.md)を別途作成した。以下の本文分割案は将来の検討資料であり、今回の投稿案には含めない。
+
+確認対象は`master`の`23e2428e809d77717f8acc9659c374a3a1fcb93e`。対象2パスは実在し、descriptionは下表と一致。repoは非archive・非disabled、Issues有効。[類似PR #93](https://github.com/NeoLabHQ/context-engineering-kit/pull/93)はマージ済みだが、この2件を含まない。投稿予定先は[上流のIssues](https://github.com/NeoLabHQ/context-engineering-kit/issues)、予定タイトルは投稿用本文の先頭見出し。投稿は未実施。
 
 確認したローカル資料: [入口方針](../skill-entry-policy.md)、[Issue #31 確認記録](issue-31-review.md)、[Skill 台帳](../skill-inventory.json)、[`context-engineering` 本文](../../skills/context-engineering/SKILL.md)、[`prompt-engineering` 本文](../../skills/prompt-engineering/SKILL.md)。
 
