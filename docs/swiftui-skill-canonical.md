@@ -1,5 +1,11 @@
 # SwiftUI Skill の配置と確認状況
 
+## 現在の運用・完了条件（2026-10-22了承）
+
+ユーザー了承により、rootの`skills/swiftui-pro/SKILL.md`を依頼文に明記する運用をIssue #33の完了条件とする。依頼文は「`docs/swiftui-skill-canonical.md`を適用し、rootの`skills/swiftui-pro/SKILL.md`を標準として使用してください。依頼内容: …」。実装・レビュー・API移行ともrootを標準とし、expertは必要な個別観点の補助とする。
+
+配置/lock対応、nested無効化の設定readback、ユーザー再起動後のroot 1件一覧、明示参照の3例読解確認を根拠とする。自然文自動選択の前回1/3は未解消で、改善したとは扱わない。下記のOPEN・判断待ちはこの合意前の観測履歴であり、現在の完了条件を上書きしない。
+
 ## 静的に確認した配置
 
 `skills/swiftui-pro/SKILL.md` は frontmatter の `name: swiftui-pro`、`version: "1.1"` を持つ。入れ子の `skills/swiftui-pro/skills/swiftui-pro/SKILL.md` は同じ name と description を持ち、version は `"1.0"`。Skill本文は異なる。9件の参照パス（`api.md`、`views.md`、`data.md`、`navigation.md`、`design.md`、`accessibility.md`、`performance.md`、`swift.md`、`hygiene.md`）は対応するファイル名が同じで、参照先本文も同一と親が比較確認した。
