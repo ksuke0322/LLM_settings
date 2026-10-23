@@ -326,32 +326,32 @@
       }
     },
     {
-      "name": "web-design-reference",
-      "directory": "design_ref",
+      "name": "application-design",
+      "directory": "application-design",
       "origin": "unknown",
       "source": null,
       "category": "design",
-      "trigger": "Web デザイン（レイアウト、色、タイポグラフィ、モーション、UI の振る舞い）に関する判断を行う際に参照するガイドライン集。基本判断は Material Design – Foundations を第一基準とし、アクセシビリティおよびタイポグラフィは該当ページを必ず参照する。実装後の品質・体験の最終確認には Apple Human Interface Guidelines を副参照として用いる。UI 判断に迷った場合は、独自判断を行わず参照先に従う。",
-      "responsibility": "Material Design を主基準に、Web のレイアウト・色・文字・動き・UI 挙動の判断に使う参照規則を示す。",
-      "related": null,
-      "conflicts": null,
-      "updatePolicy": "由来が未確認のため不明。編集前に由来と更新方針を確認する。",
+      "trigger": "Web・iOS・macOS アプリケーションの画面、操作フロー、レイアウト、色、文字、モーション、UI 文言を設計・実装・レビューするときに使う。共通の UI/UX 判断とプラットフォーム別の参照を扱う。文書・スライド・図解・画像・映像・一般文章・販促サイトだけの制作には使わない。",
+      "responsibility": "アプリ UI/UX の共通判断、必要な説明の保持、プラットフォーム別参照と専門スキルの分担を示す。",
+      "related": ["swiftui-pro", "swiftui-expert-skill", "reviewing-a11y", "auditing-wcag", "planning-wcag-audit", "planning-a11y-improvement"],
+      "conflicts": [],
+      "updatePolicy": "元の由来は unknown のまま保持する。2026-10-23 のユーザー承認により、ローカル管理の指針として改名・再編し、以後の変更も承認範囲内で行う。",
       "status": "unknown",
       "version": null,
       "verification": {
-        "skillFile": "skills/design_ref/SKILL.md",
+        "skillFile": "skills/application-design/SKILL.md",
         "nameEvidence": "frontmatter.name",
         "triggerEvidence": "frontmatter.description",
         "responsibilityEvidence": "SKILL.md のタイトルと冒頭説明",
         "categoryEvidence": "frontmatter.description とタイトルから分類",
         "provenance": {
           "status": "unknown",
-          "reason": ".skill-lock.json に対応キーがなく、由来は独立確認していない。"
+          "reason": ".skill-lock.json と Git 履歴を調査したが作者・上流は確定できない。ユーザー承認によるローカル改名・再編は元の由来の証明と区別する。"
         },
-        "relationshipEvidence": "未確認。",
-        "conflictEvidence": "unknown; Skill 間の競合を体系的には監査していない。",
-        "lifecycleEvidence": "unknown; 利用状態や所有者の判断を確認していない。",
-        "reviewedAt": "2026-10-03"
+        "relationshipEvidence": "SKILL.md の他のスキルとの分担、および docs/application-design-skill-map.md。Figma はプラグイン側の該当スキルを選ぶ。",
+        "conflictEvidence": "2026-10-23 の変更対象監査で Web E2E・結合テスト・Playwright・SwiftUI expert の4候補を確認。UI/UX 判断と検証・実装の併用関係であり、この範囲に未解決の矛盾はない。全スキルの無競合は保証しない。",
+        "lifecycleEvidence": "2026-10-23 にユーザーがローカル管理としての改名・再編を承認。由来の status=unknown は維持する。",
+        "reviewedAt": "2026-10-23"
       }
     },
     {
