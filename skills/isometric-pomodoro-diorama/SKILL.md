@@ -97,10 +97,12 @@ W=~/work/image-to-3d/diorama/$T                        # 3D・レンダー・動
   - 島の上下と雲の流れ: どのテーマにも自動で付く
 - 雪・風車と型が違う点（水・ガラス・細い植物など）と、それをどの工程で扱うか。上の 4 つで表せない動き（水の流れなど）や、検出が外れそうな回転部分（張り出しの小さい水車など）は、`report.md` に「未対応」と書き、静止画（9）の前にユーザーと扱いを決める。決めた方法で作ったら、スクリプトとこのスキルに足す。
 
-### 既知の未対応（次のテーマで解決する）
+### 水と、張り出しの小さい回転部分（水車小屋 2026-11-01 で対応）
 
-- 水の流れ（水面・水路・滝）を動かす手段がない。
-- `assemble_theme.py` から `split_rotor` に渡せるのは `slab` だけで、張り出しの判定 `reach`（既定 1.25）は渡せない。回転部分が見つからないときは、`$B -b --factory-startup -P $S/split_rotor.py -- $W/parts/<part>.glb $W/rotor-check --reach 1.1` のように単体で試し、効いた値を配置仕様から渡せるよう `assemble_theme.py` を直す。
+- 川・水路は器の画像に描かない（上面の模様は TRELLIS で崩れる）。器は川なしで作り、配置仕様の `stream`（点列・幅・滝 `fall`）で Blender が水の帯と滝を描く。動きは `animation.water`（模様の流れ `speed`、輪郭の揺れ `wave`）。書式は `assemble_theme.py`・`animate_theme.py` の docstring。
+- 落ちる水には粒を足す（`water_fx.py`、配置仕様の `animation.water_fx`）。`fall`（滝の下端のしぶき）・`lip`（縁の泡）・`drips`（水車のしずく）を使う。`wheel`（水車の下の撹拌）は橋や柱に隠れやすいので、見えるときだけ。値は `layout_specs/watermill.json` から始める（ユーザー採用 2026-11-01）。本物の流体シミュレーション（Mantaflow）はこの絵柄に合わず使わない（`report.md`「水表現の研究」）。
+- 回転部分の自動検出が外れたら（`rotor-check` の画像で別の部分が回っていたら）、`split_rotor.py` を単体で `--hub '[x,y,z]' --axis '[x,y,z]' --radius r [--keep '[[lo],[hi]]']`（部品の座標系）で試し、効いた値を `rotor` に書く。`--reach` も渡せる。
+- 切り出した回転部分を回して崩れて見えるとき（切り口のギザギザ、壁に焼き込まれた色）は、`rotor.rebuild` で同じ軸・半径の Blender 製の水車に差し替える。
 
 ### 2. マスター画像（Codex → 親 → **停止点 1**）
 
