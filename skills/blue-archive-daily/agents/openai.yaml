@@ -1,0 +1,4 @@
+interface:
+  display_name: "ブルアカの日課"
+  short_description: "iPhoneミラーリングでデイリー操作と日替わり掃討を確認しながら実行"
+  default_prompt: "$blue-archive-daily を使って、未達成の日課を実行し、消費と結果を報告してください。"
