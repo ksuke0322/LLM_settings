@@ -1,12 +1,19 @@
 ---
 name: isometric-pomodoro-diorama
-description: IsometricPomodoro アプリのテーマ動画（浮島ジオラマのループ映像）を、マスター画像（Codex 画像生成）→ TRELLIS.2 で 3D 化 → Blender で組み立て → 背景・雲の合成 → ループ動画、の流れで作るときに使う。新しいテーマを作るとき、既存テーマ（雪・風車）を作り直すとき、この流れ自体を改善するときに読む。旧スキル isometric-story-workflow / blender-isometric-rules の手作業モデリング手順は使わない。
+description: IsometricPomodoro アプリのテーマ動画（浮島ジオラマがクールごとに組み上がる映像）を、ストーリー仕様書 → マスター画像（Codex 画像生成）→ TRELLIS.2 で 3D 化 → Blender で組み立て → 背景・雲の合成 → クールごとの組み上がり動画、の流れで作るときに使う。新しいテーマを作るとき、既存テーマ（雪・風車）を作り直すとき、この流れ自体を改善するときに読む。旧スキル isometric-story-workflow / blender-isometric-rules の手作業モデリング手順は使わない。
 ---
 
 # 浮島ジオラマの制作フロー
 
-1 テーマ = 島 1 つ。マスター画像で完成形を決め、土台と部品を別々に画像→3D 化し、Blender で組み立て、背景と雲を合成して 10 秒のループ動画にする。
-採用実績: 雪の山小屋・風車（2026-10-31、ユーザー評価「めちゃくちゃいい。これでいこう」）。
+1 ストーリー = 島 1 つ。ストーリー仕様書のクール構成に沿って、マスター画像で完成形を決め、土台と部品（段階ごとに姿が変わる物は段階ごとの部品）を別々に画像→3D 化し、Blender で組み立てる。動画はクールごとに 1 本（10 秒）で、前のクールの完成形から始まり、そのクールの完成形で終わる。
+採用実績: 雪の山小屋・風車（2026-10-31、見た目）、温室ストーリー01 の 4 クール（2026-11-03、組み上がりの初検証）。
+
+## 動画の仕様（アプリ側の決まり。必ず守る）
+
+- アプリは 1 クールの動画を 25 分の集中に合わせて 1 回だけ再生する（ループしない、約 150 倍スロー）。出典: `specs/flow/004-video-assets-integration.md`、`IsometricPomodoro/ArtworkCanvas/VideoArtworkView.swift`。
+- 最終フレームが「そのクールの完成形」として、選択カード・図鑑・完成グリッドに正方形で表示される。最終フレームの完成形を中央 1080×1080 に収める。出典: `specs/flow/006-artwork-video-format.md`。
+- クール数と各クールで完成するものは、ストーリー仕様書 `docs/story-ideas/themes/<theme>/story-NN-*.md` の「クール構成」と frontmatter `cools` に従う。テーマの決まり（`_theme.md`）と `WORLD_GUIDELINES.md` も読む。
+- 完成形の 10 秒ループ（雪・風車・水車小屋・温室 anim-v1）はこの仕様に合わない。25 分に引き伸ばされてほぼ止まって見え、何も組み上がらない（2026-11-02 に判明）。
 
 ## 採用済みの見た目の規則（毎回守る）
 
@@ -14,7 +21,7 @@ description: IsometricPomodoro アプリのテーマ動画（浮島ジオラマ�
 2. 雲は島の下だけでなく、画面の下端まで重ねて埋める。
 3. 島の上下運動は小さく（画面高さの 0.4%、10 秒で 1 往復）、雲の流れは大きく（`cloud_drift` 0.06）。
 4. 島の底は小さく（半径の 0.5 倍、垂れ岩 3 本）、色・目地は真上の石積みから引き継ぐ。
-5. 見た目は静止画で決めてから動画にする。ループは閉じなくてよい。
+5. 見た目は完成形の静止画で決めてから動画にする。各クールの動画は最終フレームまで動いてよい（完成形で止める時間は作らない、ユーザー判断 2026-11-02）。
 6. 動きは形が変わるもの（回転・揺れ・上下・降る・流れる）。明るさの増減を動きとして数えない。
 
 理由と出典は [references/legacy-lessons.md](references/legacy-lessons.md)「新フローの採用判断」。
@@ -88,8 +95,14 @@ W=~/work/image-to-3d/diorama/$T                        # 3D・レンダー・動
 
 次を決めて、`report.md` の末尾に `## テーマ「<日本語名>」の制作（YYYY-MM-DD）` の節を作って書く。節の中は `### 設計`・`### 生成と 3D 化`・`### 静止画`・`### 動画`・`### 分かったこと`・`### 残る課題` の順に、工程が進むたびに足す。
 
+- 最初にストーリー仕様書（`docs/story-ideas/themes/<theme>/story-NN-*.md`）と `_theme.md` を読む。主役・周りの物・クール数・各クールで完成するものは仕様書から取る。親が勝手に決めない（温室で仕様書を読まずにマスターを作り、作り直しになった 2026-11-02）。
 - テーマ名 `T`、`{world}` の 1 語句（場所・季節・時間帯）。
-- 主役 1 つと、周りの部品 3〜7 個。部品ごとに「1 枚の画像で描ける 1 つの物」にする。
+- 主役 1 つと、周りの部品 3〜7 個（仕様書の「周辺の余白」から選ぶ）。部品ごとに「1 枚の画像で描ける 1 つの物」にする。
+- **クール分解**: 仕様書のクールごとに、そのクールで起きることを次の 2 種類に分けて `report.md` に表で書く。
+  - 現れる物: 新しく置かれる部品・仕上げの層。現れ方（下の `how`）を決める。
+  - 姿が変わる物: 骨組み→完成、苗→育った株→花と実のように、同じ場所で段階が進む物。段階ごとに別の部品を作る（4 で画像、5 で 3D 化）。完成形の静止画に写らない前の段階には配置仕様で `"hidden": true` を付ける。
+  - 1 クールで足す物は 2〜4 グループにし、ひと目で何が増えたか分かるようにする。最後のクールの最終状態 = 完成形の静止画。
+  - ガラスのように透ける外皮は 3D 化すると不透明に焼き込まれ中が見えなくなるので、骨組みだけを部品にし、配置仕様の `"glass"` で Blender が透明な囲いを作る（温室）。
 - 動く物と動き方。今のスクリプトで動かせるのは次の 4 つだけ。
   - 回る: `rotor`（`split_rotor.py`。羽根のように回転部分が建物の外へ張り出していることが前提）
   - 揺れる: `sway` のプリセット `wheat`／`grass`／`cloth`
@@ -132,6 +145,7 @@ W=~/work/image-to-3d/diorama/$T                        # 3D・レンダー・動
 
 - 部品ごとに `$IMG/$T-<part>/` を作り、`MASTER` を `ref-master.png` としてコピーする。KIND=part、参照 = `ref-master.png`。テンプレートは prompts.md の 3。
 - 判定: マスターのその物と形・色・付属物が一致 / 1 つだけで欠けていない / 地面や影がない / 細い所が太く描かれている / 回る部品は回転部分が本体の外へ張り出している。
+- 段階ごとの部品（工程 1 のクール分解で決めたもの）は、同じ器・同じ並び・同じ大きさで中身だけ変えて描かせる（例: 「two long rectangular wooden raised planting beds … the same size and layout」を全段階のプロンプトに入れる）。入れ替えたときに位置がずれないようにするため。骨組みの段階は「ALL openings completely EMPTY, NO glass」と明記する。
 
 ### 5. 部品の 3D 化と検査（親）
 
@@ -187,6 +201,18 @@ for p in <part> ...; do cp $IMG/$T-$p/$T-$p-v1.png $W/parts/$p.png
 - 窓・ランプが光る部品に `"glow": 4.0`。回る部品に `"rotor": {"slab": 0.07}` と、`animation` に `"spin_turns": 1`。揺れる部品は `animation.sway` に `{"<part>": "wheat"}`。雪を降らせるなら `animation.snow`（雪テーマは 260）。
 - 同じ部品を複数置くと、色が自動で少しずつずれる（`vary_copy`）。
 - 画像のパスは配置仕様からの相対パス。
+- 段階ごとの部品は同じ `xy`・`turn`・`size` で重ねて置き、完成形に写らない段階に `"hidden": true`。ガラスの外皮は骨組みの部品に `"glass": {"sill": 0.2, "eave": 0.55, "ridge": 0.92, "alpha": 0.12}`（`glass_<i>` ができる）。
+- `cools`: 工程 1 のクール分解をそのまま書く。書式は `build_cools.py` の docstring が正本。
+  ```json
+  "cools": [
+    {"title": "骨組みが完成する", "steps": [{"add": ["stones"], "how": "pop"}, {"add": ["frame"], "how": "grow"}]},
+    {"title": "ガラスが張られ温室が完成する", "steps": [{"add": ["glass"], "how": "fade"}, {"add": ["bench"], "how": "grow"}]},
+    {"title": "植物が育っていく", "steps": [{"add": ["plants1"], "how": "grow"},
+                                          {"add": ["plants2"], "remove": ["plants1"], "how": "grow"}]}]
+  ```
+  - 選び方: 部品名（置いた全部）、`"dress:<n>"`（仕上げ仕様の n 番目の層）、`glass`。土台は常にある。どのクールにも出てこない物は、クール 1 の最初からある。
+  - `how`: `grow`（下から生える。地面に立つ物）、`drop`（上から落ちる。置かれる物）、`pop`（その場で大きくなる。小物）、`scatter`（仕上げの層の一粒ずつが時間差で出る。草花・小石）、`fade`（透明から。ガラス）。`remove` を同じ step に書くと、前の段階が縮んで消え、次の段階が生える（入れ替え）。
+  - step はクールの 10 秒を順に分け合い、30% ずつ重なる。1 フレーム目から動き始め、最終フレームまで動く。
 
 ### 9. 組み立てと静止画（親 → **停止点 2**）
 
@@ -210,39 +236,59 @@ $B -b --factory-startup -P $S/assemble_theme.py -- $SHELL $S/dress_specs/$T.json
 - 同じ指摘が 2 回続けて直らなかったら、3 回目を試さずユーザーに相談する。
 - 合格した `scene.png` を SendUserFile で見せ、**ユーザーの承認を得るまで 10 に進まない**。承認された版のフォルダを `STILL` に入れる。
 
-### 10. 動きの確認（親）
+### 10. クールごとの動き付き .blend（親）
 
-間引きレンダーで動きだけ先に確かめる（10 フレームおきの 30 枚、約 3 分）。
-
-```bash
-$B -b --factory-startup $STILL/scene.blend -P $S/animate_theme.py -- $S/layout_specs/$T.json $W/anim-test-v1 --every 10
-```
-
-- 出力の `frames/` には `0001.png`、`0011.png`、…、`0291.png` の 30 枚が並ぶ。`0001`・`0071`・`0151`・`0221` の 4 枚を Read して比べる。
-- 確かめること: 回る部品が軸の中心で回り本体から外れない / 揺れる部品の根元が動かない / 島が雲の上で浮き沈みし、雲が島にかからない / 4 枚で回る・揺れる部品の輪郭が変わっている。
-- 見る項目: legacy「アニメーション」、external「適用候補 8」。
-
-### 11. 動画（親）
+完成形の `scene.blend` から、クールごとに動きを付けて保存する（レンダーはしない。1 本 1 分ほど）。
 
 ```bash
-$B -b --factory-startup $STILL/scene.blend -P $S/animate_theme.py -- $S/layout_specs/$T.json $W/anim-v1 > $W/anim-v1.log 2>&1
+for c in 1 2 3 4; do $B -b --factory-startup $STILL/scene.blend -P $S/animate_theme.py -- \
+  $S/layout_specs/$T.json $W/anim-v1/cool$c --cool $c --save 1 > $W/anim-v1/prep-c$c.log 2>&1; done
 ```
 
-- 作り直すときは `anim-v2`、`anim-v3` と版を上げる（以下のコマンドの `anim-v1` も同じ版に置き換える）。
-
-- 約 21 分かかる。Bash の `run_in_background` で走らせ、完了通知を待つ（ポーリングしない）。
-- 完了後に検査する。どれか 1 つでも違えば不合格。
+- クール数は仕様書の `cools` に合わせる。出力は `$W/anim-v1/coolN/coolN.blend`。背景と雲を重ねる位置（完成形から決めた枠）も `.blend` に保存され、全クールで構図がそろう。
+- 保存した `.blend` を 30 フレームおきに間引きレンダーして、動きを確かめる（1 クール約 3 分）。
   ```bash
-  ffprobe -v error -select_streams v:0 -show_entries stream=width,height,r_frame_rate,codec_name,pix_fmt,nb_frames -of csv=p=0 $W/anim-v1/loop.mp4
-  ffprobe -v error -show_entries stream=codec_type -of csv=p=0 $W/anim-v1/loop.mp4   # video だけ（音声なし）
-  ffmpeg -v error -i $W/anim-v1/loop.mp4 -f null - && echo decode-ok
+  $B -b --factory-startup $W/anim-v1/cool$c/cool$c.blend -P $S/animate_theme.py -- $S/layout_specs/$T.json $W/check-c$c --every 30
+  ```
+  クールごとに 10 コマを横に、クールを縦に並べた確認シートを作り（`tile=10x1` と `vstack`）、次を見る。
+  - 各クールの 1 コマ目が、前のクールの最後のコマと同じ状態。
+  - 現れる物が書いた順に現れ、最後のコマが完成形（最後のクールは静止画と同じ）。
+  - 入れ替え（`remove`）で前の段階が残っていない。小さい物・ガラスの奥の物は拡大シートでも見る。
+- 確認シートと `.blend` の場所をユーザーに渡す。
+
+### 11. ユーザーの手直し（**停止点 3**）
+
+ユーザーが破綻を少し直す。流れ（ユーザー合意 2026-11-02）:
+
+1. 形の破綻（めり込み・浮き・3D 化の崩れ・大きさ・材質）は、完成形のマスター `$STILL/scene.blend` で直してもらう。全クールに共通なので 1 回で済む。
+2. 形を直したら、親が 10 をやり直す（`coolN.blend` は作り直され、そこにあった直しは消える）。
+3. 動きの破綻（タイミング・順番・落ちる高さ）は、各 `coolN.blend` で直してもらう。
+4. 直した `coolN.blend` をそのままレンダーする（12）。
+
+- 手直しの後に組み立て（9）をやり直さない（`scene.blend` が上書きされる）。やり直すときは `still-v2` に出し、手直しも入れ直す。
+- オブジェクトの名前を変えない・複製しない（`cools` は名前で選ぶ）。`"hidden"` の段階の表示を触らない。背景と雲は Blender の外で合成するので、コンポジターの直しは効かない。
+- ユーザーが「見た目より動きの検証」と言うときは、手直しを飛ばして 12 へ進む。
+
+### 12. 動画（親）
+
+```bash
+$B -b --factory-startup $W/anim-v1/cool$c/cool$c.blend -P $S/animate_theme.py -- $S/layout_specs/$T.json $W/anim-v1/cool$c
+```
+
+- 保存済みの `.blend` は、動きを付け直さずそのままレンダーする（`scene["prepared"]`）。1 クール約 20 分。Bash の `run_in_background` で全クールを順に走らせ、完了通知を待つ。
+- クールごとに検査する。どれか 1 つでも違えば不合格。
+  ```bash
+  ffprobe -v error -select_streams v:0 -show_entries stream=width,height,r_frame_rate,codec_name,pix_fmt,nb_frames -of csv=p=0 $M
+  ffprobe -v error -show_entries stream=codec_type -of csv=p=0 $M   # video だけ（音声なし）
+  ffmpeg -v error -i $M -f null - && echo decode-ok
   ```
   期待値: `h264,1080,1920,yuv420p,30/1,300`、`decode-ok`、ファイル 3〜5MB。
-- 1 秒ごとの静止画を数枚抜いて Read し、雲のかかり・部品の外れがないかを見る（`ffmpeg -i loop.mp4 -vf fps=1 $W/anim-v1/check-%02d.png`）。
+- 継ぎ目: クール N の最終フレームとクール N+1 の 1 フレーム目の差が小さいこと（島の上下と雲の位置だけが違う）。最後のクールの最終フレームが完成形の静止画と同じ見た目であること。
+- 動画を SendUserFile で送り、感想をもらう。指摘は仕様 JSON の数値 → スクリプトの汎用処理 → 画像の作り直しの順で直す。
 
-### 12. ユーザー確認（**停止点 3**）
+### 旧: 完成形のループ（参考）
 
-`loop.mp4` を SendUserFile で送り、感想をもらう。指摘は次の順で直す: 仕様 JSON の数値 → スクリプトの汎用処理（雪・風車でも壊れないことを静止画で確かめる）→ 画像の作り直し。直したら 9 の静止画から確かめ直す。
+`--cool` を付けずに `animate_theme.py` を実行すると、完成形のまま島が上下し雲が流れる 10 秒ループになる（雪・風車・水車小屋の anim）。アプリの仕様には合わないので本番には使わない。
 
 ### 13. 記録と反映（親）
 
