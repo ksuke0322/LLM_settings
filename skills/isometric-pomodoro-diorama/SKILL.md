@@ -114,7 +114,12 @@ W=~/work/image-to-3d/diorama/$T                        # 3D・レンダー・動
 
 - 川・水路は器の画像に描かない（上面の模様は TRELLIS で崩れる）。器は川なしで作り、配置仕様の `stream`（点列・幅・滝 `fall`）で Blender が水の帯と滝を描く。動きは `animation.water`（模様の流れ `speed`、輪郭の揺れ `wave`）。書式は `assemble_theme.py`・`animate_theme.py` の docstring。
 - 落ちる水には粒を足す（`water_fx.py`、配置仕様の `animation.water_fx`）。`fall`（滝の下端のしぶき）・`lip`（縁の泡）・`drips`（水車のしずく）を使う。`wheel`（水車の下の撹拌）は橋や柱に隠れやすいので、見えるときだけ。値は `layout_specs/watermill.json` から始める（ユーザー採用 2026-11-01）。本物の流体シミュレーション（Mantaflow）はこの絵柄に合わず使わない（`report.md`「水表現の研究」）。
-- 水を主役級に見せたいテーマは、FLIP Fluids で本物の流れを焼く道も使える（`$S/flip_trial.py`、水車小屋 anim-v4 でユーザー評価「めちゃくちゃいいね」2026-11-02）。土台を水路の形に掘り下げ、上流から流して滝へ落とす。採用した指定一式・計測方法・失敗と直し方は `report.md`「FLIP」の節。ベイク約 3 分＋レンダー約 37 分、キャッシュ約 1GB で、焼き終えたらキャッシュと連番画像は消す。
+- 水を主役級に見せたいテーマは、FLIP Fluids で本物の流れを焼く（`$S/flip_water.py`、水車小屋 anim-v4 の H6 から飛沫を除いた設定、標準の流れへ組み込み 2026-11-05）。土台を水路の形に掘り下げ、上流から流して滝へ落とす。
+  - 配置仕様の `animation.water` に `{"engine": "flip", "from_cool": N, "res": 96, "preroll": 150}` を書く。川の形は `stream` から作られ、テーマ固有の値は要らない。
+  - 焼き上げは完成静止画で 1 回だけ（`flip_water.py LAYOUT FLIP_DIR` → アドオンの `run_simulation.py`）。各クールは `animate_theme.py --cool N --flip FLIP_DIR` で同じキャッシュを使う。どちらも Blender 起動時に `--python-expr` で FLIP アドオンを有効にする。
+  - `from_cool` より前のクールは帯の水のまま。そのクールでは前半の水路が空で、回転が始まる時に水が来る。後のクールは始めから流れている。
+  - 目安（watermill2、450 フレーム）: 焼き約 2 分・キャッシュ約 0.7GB、描画 1 本 30 分前後。動画を作り終えたらキャッシュと連番画像は消してよい。
+  - 研究用の `$S/flip_trial.py` の指定一式・失敗と直し方は `report.md`「FLIP」の節。
   - 滝の飛沫（whitewater）は付けない（`--whitewater 0`）。水路と滝の流れだけで足りるとユーザー判断（2026-11-02）。
   - 流れの模様は速度の属性で動かす（`--flow 0.1`）。UVW 属性だけでは画面上ほぼ動かず、水路が止まって見えた。
 - 回転部分の自動検出が外れたら（`rotor-check` の画像で別の部分が回っていたら）、`split_rotor.py` を単体で `--hub '[x,y,z]' --axis '[x,y,z]' --radius r [--keep '[[lo],[hi]]']`（部品の座標系）で試し、効いた値を `rotor` に書く。`--reach` も渡せる。
