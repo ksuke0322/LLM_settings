@@ -34,6 +34,8 @@ description: IsometricPomodoro アプリのテーマ動画（浮島ジオラマ�
 | Codex | 画像生成だけ（`codex-delegate.mjs` 経由）。3D・Blender 作業は任せない |
 | ユーザー | 3 つの停止点（マスター画像・静止画・動画）での承認 |
 
+複数のストーリーを同時に作るときは [references/parallel-production.md](references/parallel-production.md) に従う。
+
 ## 道具と置き場所
 
 作業はアプリリポジトリの専用 worktree で行う。以下の変数をこの名前で使う。
@@ -47,6 +49,8 @@ SK=~/.agents/skills/isometric-pomodoro-diorama         # このスキル
 T=<theme>                                              # テーマ名（英小文字・ハイフン。例 snow, windmill, watermill）
 IMG=$REPO/.tmp/diorama/$T                              # 生成画像（資産ごとのフォルダ）
 W=~/work/image-to-3d/diorama/$T                        # 3D・レンダー・動画の出力
+REC=$REPO/specs/experiments/results/image-to-3d-202610/themes/$T.md   # このテーマの制作記録
+Q=$SK/scripts/queue_run.py                              # 重い処理の順番待ち（並列制作のとき必須）
 ```
 
 | 場所 | 中身 | Git |
@@ -56,7 +60,8 @@ W=~/work/image-to-3d/diorama/$T                        # 3D・レンダー・動
 | `$W/shell/` | 土台の GLB と計測結果 | 管理外 |
 | `$W/still-vN/`、`$W/anim-vN/` | 静止画（`scene.png`、`scene.blend`）と動画（`loop.mp4`） | 管理外 |
 | `$S/dress_specs/$T.json`、`$S/layout_specs/$T.json` | テーマの仕上げ仕様と配置仕様 | 管理する |
-| `$REPO/specs/experiments/results/image-to-3d-202610/report.md` | 制作記録 | 管理する |
+| `$REC`（テーマごとに 1 ファイル） | そのテーマの制作記録 | 管理する |
+| `$REPO/specs/experiments/results/image-to-3d-202610/report.md` | テーマをまたぐ研究の記録（水表現・FLIP など）。テーマの制作記録は書かない | 管理する |
 
 使うスクリプトは `$S` 直下のもの:
 
@@ -74,7 +79,7 @@ W=~/work/image-to-3d/diorama/$T                        # 3D・レンダー・動
 
 ## 版の呼び方
 
-工程をまたいで使う版は、決めた時点で次の変数に入れ、`report.md` にも書く。後の工程のコマンドはこの変数を使う。
+工程をまたいで使う版は、決めた時点で次の変数に入れ、`$REC` にも書く。後の工程のコマンドはこの変数を使う。
 
 | 変数 | 決める工程 | 例 |
 |---|---|---|
@@ -94,21 +99,22 @@ W=~/work/image-to-3d/diorama/$T                        # 3D・レンダー・動
    ```bash
    python3 $SK/scripts/make_image_request.py $IMG/<asset> <KIND> [ref.png ...] > $IMG/<asset>/req.json
    rtk proxy node ~/.agents/bin/codex-delegate.mjs < $IMG/<asset>/req.json > $IMG/<asset>/out.json 2>&1
+   $TR/.venv/bin/python $SK/scripts/collect_image.py $IMG/<asset> <KIND>
    ```
-3. **1 本ずつ**頼む。並行に頼むと出力が衝突する。
-4. `out.json` の `status` が FAILED でも、理由が「`~/.codex/generated_images/` への自動保存」だけなら画像は使える。その他の FAILED は理由を読んで依頼を直す。
+3. 同時に頼んでよい。Codex は生成だけを行い、`collect_image.py` がその実行のセッション専用フォルダから画像を写すので、衝突しない（`COLLECTED` で次へ。`REJECTED`＝背景が透過でない、`NOTHING`＝画像ができていない、はどちらも同じ依頼を出し直す）。
+4. `out.json` の `status` が FAILED なら理由を読む。`collect_image.py` が `COLLECTED` を返した画像は使える。
 5. 親が画像を原寸で Read して判定する。context-mode が入っていると 16KB を超える Read は拒否されるので、Read に `limit: 1` を付ける（画像は全体が読める。2026-11-05）。不合格は理由をプロンプトに足して作り直す（1 資産 3 回まで。3 回とも不合格なら止めてユーザーに相談する）。
 
 ## 工程
 
 ### 1. テーマの設計（親）
 
-次を決めて、`report.md` の末尾に `## テーマ「<日本語名>」の制作（YYYY-MM-DD）` の節を作って書く。節の中は `### 設計`・`### 生成と 3D 化`・`### 静止画`・`### 動画`・`### 分かったこと`・`### 残る課題` の順に、工程が進むたびに足す。
+次を決めて、`$REC` を新しく作り、`# テーマ「<日本語名>」の制作（YYYY-MM-DD）` の見出しの下に書く。節は `## 設計`・`## 生成と 3D 化`・`## 静止画`・`## 動画`・`## 分かったこと`・`## 残る課題` の順に、工程が進むたびに足す。
 
 - 最初にストーリー仕様書（`docs/story-ideas/themes/<theme>/story-NN-*.md`）と `_theme.md` を読む。主役・周りの物・クール数・各クールで完成するものは仕様書から取る。親が勝手に決めない（温室で仕様書を読まずにマスターを作り、作り直しになった 2026-11-02）。
 - テーマ名 `T`、`{world}` の 1 語句（場所・季節・時間帯）。
 - 主役 1 つと、周りの部品 3〜7 個（仕様書の「周辺の余白」から選ぶ）。部品ごとに「1 枚の画像で描ける 1 つの物」にする。
-- **クール分解**: 仕様書のクールごとに、そのクールで起きることを次の 2 種類に分けて `report.md` に表で書く。
+- **クール分解**: 仕様書のクールごとに、そのクールで起きることを次の 2 種類に分けて `$REC` に表で書く。
   - 現れる物: 新しく置かれる部品・仕上げの層。現れ方（下の `how`）を決める。
   - 姿が変わる物: 骨組み→完成、苗→育った株→花と実のように、同じ場所で段階が進む物。段階ごとに別の部品を作る（4 で画像、5 で 3D 化）。完成形の静止画に写らない前の段階には配置仕様で `"hidden": true` を付ける。
     - 段階は完成形を基準に作り、どの段階も完成形の一部に見えるようにする（別々に作ると形が揃わず、クールごとに別の物に見える）。前の段階の用意は、静止画をユーザーに見せる前に済ませる。
@@ -122,7 +128,7 @@ W=~/work/image-to-3d/diorama/$T                        # 3D・レンダー・動
   - 炎・煙・火花: `animation.fire_fx`（下の「煙と炎」）
   - 組み上がり: `cools` の `how`（工程 8）
   - 島の上下と雲の流れ: どのテーマにも自動で付く
-- 雪・風車と型が違う点（水・ガラス・細い植物など）と、それをどの工程で扱うか。上で表せない動きや、検出が外れそうな回転部分（張り出しの小さい水車など）は、`report.md` に「未対応」と書き、静止画（9）の前にユーザーと扱いを決める。決めた方法で作ったら、スクリプトとこのスキルに足す。
+- 雪・風車と型が違う点（水・ガラス・細い植物など）と、それをどの工程で扱うか。上で表せない動きや、検出が外れそうな回転部分（張り出しの小さい水車など）は、`$REC` に「未対応」と書き、静止画（9）の前にユーザーと扱いを決める。決めた方法で作ったら、スクリプトとこのスキルに足す。
 
 ### 水と、張り出しの小さい回転部分（水車小屋 2026-11-01 で対応）
 
@@ -160,10 +166,10 @@ W=~/work/image-to-3d/diorama/$T                        # 3D・レンダー・動
 ### 3. 土台の器と 3D 化（Codex → 親）
 
 1. `$IMG/$T-base/` に `MASTER` を `ref-master.png` としてコピーし、KIND=base で生成する（prompts.md の 2）。判定: 上面が平ら、縁が面一、上に何もない、側面が 2〜3 段の積み石、背景が透過。合格した版を `BASEIMG` に入れる（例 `$IMG/$T-base/$T-base-v1.png`）。
-2. 3D 化する。高速設定でシード 2 つ（7 と 42）を順番に回す（1 本約 10 分、メモリ約 25GB。同時に 2 本走らせない）。
+2. 3D 化する。高速設定でシード 2 つ（7 と 42）を順番に回す（1 本約 10 分、メモリ約 25GB。同時に 2 本走らせない。`$Q trellis` が他のセッションの 3D 化と合わせて 1 本ずつに並べる）。
    ```bash
    mkdir -p $W/shell ~/work/image-to-3d/logs
-   for s in 7 42; do (cd $TR && PYTHONPATH=. .venv/bin/python generate.py --image $BASEIMG \
+   for s in 7 42; do (cd $TR && PYTHONPATH=. $Q trellis -- .venv/bin/python generate.py --image $BASEIMG \
      --output $W/shell/base-s$s.glb --seed $s --no-cascade --steps 8 --target-faces 200000 --texture-size 1024 \
      > ~/work/image-to-3d/logs/$T-base-s$s.log 2>&1); done
    ```
@@ -183,7 +189,7 @@ W=~/work/image-to-3d/diorama/$T                        # 3D・レンダー・動
 ```bash
 mkdir -p $W/parts
 for p in <part> ...; do cp $IMG/$T-$p/$T-$p-v1.png $W/parts/$p.png
-  (cd $TR && PYTHONPATH=. .venv/bin/python generate.py --image $W/parts/$p.png --output $W/parts/$p.glb \
+  (cd $TR && PYTHONPATH=. $Q trellis -- .venv/bin/python generate.py --image $W/parts/$p.png --output $W/parts/$p.glb \
    --seed 7 --no-cascade --steps 8 --target-faces 200000 --texture-size 1024 > ~/work/image-to-3d/logs/$T-$p.log 2>&1); done
 ```
 
@@ -314,10 +320,10 @@ for c in 1 2 3 4; do $B -b --factory-startup $STILL/scene.blend -P $S/animate_th
 ### 12. 動画（親）
 
 ```bash
-$B -b --factory-startup $W/anim-v1/cool$c/cool$c.blend -P $S/animate_theme.py -- $S/layout_specs/$T.json $W/anim-v1/cool$c
+$Q render -- $B -b --factory-startup $W/anim-v1/cool$c/cool$c.blend -P $S/animate_theme.py -- $S/layout_specs/$T.json $W/anim-v1/cool$c
 ```
 
-- 保存済みの `.blend` は、動きを付け直さずそのままレンダーする（`scene["prepared"]`）。1 クール約 20 分、FLIP の水があるクールは約 30 分。Bash の `run_in_background` で全クールを順に走らせ、完了通知を待つ。
+- 保存済みの `.blend` は、動きを付け直さずそのままレンダーする（`scene["prepared"]`）。1 クール約 20 分、FLIP の水があるクールは約 30 分。Bash の `run_in_background` で全クールを順に走らせ、完了通知を待つ。`$Q render` は全セッション合わせて同時 2 本までに抑える（待っている間は 1 分ごとに `QUEUE waiting` が出る。空き状況は `$Q --status`）。
 - クールごとに検査する。どれか 1 つでも違えば不合格。
   ```bash
   ffprobe -v error -select_streams v:0 -show_entries stream=width,height,r_frame_rate,codec_name,pix_fmt,nb_frames -of csv=p=0 $M
@@ -334,7 +340,7 @@ $B -b --factory-startup $W/anim-v1/cool$c/cool$c.blend -P $S/animate_theme.py --
 
 ### 13. 記録と反映（親）
 
-- `report.md` のテーマの節（工程 1 で作ったもの）に、`MASTER`・`SHELL`・`BG`・`CLOUD`・`STILL` の版、失敗と直し方、ユーザーの評価を書く。
+- `$REC`（工程 1 で作ったもの）に、`MASTER`・`SHELL`・`BG`・`CLOUD`・`STILL` の版、失敗と直し方、ユーザーの評価を書く。
 - ユーザーの指摘・新しい失敗は、規則・理由・出典の 3 行でこのスキルへ足す（下の「改善のしかた」）。
 - Git（ブランチ・コミット・PR）はユーザーの承認を得てから行う。生成画像・GLB・動画はコミットしない。
 
