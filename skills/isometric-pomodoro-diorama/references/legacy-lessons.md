@@ -117,3 +117,5 @@
 - Greyboxを土台に手作業で段階的に造形する工程と、その手法カタログは新フローが生成メッシュを組み立てるため除外した。出典: isometric-story-workflow/references/production-workflow.md; blender-isometric-rules/SKILL.md「2.5」
 - Notion、Jev、委任先、旧スキル固有のレビューJSON/台帳手順はツール・運用依存のため除外した。レビュー独立性と再発停止の原則だけ残した。出典: isometric-story-workflow/references/jev-shadow-review.md; isometric-story-workflow/references/codex-delegation.md; isometric-story-workflow/references/step8-review-control.md
 - 風車・灯台・巣箱など個別テーマの寸法・パーツ・ストーリーは再利用対象外のため除外した。出典: isometric-story-workflow/references/worksheet-rules.md; blender-isometric-rules/references/build-pitfalls.md
+
+- 規則: 夜の場面は `light.color` を暖色で明示し、`backdrop` の `grade`・`haze`・`rim` を下げる。理由: 背景の紺が光の色と合成の両方から部品に乗り、真鍮や石が青くなる。出典: 天体観測小屋の still-v1〜v2（2026-11-09）。
