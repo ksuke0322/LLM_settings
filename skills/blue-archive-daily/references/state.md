@@ -18,6 +18,8 @@ JSONには次を保持する。作成時に過去の会話を今日の完了と�
 
 項目状態は `not_started / pending / partial / completed / already_completed / blocked / uncertain` を区別する。保存前のJSONを読んで、今回変更する項目だけ更新する。原子的な置換で保存する。保存に失敗したら新しい資源消費を始めない。
 
+指名手配の当日対象が屋敷の場合、固定割当を `pending` のまま保持し、`manual_action_required` を理由として記録する。ユーザーに手動で残チケットの消化を依頼し、完了報告までは指名手配の次indexを進めない。報告を受けたら画面操作をせず、`completed` と `completion_source=user_report` を記録して次indexを1回だけ進める。ステージ名・チケット数・画面での確認など報告されていない値は推測せず、既存スキーマに合わせて未記録または `null` のままにする。
+
 ## 対象の決め方
 
 1. 初回の次indexはそれぞれ0。ゲーム内日付の割当が既にあれば、それを再利用する。
