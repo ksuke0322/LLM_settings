@@ -264,6 +264,9 @@ for p in <part> ...; do cp $IMG/$T-$p/$T-$p-v1.png $W/parts/$p.png
 - 窓・ランプが光る部品に `"glow": 4.0`。回る部品に `"rotor": {"slab": 0.07}` と、`animation` に `"spin_turns": 1`。クールの途中から回し始めるなら `animation.spin_from_cool: N`（N より前のクールは止まり、クール N の中ほどから 1 秒かけて回り始め、後のクールは最初から回る）。揺れる部品は `animation.sway` に `{"<part>": "wheat"}`。雪を降らせるなら `animation.snow`（雪テーマは 260）。
 - 同じ部品を複数置くと、色が自動で少しずつずれる（`vary_copy`）。色ずれが目立つ部品（養蜂箱の巣板が赤くなった）は GLB を `comb1.glb`〜`comb4.glb` のように別名で複製し、別の部品として置く。
 - 夜の背景の星を瞬かせるなら `backdrop.stars`。`from_cool` を付けると、クール番号の記録がない古い `coolN.blend` のレンダーには `--cool N` が要る。
+  - ほかのテーマに足すとき: 天体観測小屋の値（`layout_specs/observatory.json`）を写し、`avoid` に背景の月・太陽の位置、`area` に空の帯（雲海より上）を入れる。`from_cool` は見せ場のクール（夜が来る・灯りがともるなど）に合わせる。背景を組み直さず `coolN.blend` をレンダーし直すだけで入る。
+  - 合う: 夜・夕暮れ後・暗い室内の窓の外など、空が暗い背景。星が出ることに物語上の理由がある（観測・祭り・夜の帰り道）。
+  - 合わない: 昼・夕焼けの明るい空（光の筋が白い点のノイズに見える）、空がほとんど見えない構図、すでに雪・火の粉・群れなど小さな動く粒が多いテーマ（視線が散る）。全テーマ一律には入れない（ユーザー方針 2026-11-12）。
 - 艶の調整: 煉瓦のように色区分で勝手にテカる部品は `"roughness": 0.85`。釉薬などは `"gloss": [{"hue": [lo, hi], "sat": [lo, hi], "val": [lo, hi], "roughness": 0.15}]` で色の範囲だけ艶を上げる（窯 2026-11-09）。木と同じ色相の琥珀色は `sat`・`val` で分ける。
 - 画像のパスは配置仕様からの相対パス。
 - 段階ごとの部品は同じ `xy`・`turn`・`size` で重ねて置き、完成形に写らない段階に `"hidden": true`。ガラスの外皮は骨組みの部品に `"glass": {"sill": 0.2, "eave": 0.55, "ridge": 0.92, "alpha": 0.12}`（`glass_<i>` ができる）。
@@ -370,6 +373,8 @@ $Q render -- $B -b --factory-startup $W/anim-v1/cool$c/cool$c.blend -P $S/animat
 - `$REC`（工程 1 で作ったもの）に、`MASTER`・`SHELL`・`BG`・`CLOUD`・`STILL` の版、失敗と直し方、ユーザーの評価を書く。
 - ユーザーの指摘・新しい失敗は、規則・理由・出典の 3 行でこのスキルへ足す（下の「改善のしかた」）。
 - Git（ブランチ・コミット・PR）はユーザーの承認を得てから行う。生成画像・GLB・動画はコミットしない。
+- アプリへの組み込み（例外として動画をコミットする）: `loop.mp4` を `IsometricPomodoro/Content/Videos/<T>-coolN.mp4` へ、最終フレーム（`ffmpeg -sseof -0.04 -i loop.mp4 -frames:v 1 -q:v 3`）を `Content/Posters/<T>-coolN-poster.jpg` へ置く。`themes.json` の末尾に order を続けて足し、クール名はストーリー仕様書の表から取る。`ContentCatalogTests` のテーマ一覧とクール数を足し、`xcodegen generate` の後にユニットテストを通す。テストが「signal kill before establishing connection」で落ちたら、`xcrun simctl boot` でシミュレータを先に起動してやり直す。
+- 並列制作では `themes.json`・`ContentCatalogTests`・`project.pbxproj`・`docs/story-ideas/README.md` の合計行が必ずぶつかる。監督がマージの順番を決め、各セッションは前の PR のマージ後に main を取り込み、main 側を正として自分の 1 テーマを足し直す（order は main の末尾の次、README の合計は数え直す）。
 
 ### 14. 片付け（親、動画の承認後）
 
