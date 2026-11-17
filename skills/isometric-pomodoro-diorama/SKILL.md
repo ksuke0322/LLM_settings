@@ -47,15 +47,15 @@ B=/Applications/Blender.app/Contents/MacOS/Blender     # Blender 4.5
 TR=~/work/image-to-3d/trellis2mlx                      # TRELLIS.2 MLX（.venv 入り）
 SK=~/.agents/skills/isometric-pomodoro-diorama         # このスキル
 T=<theme>                                              # テーマ名（英小文字・ハイフン。例 snow, windmill, watermill）
-IMG=$REPO/.tmp/diorama/$T                              # 生成画像（資産ごとのフォルダ）
-W=~/work/image-to-3d/diorama/$T                        # 3D・レンダー・動画の出力
+W=~/Documents/image-to-3d/diorama/$T                   # 3D・レンダー・動画の出力（worktree の外に置く）
+IMG=$W/images                                          # 生成画像（資産ごとのフォルダ）
 REC=$REPO/specs/experiments/results/image-to-3d-202610/themes/$T.md   # このテーマの制作記録
 Q=$SK/scripts/queue_run.py                              # 重い処理の順番待ち（並列制作のとき必須）
 ```
 
 | 場所 | 中身 | Git |
 |---|---|---|
-| `$IMG/<asset>/` | `prompt.txt`、参照画像、`<asset>-vN.png`、`<asset>-gen-log.json` | 管理外（`.tmp/` は `info/exclude` 済み。worktree ごとに別なので、別の worktree に移るときはフォルダごとコピーする） |
+| `$IMG/<asset>/` | `prompt.txt`、参照画像、`<asset>-vN.png`、`<asset>-gen-log.json` | 管理外（worktree の外なので、worktree を消しても残る） |
 | `$W/parts/` | 部品の `NAME.png`（3D 化に使った入力画像）と `NAME.glb` を同じ名前で並べる | 管理外 |
 | `$W/shell/` | 土台の GLB と計測結果 | 管理外 |
 | `$W/still-vN/`、`$W/anim-vN/` | 静止画（`scene.png`、`scene.blend`）と動画（`loop.mp4`） | 管理外 |
@@ -267,8 +267,8 @@ for p in <part> ...; do cp $IMG/$T-$p/$T-$p-v1.png $W/parts/$p.png
   "props": [{"part": "<part>", "xy": [x, y], "size": s, "by": "height", "turn": 0, "keep_out": 1.0}],
   "light": {"energy": 4.5, "elevation": 35, "azimuth": -20, "fill": [0.6, 0.72, 1.0], "fill_energy": 0.6},
   "world_strength": 0.7, "margin": 1.08, "look": "AgX - Medium High Contrast", "exposure": 0.3,
-  "backdrop": {"image": "../../../../.tmp/diorama/<T>/<T>-bg/<T>-bg-v1.png",
-               "cloud": "../../../../.tmp/diorama/<T>/<T>-cloud/<T>-cloud-v1.png",
+  "backdrop": {"image": "/Users/<user>/Documents/image-to-3d/diorama/<T>/images/<T>-bg/<T>-bg-v1.png",
+               "cloud": "/Users/<user>/Documents/image-to-3d/diorama/<T>/images/<T>-cloud/<T>-cloud-v1.png",
                "cloud_overlap": 0.2, "cloud_width": 1.7},
   "underside": {"depth": 0.5, "lobes": 3},
   "portrait": true,
@@ -289,7 +289,7 @@ for p in <part> ...; do cp $IMG/$T-$p/$T-$p-v1.png $W/parts/$p.png
   - 合う: 夜・夕暮れ後・暗い室内の窓の外など、空が暗い背景。星が出ることに物語上の理由がある（観測・祭り・夜の帰り道）。
   - 合わない: 昼・夕焼けの明るい空（光の筋が白い点のノイズに見える）、空がほとんど見えない構図、すでに雪・火の粉・群れなど小さな動く粒が多いテーマ（視線が散る）。全テーマ一律には入れない（ユーザー方針 2026-11-12）。
 - 艶の調整: 煉瓦のように色区分で勝手にテカる部品は `"roughness": 0.85`。釉薬などは `"gloss": [{"hue": [lo, hi], "sat": [lo, hi], "val": [lo, hi], "roughness": 0.15}]` で色の範囲だけ艶を上げる（窯 2026-11-09）。木と同じ色相の琥珀色は `sat`・`val` で分ける。
-- 画像のパスは配置仕様からの相対パス。
+- 画像のパスは `$IMG` の絶対パスで書く（`~` は展開されない）。相対パスは配置仕様のフォルダからの相対として解かれる。
 - 段階ごとの部品は同じ `xy`・`turn`・`size` で重ねて置き、完成形に写らない段階に `"hidden": true`。ガラスの外皮は骨組みの部品に `"glass": {"sill": 0.2, "eave": 0.55, "ridge": 0.92, "alpha": 0.12}`（`glass_<i>` ができる）。
 - `cools`: 工程 1 のクール分解をそのまま書く。書式は `build_cools.py` の docstring が正本。
   ```json
@@ -414,7 +414,6 @@ $Q render -- $B -b --factory-startup $W/anim-v1/cool$c/cool$c.blend -P $S/animat
 - 手順: 消す対象の一覧と大きさを `du -sh` でユーザーに見せ、承認を得てから `~/.Trash/diorama-cleanup-YYYYMMDD/` へ元の構成のまま移す。完全に消す（ゴミ箱を空にする）のはユーザーが行う。
 - 移した後、`STILL/scene.blend` と全クールの `loop.mp4` が残っていることを確かめる。
 - 消す前に確かめる: 配置仕様の `backdrop` などが参照する画像・GLB は残す（温室 2 は旧温室の背景を参照している）。Git にないスクリプト（試作など）は、要るならリポジトリへ移してから消す。
-- worktree を消す前に、`$IMG`（worktree の `.tmp/diorama/$T`、Git が無視するので `git status` に出ない）をアプリリポジトリ本体の `.tmp/diorama/$T` へ移す。worktree と一緒に消えると生成画像は作り直せない（養蜂箱 2026-11-12）。
 
 ### 15. ストーリーのステータス更新（親、すべての工程の完了後）
 
