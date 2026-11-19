@@ -249,6 +249,7 @@ const buildCodexArgs = (request, schemaPath, outputPath) => {
     "--model", MODEL,
     "-c", `model_reasoning_effort="${REASONING_EFFORT}"`,
     "--ignore-user-config",
+    "--skip-git-repo-check",
     "--strict-config",
     "--disable", "multi_agent",
     "--output-schema", schemaPath,
