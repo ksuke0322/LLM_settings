@@ -1,3 +1,4 @@
 skills/.system
 __pycache__/
 /state/ntfy-task-context/
+.worktrees
